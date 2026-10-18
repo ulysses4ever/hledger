@@ -400,6 +400,18 @@ function registerChart($container, series) {
   // The colors come from the palette in hledger.css, for the current scheme.
   var style = getComputedStyle(document.documentElement);
   var color = function(name) { return style.getPropertyValue(name).trim(); };
+  var xaxis = {
+    mode: "time",
+    timeformat: "%Y/%m/%d",
+  };
+  // On a narrow screen (below the breakpoint in hledger.css) flot crowds
+  // the date labels until they overlap, and centers the last one on its
+  // tick, past the chart's edge, where it can widen the page. There, ask
+  // for a label per 110px or so, and keep room for half a label at each end.
+  if (window.matchMedia('(max-width: 767px)').matches) {
+    xaxis.ticks = Math.max(2, Math.floor($container.width() / 110));
+    xaxis.reserveSpace = true;
+  }
   // https://github.com/flot/flot/blob/master/API.md
   return $container.plot(
     series,
@@ -408,10 +420,7 @@ function registerChart($container, series) {
         // hollow points: filled with the page's own background
         points: { fillColor: color('--bg') },
       },
-      xaxis: {
-        mode: "time",
-        timeformat: "%Y/%m/%d",
-      },
+      xaxis: xaxis,
       selection: {
         mode: "x"
       },
