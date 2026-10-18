@@ -19,7 +19,7 @@ and then Application.hs completes the job.
 module Hledger.Web.App where
 
 import Control.Applicative ((<|>))
-import Control.Monad (join, mfilter, when, unless)
+import Control.Monad (filterM, forM_, join, mfilter, when, unless)
 -- import Control.Monad.Except (runExceptT)  -- now re-exported by Hledger
 import Data.ByteString.Base64 qualified as B64
 import Data.ByteString.Char8 qualified as BC
@@ -27,7 +27,7 @@ import Data.Foldable (for_)
 import Data.Map qualified as M
 import Data.Traversable (for)
 import Data.IORef (IORef, readIORef, writeIORef)
-import Data.Maybe (catMaybes, fromMaybe, listToMaybe)
+import Data.Maybe (catMaybes, fromMaybe, listToMaybe, maybeToList)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as TE
@@ -36,7 +36,7 @@ import Network.HTTP.Conduit (Manager)
 import Network.HTTP.Types (status403)
 import Network.Wai (requestHeaders)
 import System.Directory (XdgDirectory (..), createDirectoryIfMissing,
-                         getXdgDirectory)
+                         doesFileExist, getXdgDirectory)
 import System.Entropy (getEntropy)
 import System.FilePath (takeFileName, (</>))
 import Text.Blaze (Markup)
@@ -157,6 +157,7 @@ instance Yesod App where
       addHeader "Vary" "Cookie, Accept-Language"
     let lang = trLang trs
     showSidebar <- shouldShowSidebar
+    mcss <- liftIO $ filterM doesFileExist $ maybeToList $ css_ opts
     -- The policy is sent from here rather than from a middleware, so that
     -- the header and the page's script tags always carry the same nonce;
     -- error pages come through here too, in a handler state of their own.
@@ -222,6 +223,9 @@ instance Yesod App where
       addScript $ StaticR js_jquery_flot_time_min_js
       addScript $ StaticR js_jquery_flot_tooltip_min_js
       addStylesheet $ StaticR hledger_css
+      -- An instance's own stylesheet, if one was given with --css and is
+      -- there, after hledger-web's own so that its rules win.
+      forM_ mcss $ \_ -> addStylesheet CustomCssR
       addScript $ StaticR hledger_js
       $(widgetFile "default-layout")
 

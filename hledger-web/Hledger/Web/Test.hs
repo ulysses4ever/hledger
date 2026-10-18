@@ -219,6 +219,13 @@ hledgerWebTest = do
           addRequestHeader ("If-None-Match", TE.encodeUtf8 tag)
         statusIs 304
 
+    yit "links no stylesheet of its own without --css" $ do
+      get JournalR
+      statusIs 200
+      bodyNotContains "custom.css"
+      get CustomCssR
+      statusIs 404
+
     yit "serves a reasonable-looking register page" $ do
       get RegisterR
       statusIs 200
@@ -486,6 +493,38 @@ hledgerWebTest = do
         bodyNotContains "<img src=x onerror"
         bodyContains "x&quot; onmouseover=&quot;alert(2)"
         bodyNotContains "onmouseover=\"alert(2)"
+
+  -- An instance's own stylesheet, given with --css: linked on every page,
+  -- after hledger-web's own, and served for revalidation, read again on each
+  -- request so that edits to it show without a restart.
+  withTempConfigDir $ \dir -> do
+    let css = dir </> "custom.css"
+    TIO.writeFile css "h2 { color: rebeccapurple; }\n"
+    runTests "hledger-web with --css" [("css", css)] nulljournal $ do
+
+      yit "links the stylesheet after its own, and serves it, read again when it changes" $ do
+        get JournalR
+        statusIs 200
+        body <- withResponse $ \SResponse{simpleBody} -> return $ TL.toStrict $ TLE.decodeUtf8 simpleBody
+        let pos t = T.length . fst $ T.breakOn t body
+        assertEq "the stylesheet is linked after hledger.css" True
+          (pos "/static/hledger.css\"" < pos "/custom.css\"" && pos "/custom.css\"" < T.length body)
+        get CustomCssR
+        statusIs 200
+        assertHeader "Cache-Control" "no-cache"
+        bodyContains "rebeccapurple"
+        etag <- withResponse $ \SResponse{simpleHeaders} ->
+          maybe (failing "no ETag header") return (lookup "ETag" simpleHeaders)
+        request $ do
+          setUrl CustomCssR
+          addRequestHeader ("If-None-Match", etag)
+        statusIs 304
+        liftIO $ TIO.writeFile css "h2 { color: teal; }\n"
+        request $ do
+          setUrl CustomCssR
+          addRequestHeader ("If-None-Match", etag)
+        statusIs 200
+        bodyContains "teal"
 
   -- The balance page: the balance report, or with a period expression,
   -- the multi-period one, rendered without inline styles (the CSP).

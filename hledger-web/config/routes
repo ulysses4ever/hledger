@@ -1,6 +1,7 @@
 /favicon.ico     FaviconR        GET
 /robots.txt      RobotsR         GET
 /static          StaticR         WaiSubsite getStatic
+/custom.css      CustomCssR      GET
 
 /openapi.json    OpenApiR        GET
 

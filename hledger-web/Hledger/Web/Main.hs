@@ -30,7 +30,7 @@ import Control.Exception (bracket)
 #if MIN_VERSION_base(4,20,0)
 import Control.Exception.Backtrace (setBacktraceMechanismState, BacktraceMechanism(..))
 #endif
-import Control.Monad (when, void)
+import Control.Monad (forM_, when, void)
 import Data.IORef (IORef, atomicModifyIORef', newIORef, readIORef, writeIORef)
 import Data.Streaming.Network (bindRandomPortTCP)
 import Data.String (fromString)
@@ -40,9 +40,9 @@ import Network.HTTP.Types (status204)
 import Network.Socket
 import Network.Wai (Application, Middleware, pathInfo, responseLBS)
 import Network.Wai.Handler.Warp (Settings, runSettings, runSettingsSocket, defaultSettings, setBeforeMainLoop, setHost, setPort)
-import System.Directory (removeFile)
+import System.Directory (doesFileExist, getPermissions, readable, removeFile)
 import System.Environment ( getArgs, withArgs )
-import System.IO (hFlush, stdout)
+import System.IO (hFlush, hPutStrLn, stderr, stdout)
 import System.PosixCompat.Files (getFileStatus, isSocket)
 import System.Time.Extra (sleep)
 import Text.Printf (printf)
@@ -147,6 +147,14 @@ web opts j = do
   case file_url_ opts of
     Just fu -> printf "and static files base url %s\n" fu
     Nothing -> pure ()
+  -- The --css stylesheet is read on each request, so a missing or unreadable
+  -- one is not fatal: the pages are shown without it until it can be read.
+  forM_ (css_ opts) $ \f -> do
+    exists <- doesFileExist f
+    ok <- if exists then readable <$> getPermissions f else return False
+    if ok
+      then printf "with the stylesheet %s\n" f
+      else hPutStrLn stderr $ "hledger-web: warning: can't read the --css file " ++ f ++ ", showing pages without it"
 
   -- start server and maybe browser
   let warpsettings = setHost (fromString h) (setPort p defaultSettings)

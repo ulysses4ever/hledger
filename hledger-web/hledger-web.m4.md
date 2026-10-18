@@ -84,6 +84,9 @@ Flags:
      --socket=SOCKET        listen on the given unix socket instead of an IP
                             address and port (unix only; implies --serve)
      --base-url=BASEURL     set the base url (default: http://IPADDR:PORT)
+     --css=FILE             add this stylesheet to every page, after
+                            hledger-web's own, to change the look; it is read
+                            again when it changes
      --lang=LANG            show the web UI in this language (en, de, zh); or
                             with auto, use each viewer's browser language if
                             available, otherwise the server's. (Default: the
@@ -195,6 +198,19 @@ The pages are light or dark, following your OS or browser's color scheme setting
 and switch when it changes.
 
 Editing, uploading and downloading journal files is described [below](#editing-uploading-downloading).
+
+# CUSTOMISING THE LOOK
+
+With `--css FILE`, hledger-web adds your own stylesheet to every page, after its own,
+so that your rules take precedence: to change colours, sizes or spacing, say,
+without changing hledger-web.
+hledger-web serves the file itself, at `/custom.css`, and reads it again when it changes,
+so you can edit it and reload a page to see the result, without restarting.
+If the file is missing or can't be read, hledger-web says so, and shows the pages without it.
+The pages' Content-Security-Policy allows no inline styles or scripts, so everything goes in this file.
+
+The pages' markup is not a stable interface, and a hledger-web upgrade may change it,
+so keep such a stylesheet small, and check it after upgrading.
 
 # PERMISSIONS
 

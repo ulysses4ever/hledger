@@ -13,6 +13,7 @@ import Data.Default (Default(def))
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import GitHash (tGitInfoCwdTry)
+import System.Directory (getCurrentDirectory)
 import System.Environment (getArgs)
 import Network.Wai as WAI
 import Network.Wai.Middleware.Cors
@@ -102,6 +103,12 @@ webflags =
       "BASEURL"
       "set the base url (default: http://IPADDR:PORT)"
   , flagReq
+      ["css"]
+      (\s opts -> Right $ setopt "css" s opts)
+      "FILE"
+      ("add this stylesheet to every page, after hledger-web's own, to change the look;"
+      ++ " it is read again when it changes")
+  , flagReq
       ["lang"]
       (\s opts -> Right $ setopt "lang" s opts)
       "LANG"
@@ -155,6 +162,7 @@ data WebOpts = WebOpts
   , allow_              :: !AccessLevel
   , cliopts_            :: !CliOpts
   , socket_             :: !(Maybe String)
+  , css_                :: !(Maybe FilePath)
   } deriving (Show)
 
 defwebopts :: WebOpts
@@ -168,6 +176,7 @@ defwebopts = WebOpts
   , allow_              = ViewAccess
   , cliopts_            = def
   , socket_             = Nothing
+  , css_                = Nothing
   }
 
 instance Default WebOpts where def = defwebopts
@@ -176,6 +185,10 @@ rawOptsToWebOpts :: RawOpts -> IO WebOpts
 rawOptsToWebOpts rawopts =
   checkWebOpts <$> do
     cliopts <- rawOptsToCliOpts rawopts
+    -- the stylesheet's path, with ~ expanded, made absolute
+    css <- case maybestringopt "css" rawopts of
+      Nothing -> return Nothing
+      Just f  -> Just <$> (getCurrentDirectory >>= flip expandPath f)
     let
       h = fromMaybe defhost $ maybestringopt "host" rawopts
       p = fromMaybe defport $ maybeposintopt "port" rawopts
@@ -208,6 +221,7 @@ rawOptsToWebOpts rawopts =
       , allow_ = access
       , cliopts_ = cliopts
       , socket_ = sock
+      , css_ = css
       }
   where
     stripTrailingSlash = reverse . dropWhile (== '/') . reverse -- yesod don't like it

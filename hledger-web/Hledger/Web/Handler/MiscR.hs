@@ -16,21 +16,27 @@ module Hledger.Web.Handler.MiscR
   , getAccounttransactionsR
   , getDownloadR
   , getFaviconR
+  , getCustomCssR
   , getManageR
   , getRobotsR
   , getRootR
   , getOpenApiR
   ) where
 
+import Control.Exception (IOException, try)
+import Data.Bits (xor)
 import Data.Map qualified as M
 import Data.Text qualified as T
+import Data.Word (Word64)
+import Numeric (showHex)
+import System.IO (hPutStrLn, stderr)
 import Data.Yaml qualified as Yaml
 import Data.ByteString qualified as BS
 import Data.FileEmbed (embedFile)
 
 import Hledger
 import Hledger.Web.Import
-import Hledger.Web.WebOptions (packageversion)
+import Hledger.Web.WebOptions (WebOpts(..), packageversion)
 import Hledger.Web.Widget.Common (journalFile404)
 
 -- | Serve the favicon and robots.txt from copies of config/favicon.ico and
@@ -38,6 +44,29 @@ import Hledger.Web.Widget.Common (journalFile404)
 -- are served whatever directory hledger-web is run from.
 getFaviconR :: Handler TypedContent
 getFaviconR = return $ TypedContent "image/x-icon" $ toContent $(embedFile "config/favicon.ico")
+
+-- | Serve the stylesheet given with --css. It is read from disk on every
+-- request, so that edits to it show on the next page load, and is sent, like
+-- the static files, with an ETag and Cache-Control: no-cache, so that it
+-- costs a 304 response when unchanged. Not found when there is no --css, or
+-- the file can't be read (which is reported on stderr).
+getCustomCssR :: Handler TypedContent
+getCustomCssR = do
+  App{appOpts} <- getYesod
+  f <- maybe notFound return $ css_ appOpts
+  ecss <- liftIO (try $ BS.readFile f :: IO (Either IOException BS.ByteString))
+  case ecss of
+    Left e -> do
+      liftIO $ hPutStrLn stderr $ "hledger-web: could not read the --css file: " ++ show e
+      notFound
+    Right css -> do
+      addHeader "Cache-Control" "no-cache"
+      setEtag $ T.pack $ showHex (fnv1a css) ""
+      return $ TypedContent "text/css; charset=utf-8" $ toContent css
+  where
+    -- a cheap hash of the bytes (64-bit FNV-1a), to tell versions apart
+    fnv1a :: BS.ByteString -> Word64
+    fnv1a = BS.foldl' (\h b -> (h `xor` fromIntegral b) * 1099511628211) 14695981039346656037
 
 getRobotsR :: Handler TypedContent
 getRobotsR = return $ TypedContent typePlain $ toContent $(embedFile "config/robots.txt")
