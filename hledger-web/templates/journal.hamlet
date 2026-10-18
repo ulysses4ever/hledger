@@ -1,17 +1,23 @@
 <h2>
   #{title'}
 
-$if elem AddPermission perms
-  <a #addformlink .btn .btn-default href=@{AddR} role="button"
-     data-toggle="modal" data-target="#addmodal" title=_{HMsg "Add a new transaction to the journal"}>
-    <span .glyphicon .glyphicon-plus aria-hidden="true">
-    _{HMsg "Add a transaction"}
+<div .journal-actions>
+  $if elem AddPermission perms
+    <a #addformlink .btn .btn-default href=@{AddR} role="button"
+       data-toggle="modal" data-target="#addmodal" title=_{HMsg "Add a new transaction to the journal"}>
+      <span .glyphicon .glyphicon-plus aria-hidden="true">
+      _{HMsg "Add a transaction"}
+  $# An entry is shown single-sided unless this is ticked (see hledger.js).
+  <label .both-sides-toggle title=_{HMsg "Show the accounts each entry's money came from on lines of their own, with their amounts"}>
+    <input #bothsides type=checkbox :bothSides:checked>
+    $# TRANSLATORS: a check box above the journal; ticked, each entry shows all its postings with their amounts.
+    _{HMsg "Show both sides"}
 
 ^{yearsRow trs JournalR qparam years}
 ^{pagingLinks trs JournalR qparam page}
 
 <div .table-responsive>
-  <table .transactionsreport .table .table-condensed>
+  <table .transactionsreport .table .table-condensed :bothSides:.both-sides>
     <thead>
       <th .date>_{HMsgc "column heading" "Date"}
       <th .description>_{HMsgc "column heading" "Description"}
@@ -29,7 +35,7 @@ $if elem AddPermission perms
         <td .amount>
 
       $forall Posting { paccount = acc, pamount = amt } <- tpostings torig
-        <tr .posting>
+        <tr .posting :isSource amt:.source>
           <td>
           <td>
           <td .account>
@@ -38,6 +44,23 @@ $if elem AddPermission perms
               ^{accountNameAsHtml acc}
           <td .amount>
             ^{mixedAmountAsHtml amt}
+      $# Single-sided, the postings whose amounts are all negative, where the
+      $# money came from, are shown on this line instead, without amounts.
+      $with sources <- sourceAccounts torig
+        $if not (null sources)
+          <tr .posting .from>
+            <td>
+            <td>
+            <td .from-accounts>
+              &nbsp;
+              <span>
+                <span .from-label>
+                  $# TRANSLATORS: begins a line naming the accounts a journal entry's money came from, eg "from bank › checking, cash".
+                  _{HMsg "from"}
+                $forall (acc, comma) <- sources
+                  <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
+                    ^{accountNameAsHtml acc}</a>#{comma}
+            <td .amount>
 
 ^{pagingLinks trs JournalR qparam page}
 

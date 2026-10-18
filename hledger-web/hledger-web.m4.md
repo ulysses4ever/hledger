@@ -147,7 +147,9 @@ If this is not working see [Install > Shell completions](install.html#shell-comp
 
 hledger-web's main views are:
 
-- the **journal view** (the home page), showing journal entries, newest first, with their postings;
+- the **journal view** (the home page), showing journal entries, newest first, with their postings:
+  single-sided, the accounts the money came from named on a "from" line under the others,
+  or with every posting and its amount when "Show both sides" is ticked;
 - the **register view**, showing the transactions affecting one account (and its subaccounts),
   with a running balance and a balance chart; and
 - the **report views**, described [below](#reports): the balance sheet, income statement,

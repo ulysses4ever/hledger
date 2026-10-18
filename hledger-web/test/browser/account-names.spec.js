@@ -9,8 +9,8 @@
 const { test, expect } = require('@playwright/test');
 const { watchPageErrors } = require('./helpers');
 
-// In the page: what each account link in the main pane shows, its text, and
-// its title. What it shows is the text of the parts in sight, with each
+// In the page: what each account link in sight in the main pane shows, its
+// text, and its title. What it shows is the text of the parts in sight, with each
 // separator as drawn.
 function accountLinks() {
   const shown = el => {
@@ -28,7 +28,8 @@ function accountLinks() {
     }
     return s;
   };
-  return [...document.querySelectorAll('#main-content td.account a')].map(a => ({
+  return [...document.querySelectorAll('#main-content td.account a, #main-content td.from-accounts a')]
+    .filter(a => a.getClientRects().length).map(a => ({
     title: a.title, text: a.textContent.trim(), shown: shown(a.querySelector('.account-name')).trim(),
   }));
 }

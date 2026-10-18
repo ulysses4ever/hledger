@@ -91,6 +91,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // The journal shows each entry single-sided unless "Show both sides" is
+  // ticked. The choice is kept in a cookie, which the server reads, so that
+  // the next page is drawn the same way from the start.
+  var bothsides = document.getElementById('bothsides');
+  if (bothsides) {
+    var showBothSides = function() {
+      document.querySelectorAll('.transactionsreport').forEach(function(t) {
+        t.classList.toggle('both-sides', bothsides.checked);
+      });
+    };
+    // A page brought back from the history may have the box as it was left.
+    showBothSides();
+    bothsides.addEventListener('change', function() {
+      showBothSides();
+      setCookie('journalbothsides', bothsides.checked ? '1' : '0');
+    });
+  }
+
   document.querySelectorAll('[data-toggle="offcanvas"]').forEach(function(el) {
     el.addEventListener('click', function() {
       var row = document.querySelector('.row-offcanvas');

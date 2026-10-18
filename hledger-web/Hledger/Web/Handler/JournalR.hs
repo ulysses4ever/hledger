@@ -7,6 +7,7 @@
 
 module Hledger.Web.Handler.JournalR where
 
+import Data.List (nub)
 import Data.Text qualified as T
 import Hledger.Utils.I18n (tr, trf)
 import Hledger
@@ -26,6 +27,9 @@ getJournalR = do
   VD{perms, j, q, opts, qparam, qopts, today, trs} <- getViewData
   require ViewPermission
   pagereq <- pageRequest
+  -- The journal shows each entry single-sided unless "Show both sides" was
+  -- ticked, which hledger.js remembers in this cookie.
+  bothSides <- (== Just "1") . lookup "journalbothsides" . reqCookies <$> getRequest
   let title = case inAccount qopts of
         Nothing         -> tr trs "General Journal"
         Just (a, True)  -> trf trs "Transactions in {account}" [("account", a)]
@@ -45,6 +49,16 @@ getJournalR = do
         maybe alltxns (\dq -> entriesReport rspec{_rsQuery = filterQuery (not . queryIsDepth) dq} j) $
         datelessQuery today qparam
       transactionFrag = transactionFragment j
+      -- Is this a posting the money came from, its amounts all negative ?
+      -- Single-sided, the journal shows those accounts on a line of their
+      -- own, without amounts.
+      isSource amt = isNegativeMixedAmount amt == Just True
+      -- The accounts an entry's money came from, each with the separator
+      -- that follows it.
+      sourceAccounts :: Transaction -> [(AccountName, Text)]
+      sourceAccounts t =
+        let accts = nub [paccount p | p <- tpostings t, isSource (pamount p)]
+        in zip accts (drop 1 (", " <$ accts) ++ [""])
 
   defaultLayout $ do
     -- TRANSLATORS: the browser tab title of this page.

@@ -46,7 +46,9 @@ test.describe('page initialization', () => {
   // colour rather than on a class: that is what the reader actually sees.
   test('a transaction link marks its target row', async ({ page }) => {
     await page.goto('/journal');
-    const link = page.locator('#main-content a[title="assets:bank:checking"]').first();
+    // (one in sight: single-sided, an entry names its source accounts on a
+    // "from" line, and their own rows are hidden)
+    const link = page.locator('#main-content a[title="assets:bank:checking"]:visible').first();
     const id = (await link.getAttribute('href')).split('#')[1];
     await link.click();
     await expect(page).toHaveURL(/register/);

@@ -238,10 +238,11 @@ td.date,
 /*------------------------------------------------------------------------------------------*/
 /* 4. the add form */
 
-/* The journal page's link to it, kept a line's space above any rows of
-   links that follow it. */
-#addformlink + .report-links {
-  margin-top: 10px;
+/* The journal page's button for it, and the "Show both sides" box beside
+   it (section 12), kept a line's space above any rows of links that
+   follow them. */
+.journal-actions {
+  margin-bottom: 10px;
 }
 
 /* Each posting row is indented a little under the date and description. */
@@ -823,6 +824,17 @@ ul {
   .transactionsreport td.account > a {
     min-width: 0;
   }
+  /* Single-sided, the line naming the accounts the money came from is
+     indented as a posting is (section 12), and wraps between them. */
+  .transactionsreport td.from-accounts {
+    display: flex;
+    flex: auto;
+    min-width: 0;
+    padding-left: 1.5em;
+  }
+  .transactionsreport td.from-accounts > span {
+    min-width: 0;
+  }
 
   /* A register row is the date and the description, then under them the
      other accounts and the amount. A balance brought forward has no
@@ -1017,4 +1029,44 @@ ul {
 a:hover > .account-name > *,
 a:focus > .account-name > * {
   text-decoration: underline;
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 12. the journal, single-sided */
+
+/* The journal shows each entry single-sided: the postings whose amounts
+   are all negative, where the money came from, are left out, and the
+   accounts are named instead on a muted line, "from ...", under the
+   postings that remain, which keep their amounts. Ticking "Show both
+   sides" shows every posting with its amount, as a double-entry journal
+   does. hledger.js keeps that choice in a cookie, which the server reads,
+   so that a page is drawn the way it was left from the start; without
+   javascript the choice could not be kept, so the box is not shown. */
+.transactionsreport:not(.both-sides) tr.posting.source,
+.transactionsreport.both-sides tr.posting.from {
+  display: none;
+}
+.transactionsreport tr.from,
+.transactionsreport tr.from a {
+  color: var(--account-parents);
+}
+.both-sides-toggle {
+  margin: 0;
+  padding: 6px 0;
+  font-weight: normal;
+  vertical-align: middle;
+}
+/* Beside the journal's add button, which a phone does without (section
+   10). */
+@media screen and (min-width: 768px) {
+  #addformlink + .both-sides-toggle {
+    margin-left: 1em;
+  }
+}
+.both-sides-toggle input {
+  margin: 0 0.4em 0 0;
+  vertical-align: -1px;
+}
+.no-js .both-sides-toggle {
+  display: none;
 }

@@ -192,7 +192,7 @@ test('on a phone, a round button in the corner adds a transaction', async ({ pag
   await page.keyboard.press('Escape');
   // scrolled to the end, the page leaves room for it below the last amount
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const last = await page.locator('#main-content td.amount .amount').last().boundingBox();
+  const last = await page.locator('#main-content td.amount .amount:visible').last().boundingBox();
   expect(overlap(last, await button.boundingBox())).toBe(false);
   // on a page without the dialog, it opens the add page
   await page.goto('/balancesheet');
