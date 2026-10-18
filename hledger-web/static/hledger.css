@@ -825,3 +825,35 @@ ul {
     display: block;
   }
 }
+
+/* The add form: the date and the description each have a row of their
+   own, so that a whole date shows beside the picker button, and an amount
+   takes five twelfths of its posting's row rather than three, so that it
+   shows its placeholder and a typical amount (see the column classes in
+   add-form.hamlet). The posting rows are not indented, the gutters
+   between the fields are narrower, and the fields' text is the size of
+   the page's (16px, which also keeps phones from zooming in on a field
+   when it is focused) with less padding, leaving the room to what is
+   typed. A long file name in the "Add to:" selector is cut short rather
+   than widening the form. */
+@media screen and (max-width: 767px) {
+  #addform .account-group {
+    padding-left: 0;
+  }
+  #addform .input-lg {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-size: 16px;
+  }
+  #addform .row {
+    margin-right: -4px;
+    margin-left: -4px;
+  }
+  #addform .row > div {
+    padding-right: 4px;
+    padding-left: 4px;
+  }
+  #addform .file-select {
+    max-width: 100%;
+  }
+}

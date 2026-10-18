@@ -1,7 +1,7 @@
 ^{extra}
 
 <div .row>
-  <div .col-md-3.col-sm-5.col-xs-6 :isJust (fvErrors dateView):.has-error>
+  <div .col-md-3.col-sm-5.col-xs-12 :isJust (fvErrors dateView):.has-error>
     $# The date field stays a text input so that hledger's smart dates
     $# ("today", "2/15") still work. The button opens the browser's own date
     $# picker, via the hidden date input next to it.
@@ -12,7 +12,7 @@
         <span .glyphicon .glyphicon-th>
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
-  <div .col-md-9.col-sm-7.col-xs-6 :isJust (fvErrors descView):.has-error>
+  <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
     <div .form-group>
       ^{fvInput descView}
     $maybe err <- fvErrors descView
@@ -22,19 +22,19 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
 <div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder}>
   $forall (n, (acc, amt, accE, amtE)) <- displayRows
     <div .form-group .row .account-group>
-      <div .col-sm-9.col-xs-9 :isJust accE:.has-error>
+      <div .col-sm-9.col-xs-7 :isJust accE:.has-error>
         <input .account-input.form-control.input-lg type=text list=accountnames
           name=account placeholder=#{numbered accountPlaceholder n} value="#{acc}">
         $maybe err <- accE
           <span .help-block .error-block>_{err}
-      <div .col-sm-3.col-xs-3 :isJust amtE:.has-error>
+      <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
         <input .amount-input.form-control.input-lg type=text
           name=amount placeholder=#{numbered amountPlaceholder n} value="#{amt}">
         $maybe err <- amtE
           <span .help-block .error-block>_{err}
 
 <div .row>
-  <div .col-sm-9.col-xs-9>
+  <div .col-sm-9.col-xs-7>
     $if length files > 1
       _{HMsg "Add to:"}
       &nbsp;
@@ -42,7 +42,7 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
         ^{fvInput fileView}
         $maybe err <- fvErrors fileView
           <span .help-block .error-block>#{err}
-  <div .col-sm-3.col-xs-3.text-right>
+  <div .col-sm-3.col-xs-5.text-right>
     <button type=submit .btn .btn-default .btn-lg name=submit>_{HMsg "Save"}
 
 $# Completion data for the account and description fields. The browser filters
