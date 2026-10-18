@@ -8,7 +8,7 @@
   ^{registerChartHtml qparam accumParams transactionFrag (T.unpack balancelabel) $ accountTransactionsReportByCommodity items}
 
 <div.table-responsive>
-  <table .table.table-condensed>
+  <table .registerreport.table.table-condensed>
     <thead>
       <tr>
         <th>
@@ -17,7 +17,7 @@
         <th>_{HMsgc "column heading" "Description"}
         <th>_{HMsgc "column heading" "To/From Account(s)"}
         <th .amount>_{HMsgc "column heading" "Amount Out/In"}
-        <th .amount>
+        <th .amount.balance>
           <a href=@?{accumToggle} title="#{accumToggleTitle}">#{balancelabel}
 
     <tbody>
@@ -36,7 +36,7 @@
           <td .amount>
             $if not split || not (mixedAmountLooksZero amt)
               ^{mixedAmountAsHtml amt}
-          <td .amount>
+          <td .amount.balance>
             ^{mixedAmountAsHtml bal}
       $if historical && lastpage
         $maybe start <- mstart
@@ -47,7 +47,7 @@
               _{HMsg "Balance brought forward"}
             <td .account>
             <td .amount>
-            <td .amount>
+            <td .amount.balance>
               $if mixedAmountLooksZero startbal
                 ^{mixedAmountAsHtml startbal}
               $else
