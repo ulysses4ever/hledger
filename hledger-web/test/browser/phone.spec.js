@@ -6,8 +6,8 @@
 // column of amounts lays out each row by itself (see section 10 of
 // hledger.css). These tests check what a reader holding a phone would
 // notice: a page wider than the screen, a table scrolling sideways inside
-// it, an amount out of view, an account name cut off, a field too narrow
-// for what it holds.
+// it, an amount out of view, an account name's leaf cut off, a field too
+// narrow for what it holds.
 //
 // Run with: npx playwright test phone  (see README.md)
 const { test, expect } = require('@playwright/test');
@@ -107,23 +107,23 @@ test('the journal and register stack their rows, and the running balance is left
   await expect(page.locator('#main-content .registerreport thead')).toBeVisible();
 });
 
-test('account names wrap rather than being cut off, and keep their full name as the title', async ({ page }) => {
+test('account names keep their leaf whole, and their full name as the title', async ({ page }) => {
   await page.setViewportSize(phones[1]);
   for (const url of ['/journal', '/register?q=inacct:assets:bank:checking']) {
     await page.goto(url);
     const links = await page.locator('#main-content td.account a').evaluateAll(as => as.map(a => {
-      const cell = a.closest('td');
+      const leaf = a.querySelector('.leaf');
       return {
         title: a.title,
-        leaf: a.textContent.trim().split(':').pop(),
-        cut: cell.scrollWidth > cell.clientWidth ||
-          [...a.getClientRects()].some(r => r.right > window.innerWidth),
+        leaf: leaf.textContent,
+        cut: leaf.scrollWidth > leaf.clientWidth ||
+          leaf.getBoundingClientRect().right > a.closest('td').getBoundingClientRect().right + 0.5,
       };
     }));
     expect(links.length).toBeGreaterThan(0);
     for (const link of links) {
+      // the parents may be cut short, with an ellipsis, but not the leaf
       expect(link.cut, `${url}: ${link.title}`).toBe(false);
-      // the register shows names abbreviated, but with the whole leaf
       expect(link.title.endsWith(link.leaf), `${url}: ${link.title} ends with ${link.leaf}`).toBe(true);
     }
   }

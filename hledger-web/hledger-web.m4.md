@@ -161,6 +161,10 @@ When the matching transactions span more than one year, a row of years above the
 links to each year's transactions; "All" widens the view again.
 When they span more than twenty years, the years are shown one row per decade.
 
+In the journal and register views, account names are shown without their top level
+when they have other parts, eg `utilities › phone` for `expenses:utilities:phone`;
+the full name shows when you hover over one, and on its register.
+
 The **sidebar** lists accounts and their balances (parent balances include subaccounts,
 and multiple commodities are shown one above the other).
 Click an account name to see its register, or an amount to see the transactions it is

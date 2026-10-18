@@ -30,9 +30,9 @@
           <td .description>
             #{textElideRight 30 (tdescription tacct)}
           <td .account>
-            $forall (Posting { paccount = acc }, (summName,comma)) <- otherTransAccounts torig
+            $forall (acc, comma) <- otherTransAccounts torig
               <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
-                #{summName}</a>#{comma}
+                ^{accountNameAsHtml acc}</a>#{comma}
           <td .amount>
             $if not split || not (mixedAmountLooksZero amt)
               ^{mixedAmountAsHtml amt}

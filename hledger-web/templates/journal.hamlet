@@ -35,7 +35,7 @@ $if elem AddPermission perms
           <td .account>
             &nbsp;
             <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
-              #{elideAccountName 40 acc}
+              ^{accountNameAsHtml acc}
           <td .amount>
             ^{mixedAmountAsHtml amt}
 

@@ -38,6 +38,7 @@
   --dialog-border: rgba(0, 0, 0, .2);
   --add-button: #2e6da4;         /* the round add button on a phone */
   --add-button-text: #fff;
+  --account-parents: #5f6b7a;    /* an account name's parents, set back from its leaf */
 
   /* the account sidebar */
   --account: #2f2f2f;
@@ -92,6 +93,7 @@
     --dialog-border: var(--border);
     --add-button: var(--link);
     --add-button-text: var(--bg);
+    --account-parents: #98a2ae;
 
     --account: var(--text);
     --account-current: #8ec3ff;
@@ -129,8 +131,12 @@ body {
   text-align: right;
 }
 
-/* A date is one token; don't break it across lines. */
-td.date {
+/* A date is one token; don't break it across lines. Nor is an amount, in
+   the journal and the register, which show each commodity's on a line of
+   its own. */
+td.date,
+.transactionsreport td.amount,
+.registerreport td.amount {
   white-space: nowrap;
 }
 
@@ -956,4 +962,59 @@ ul {
   .balancereport:not(:has(> thead > tr > :nth-child(3))) > tbody + tbody > tr:first-child > * {
     border-top: 0;
   }
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 11. account names in the journal and the register */
+
+/* An account name (see accountNameAsHtml) is shown without its top level
+   when it has other parts: utilities › phone rather than
+   expenses:utilities:phone. The full name is the link's title, and the top
+   level and the colons are still in the text, out of sight, so that a
+   screen reader, or a name pasted into a field, has the real one (pasted
+   where lines can break, its parts come on lines of their own, being flex
+   items). The other parents are set back from the leaf, in a muted color,
+   and › stands between the parts. When there is not room for the whole
+   name, the parents give way first, cut short with an ellipsis; the leaf
+   is never cut, and wraps if it alone does not fit. A name underlines
+   under the pointer, as other links do, though its parts, as flex items,
+   do not inherit that. */
+.account-name {
+  display: inline-flex;
+  max-width: 100%;
+}
+.account-name .top,
+.account-name .sep > span {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.account-name .parents {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.account-name .parents,
+.account-name .sep {
+  color: var(--account-parents);
+}
+.account-name .sep {
+  flex: none;
+  white-space: pre;
+}
+.account-name .sep::before {
+  content: " \203A\20";
+}
+.account-name .leaf {
+  flex: none;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+a:hover > .account-name > *,
+a:focus > .account-name > * {
+  text-decoration: underline;
 }

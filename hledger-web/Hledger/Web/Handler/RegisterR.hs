@@ -23,7 +23,7 @@ import Hledger.Web.Paging
 import Hledger.Web.WebOptions
 import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
-             (accountQuery, accountOnlyQuery, mixedAmountAsHtml,
+             (accountNameAsHtml, accountQuery, accountOnlyQuery, mixedAmountAsHtml,
               transactionFragment, removeDates, removeInacct, replaceInacct, journalDayQuery)
 
 -- | The main journal/account register view, with accounts sidebar.
@@ -55,19 +55,16 @@ getRegisterR = do
       -- An account's register, keeping this register's mode, opened on the
       -- page holding this transaction.
       acctlink acc t = (RegisterR, ("q", replaceInacct qparam $ accountQuery acc) : ("txn", T.pack $ show $ tindex t) : accumParams)
+      -- The accounts a row names beside the one it is for: as many as fit
+      -- in about forty characters as they are shown, each whole, with the
+      -- separator that follows each.
       -- In an account's register a type: term selects the postings
       -- totaled, not the accounts named beside them: a liability's
       -- register names the accounts it was posted against, whatever their
       -- types. A register of all accounts of a type names those accounts.
       otherTransAccounts =
-          map (\(acct,(name,comma)) -> (acct, (T.pack name, T.pack comma))) .
-          undecorateLinks . elideRightDecorated 40 . decorateLinks .
-          addCommas . preferReal . otherTransactionAccounts j displayq acctQuery
+          fitAccountNames 40 . nub . map paccount . preferReal . otherTransactionAccounts j displayq acctQuery
       displayq = if isJust (inAccount qopts) then filterQuery (not . queryIsType) q else q
-      addCommas xs =
-          zip xs $
-          zip (map (T.unpack . accountSummarisedName . paccount) xs) $
-          tailSafe (", "<$xs) ++ [""]
       styles = journalCommodityStylesWith HardRounding j
       -- The matching transactions, newest first, and the balance brought
       -- forward from before them; this page shows one page of them.
@@ -134,25 +131,18 @@ preferReal ps
     | otherwise   = realps
     where realps = filter isReal ps
 
-elideRightDecorated :: Int -> [(Maybe d, Char)] -> [(Maybe d, Char)]
-elideRightDecorated width s =
-    if length s > width
-        then take (width - 2) s ++ map (Nothing,) ".."
-        else s
-
-undecorateLinks :: [(Maybe acct, char)] -> [(acct, ([char], [char]))]
-undecorateLinks [] = []
-undecorateLinks xs0@(x:_) =
-    case x of
-        (Just acct, _) ->
-            let (link, xs1) = span (isJust . fst) xs0
-                (comma, xs2) = span (isNothing . fst) xs1
-            in (acct, (map snd link, map snd comma)) : undecorateLinks xs2
-        _ -> error' "link name not decorated with account"  -- PARTIAL:
-
-decorateLinks :: [(acct, ([char], [char]))] -> [(Maybe acct, char)]
-decorateLinks = concatMap $ \(acct, (name, comma)) ->
-    map (Just acct,) name ++ map (Nothing,) comma
+-- | As many of these account names as fit in the given number of
+-- characters, taking each as wide as the journal and register show it
+-- (without its top level, with " › " between the rest), but at least one;
+-- each paired with the separator that follows it: a comma, nothing after
+-- the last, or a comma and an ellipsis if some were left out.
+fitAccountNames :: Int -> [AccountName] -> [(AccountName, Text)]
+fitAccountNames width names = zip shown (tailSafe (", " <$ shown) ++ [if length shown < length names then ", …" else ""])
+  where
+    shown = take (max 1 . length . takeWhile (<= width) . scanl1 (\total w -> total + 2 + w) $ map shownWidth names) names
+    shownWidth a = case accountNameComponents a of
+      _ : rest@(_ : _) -> sum (map T.length rest) + 3 * (length rest - 1)
+      _ -> T.length a
 
 -- | The register balance chart: its markup, carrying the per-commodity
 -- series as JSON in a data attribute. hledger.js draws it with flot on page

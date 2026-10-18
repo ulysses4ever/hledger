@@ -13,6 +13,7 @@ module Hledger.Web.Widget.Common
   , intervalLinks
   , accumulationLinks
   , helplink
+  , accountNameAsHtml
   , mixedAmountAsHtml
   , fromFormSuccess
   , writeJournalTextIfValidAndChanged
@@ -24,9 +25,10 @@ module Hledger.Web.Widget.Common
   , journalDayQuery
   ) where
 
+import Control.Monad (unless)
 import Control.Monad.Except (ExceptT, mapExceptT)
 import Data.Foldable (find, for_)
-import Data.List (elemIndex)
+import Data.List (elemIndex, intersperse)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Time.Calendar (Day)
@@ -167,6 +169,28 @@ accountQuery = ("inacct:" <>) .  quoteIfSpaced
 
 accountOnlyQuery :: AccountName -> Text
 accountOnlyQuery = ("inacctonly:" <>) . quoteIfSpaced
+
+-- | An account name as html, for the journal's and the register's rows:
+-- its top level, its other parents and its leaf, each in a span of its own
+-- (classes "top", "parents" and "leaf"), and each separator in one too
+-- ("sep"). From these the stylesheet leaves out the top level of a name
+-- that has other parts, sets the parents back from the leaf, and draws the
+-- separators as it likes. The text is still the whole name, colons
+-- included, so that copying it, or a screen reader, still gets the name.
+accountNameAsHtml :: AccountName -> HtmlUrl a
+accountNameAsHtml a _ =
+  H.span ! A.class_ "account-name" $
+    case accountNameComponents a of
+      top : rest@(_ : _) -> do
+        H.span ! A.class_ "top" $ toHtml top >> sep
+        let (leaf : rparents) = reverse rest
+        unless (null rparents) $ do
+          H.span ! A.class_ "parents" $ sequence_ $ intersperse sep $ map toHtml $ reverse rparents
+          sep
+        H.span ! A.class_ "leaf" $ toHtml leaf
+      _ -> H.span ! A.class_ "leaf" $ toHtml a
+  where
+    sep = H.span ! A.class_ "sep" $ H.span ":"
 
 mixedAmountAsHtml :: MixedAmount -> HtmlUrl a
 mixedAmountAsHtml b _ =
