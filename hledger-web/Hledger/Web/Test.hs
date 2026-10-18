@@ -203,6 +203,22 @@ hledgerWebTest = do
       statusIs 200
       bodyContains "Add a transaction"
 
+    -- Their urls stay the same across versions, so caches must check them.
+    yit "serves static files for revalidation, and answers an unchanged one's revalidation with a 304" $ do
+      get (StaticR hledger_css)
+      statusIs 200
+      assertHeader "Cache-Control" "no-cache"
+      etag <- withResponse $ \SResponse{simpleHeaders} ->
+        maybe (failing "no ETag header") (return . TE.decodeUtf8) (lookup "ETag" simpleHeaders)
+      -- a valid entity tag, quoted
+      assertEq "the ETag is quoted" True ("\"" `T.isPrefixOf` etag && "\"" `T.isSuffixOf` etag && T.length etag > 2)
+      -- and matched as sent, or as a proxy that made it weak would send it
+      forM_ [etag, "W/" <> etag] $ \tag -> do
+        request $ do
+          setUrl (StaticR hledger_css)
+          addRequestHeader ("If-None-Match", TE.encodeUtf8 tag)
+        statusIs 304
+
     yit "serves a reasonable-looking register page" $ do
       get RegisterR
       statusIs 200

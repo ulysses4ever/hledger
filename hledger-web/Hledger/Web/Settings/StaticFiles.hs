@@ -1,13 +1,18 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-|
 Serving of the web app's static files, and type-safe routes for them.
 -}
 module Hledger.Web.Settings.StaticFiles where
 
+import Data.ByteString.Char8 qualified as B8
 import Data.FileEmbed (embedDir)
+import Data.Maybe (fromMaybe)
+import Network.Wai (Middleware, mapResponseHeaders, requestHeaders)
 import Network.Wai.Application.Static (defaultFileServerSettings, embeddedSettings, staticApp)
 import System.IO (stdout, hFlush)
-import WaiAppStatic.Types (StaticSettings(..))
+import WaiAppStatic.Types (MaxAge(..), StaticSettings(..))
 import Yesod.Core (WaiSubsite(..))
 
 import Hledger.Web.Settings (staticDir, development, staticFileRoute)
@@ -27,8 +32,31 @@ staticSite =
      -- putStrLn "Using built-in web files" >> hFlush stdout
      return $ serve $ embeddedSettings $(embedDir staticDir)
   where
-    -- serve files with hash-based ETag headers, so browsers can cache them
-    serve settings = WaiSubsite $ staticApp settings{ssUseHash = True}
+    -- Serve files with hash-based ETag headers, and Cache-Control: no-cache,
+    -- so that browsers and proxies may keep them but must check them on each
+    -- use, which for an unchanged file costs a 304 response. Their urls do not
+    -- change from one version of hledger-web to the next, so a cache that did
+    -- not check could go on using an old version's files after an upgrade.
+    serve settings = WaiSubsite $ quoteETags $ staticApp settings{ssUseHash = True, ssMaxAge = revalidate}
+#if MIN_VERSION_wai_app_static(3,1,9)
+    revalidate = NoCache
+#else
+    revalidate = MaxAgeSeconds 0
+#endif
+
+-- | wai-app-static sends its file hashes as bare ETag values, which are not
+-- valid entity tags (they should be quoted), and which a proxy may drop, or
+-- no longer match once it has made them weak (W/"..."), as some do when they
+-- compress a response. So quote them on the way out, and take such a tag
+-- back to the bare hash on the way in.
+quoteETags :: Middleware
+quoteETags app req respond =
+  app req{requestHeaders = map unquote (requestHeaders req)} (respond . mapResponseHeaders (map quote))
+  where
+    quote (h, v) | h == "ETag" = (h, B8.concat ["\"", v, "\""])
+    quote hv = hv
+    unquote (h, v) | h == "If-None-Match" = (h, B8.filter (/= '"') $ fromMaybe v $ B8.stripPrefix "W/" v)
+    unquote hv = hv
 
 -- Type-safe routes for the static files used by the app,
 -- verified to exist at compile time.
