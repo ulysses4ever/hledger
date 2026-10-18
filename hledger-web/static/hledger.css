@@ -857,3 +857,45 @@ ul {
     max-width: 100%;
   }
 }
+
+/* A report with one column of amounts, such as a balance sheet on a date,
+   lays out each row by itself, so that each fits the screen: the account
+   name at the left, wrapping (at any point, if it has to) only when its
+   own row is short of room, and the amount at the right. A cell with
+   several commodities, which the writer lists on one line, wraps between
+   them, each kept whole, and gives way before the account name does. A
+   report with more columns still scrolls sideways, as its columns must
+   line up. (:has() picks out the reports whose heading row has two cells;
+   a browser without it shows them as before.) */
+@media screen and (max-width: 767px) {
+  .balancereport:not(:has(> thead > tr > :nth-child(3))),
+  .balancereport:not(:has(> thead > tr > :nth-child(3))) > * {
+    display: block;
+  }
+  .balancereport:not(:has(> thead > tr > :nth-child(3))) > * > tr {
+    display: grid;
+    grid-template-columns: auto auto;
+  }
+  .table-responsive > .balancereport:not(:has(> thead > tr > :nth-child(3))) > * > tr > * {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .table-responsive > .balancereport:not(:has(> thead > tr > :nth-child(3))) > * > tr > .amount {
+    overflow-wrap: normal;
+  }
+  .balancereport td.amount .amount {
+    white-space: nowrap;
+  }
+  .balancereport > tbody > tr.section > th {
+    grid-column: 1 / -1;
+  }
+  /* Out of a table, borders no longer collapse into one: the heading's rule
+     and the first row's would make two lines, as would the rule bootstrap
+     draws between sections and a section's first row's. */
+  .balancereport:not(:has(> thead > tr > :nth-child(3))) > thead > tr > th {
+    border-bottom: 0;
+  }
+  .balancereport:not(:has(> thead > tr > :nth-child(3))) > tbody + tbody > tr:first-child > * {
+    border-top: 0;
+  }
+}
