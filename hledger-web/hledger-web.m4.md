@@ -523,4 +523,7 @@ _reportbugs_
 
 Some known issues:
 
-Does not work well on small screens, or in text-mode browsers.
+Does not work well in text-mode browsers.
+
+On a phone, a report with a column for each period scrolls sideways.
+On a tablet held upright, with the sidebar shown, the journal can be wider than its pane.
