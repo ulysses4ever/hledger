@@ -447,7 +447,7 @@ ul {
    and lets its scroll position be preserved across navigations (restored from
    sessionStorage in hledger.js). calc leaves room for the header row above, so
    the last accounts aren't clipped; short lists stay content-height. */
-@media screen and (min-width: 769px) {
+@media screen and (min-width: 768px) {
     #sidebar-menu, #main-content {
         max-height: calc(100vh - 5em);
         overflow-y: auto;
@@ -550,7 +550,12 @@ ul {
     font-size:large;
 }
 
-@media screen and (max-width: 768px) {
+/* Below bootstrap's sm breakpoint, where its grid stacks the columns and the
+   sidebar's toggle button appears (.visible-xs), the sidebar moves off-canvas.
+   At 768px and up it is a column of the grid. (The two used to meet at 769px,
+   which left a 768px wide window, such as a tablet held upright, with the
+   sidebar neither shown nor reachable.) */
+@media screen and (max-width: 767px) {
     .row-offcanvas {
         position: relative;
         transition: all .25s ease-out;
