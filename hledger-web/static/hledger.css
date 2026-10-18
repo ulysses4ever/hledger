@@ -708,6 +708,18 @@ ul {
    Everything here is in such a media query, so wider screens are not
    affected, and is keyed off the classes the templates already carry. */
 
+/* Text is 16px rather than bootstrap's 14px: the size phone browsers use by
+   default, and the smallest at which iOS Safari does not zoom the page into a
+   field when it is tapped. Tables and anything sized in em follow the body. */
+@media screen and (max-width: 767px) {
+  body,
+  .form-control,
+  .input-group-addon,
+  .btn {
+    font-size: 16px;
+  }
+}
+
 /* The main pane needs no wide margin to keep it off the sidebar. The file
    name and the page's heading are set smaller, leaving more of the screen
    to the page; a long word in them, such as an account name, breaks rather
