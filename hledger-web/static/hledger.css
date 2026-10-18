@@ -629,7 +629,8 @@ ul {
   }
 
   .table > tbody > tr > td,
-  .table > tbody > tr > th {
+  .table > tbody > tr > th,
+  .table > tbody + tbody {
     border-top-color: var(--rule);
   }
   .table-responsive,

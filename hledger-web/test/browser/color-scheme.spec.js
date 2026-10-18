@@ -100,6 +100,8 @@ const views = {
   'register': page => page.goto('/register?q=inacct:assets:bank:checking'),
   'balance report': page => page.goto('/balance?period=monthly'),
   'balance report error': page => page.goto('/balance?period=nonsense'),
+  // a statement has a table section per subreport
+  'income statement': page => page.goto('/incomestatement'),
   'manage': page => page.goto('/manage'),
   'edit form': async page => {
     await page.goto('/manage');
