@@ -14,6 +14,11 @@ highlighting.
 - `color-scheme.spec.js` — the dark color scheme: no page or dialog is left light or
   hard to read in it, and the register chart is drawn again when the scheme changes, and
   for printing.
+- `phone.spec.js` — the pages at a phone's width (#340): none is wider than the
+  screen or scrolls sideways inside, every amount is in view, the journal and register
+  stack their rows and the register leaves out its running balance, account names wrap
+  rather than being cut off, and the add form's fields have room for what they hold.
+  (`color-scheme.spec.js` checks the dark scheme at a phone's width too.)
 - `paging.spec.js` — the journal and register views page their transactions (#586):
   what only a browser shows, a paged page loading without policy violations or
   errors, the register chart drawn from the page's rows, and a link to a

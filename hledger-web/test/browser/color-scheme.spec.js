@@ -126,6 +126,21 @@ test('in the dark scheme, nothing on any page is left light', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
+// Below 768px the pages have a layout of their own (section 10 of
+// hledger.css), so they are checked at a phone's width too.
+test('in the dark scheme, nothing is left light at a phone\'s width either', async ({ page }) => {
+  const errors = watchPageErrors(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ colorScheme: 'dark' });
+  const found = [];
+  for (const [view, open] of Object.entries(views)) {
+    await open(page);
+    found.push(...(await page.evaluate(lightOnDark)).map(f => `${view}: ${f}`));
+  }
+  expect(found).toEqual([]);
+  expect(errors).toEqual([]);
+});
+
 test('the register chart is drawn again for a change of scheme, and in the light one for printing', async ({ page }) => {
   const errors = watchPageErrors(page);
   await page.goto('/register?q=inacct:assets:bank:checking');

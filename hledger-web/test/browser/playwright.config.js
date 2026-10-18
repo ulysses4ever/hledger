@@ -11,7 +11,8 @@ module.exports = defineConfig({
   // hledger-web mutates one shared journal file; keep tests serial.
   workers: 1,
   use: {
-    baseURL: process.env.HLEDGER_WEB_URL || 'http://127.0.0.1:5099',
+    // the server global-setup.js starts, on HLEDGER_WEB_PORT if that is set
+    baseURL: process.env.HLEDGER_WEB_URL || `http://127.0.0.1:${process.env.HLEDGER_WEB_PORT || '5099'}`,
   },
   reporter: [['list']],
 });
