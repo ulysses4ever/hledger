@@ -154,3 +154,17 @@ test("the add form's fields have room for what they hold", async ({ page }) => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
+
+// flot draws the register chart to the width it has, so the chart is drawn
+// again when that changes; otherwise a phone turned from landscape to
+// upright would keep a chart wider than the page.
+test('the register chart is drawn again to fit when a phone is turned upright', async ({ page }) => {
+  const errors = watchPageErrors(page);
+  await page.setViewportSize({ width: phones[0].height, height: phones[0].width });
+  await page.goto('/register?q=inacct:assets:bank:checking');
+  await expect(page.locator('#register-chart canvas').first()).toBeVisible();
+  await page.setViewportSize(phones[0]);
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await expect(page.locator('#register-chart-label .legend-item')).toHaveCount(1);
+  expect(errors).toEqual([]);
+});

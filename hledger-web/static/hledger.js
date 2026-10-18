@@ -392,6 +392,20 @@ function registerChartInit() {
   ['(prefers-color-scheme: dark)', 'print'].forEach(function(query) {
     window.matchMedia(query).addEventListener('change', draw);
   });
+  // flot draws to the width the chart has, and so does it again when that
+  // changes, eg when a phone is turned, which would otherwise leave the
+  // chart too wide for the page. After a pause, so as not to draw at every
+  // step of a window being resized.
+  var width = $chartdiv.width(), resized = null;
+  window.addEventListener('resize', function() {
+    clearTimeout(resized);
+    resized = setTimeout(function() {
+      if ($chartdiv.width() !== width) {
+        width = $chartdiv.width();
+        draw();
+      }
+    }, 200);
+  });
   $chartdiv.bind('plotclick', registerChartClick);
   $chartdiv.bind('plotselected', registerChartSelect);
 }
