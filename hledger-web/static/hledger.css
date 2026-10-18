@@ -1070,3 +1070,19 @@ a:focus > .account-name > * {
 .no-js .both-sides-toggle {
   display: none;
 }
+
+/*------------------------------------------------------------------------------------------*/
+/* 13. the journal page's parts, for an instance's own stylesheet to rearrange */
+
+/* The journal page's parts are a flex column, which looks as a column of
+   blocks always did, but lets a stylesheet given with --css rearrange them
+   with the order property: .journal-heading; .journal-actions, the row
+   holding the add button (#addformlink) and the "Show both sides" box
+   (.both-sides-toggle), which display: contents on the row lets move
+   apart; .journal-years; .journal-paging-top, with the "Showing ..." line
+   (.paging) and the page links (.paging-nav); .journal-entries; and
+   .journal-paging-bottom. */
+.journal-page {
+  display: flex;
+  flex-direction: column;
+}

@@ -23,6 +23,9 @@ highlighting.
   top level, with › between the parts, and keep the full name as the title and the text.
 - `single-sided.spec.js` — the journal shows each entry single-sided, and both sides when
   the box above it is ticked, a choice kept across pages, and without javascript too.
+- `custom-css.spec.js` — `--css`, an instance's own stylesheet: it applies within the
+  Content-Security-Policy, and can rearrange the journal page's parts. This spec starts
+  a second hledger-web, with `--css`.
 - `paging.spec.js` — the journal and register views page their transactions (#586):
   what only a browser shows, a paged page loading without policy violations or
   errors, the register chart drawn from the page's rows, and a link to a

@@ -209,6 +209,24 @@ so you can edit it and reload a page to see the result, without restarting.
 If the file is missing or can't be read, hledger-web says so, and shows the pages without it.
 The pages' Content-Security-Policy allows no inline styles or scripts, so everything goes in this file.
 
+Some parts of the pages have classes meant as hooks for this.
+The journal page's parts are a flex column, which a stylesheet can rearrange with the `order` property.
+From the top, they are:
+`.journal-heading`;
+`.journal-actions`, the row with the add button (`#addformlink`) and the "Show both sides" box
+(`.both-sides-toggle`), which `display: contents` on the row lets move apart;
+`.journal-years`;
+`.journal-paging-top`, the "Showing ..." line and the page links;
+`.journal-entries`;
+and `.journal-paging-bottom`.
+For example, this moves the years and the page links below the entries:
+
+```css
+.journal-entries { order: 1; }
+.journal-years, .journal-paging-top { order: 2; }
+.journal-paging-bottom { display: none; }
+```
+
 The pages' markup is not a stable interface, and a hledger-web upgrade may change it,
 so keep such a stylesheet small, and check it after upgrading.
 
