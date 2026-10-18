@@ -9,12 +9,13 @@ document.addEventListener('DOMContentLoaded', function() {
   browsePingInit();
 
   // Open and close the dialogs. The data-toggle/data-target/data-dismiss
-  // attributes in the templates are the hooks.
+  // attributes in the templates are the hooks. On a page without the dialog,
+  // a link (the add buttons) goes to its href instead, the add page.
   document.querySelectorAll('[data-toggle="modal"]').forEach(function(el) {
     el.addEventListener('click', function(e) {
-      e.preventDefault();
       var d = document.querySelector(el.getAttribute('data-target'));
       if (!d) { return; }
+      e.preventDefault();
       if (d.id === 'addmodal') { addformShow(); } else { d.showModal(); }
     });
   });

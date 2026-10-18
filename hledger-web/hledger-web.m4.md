@@ -170,7 +170,8 @@ The **search form** filters every view with hledger's [query](hledger.md#queries
 eg `expenses date:thismonth`; the help dialog summarises the query types.
 The current view and search are reflected in the URL, so views can be bookmarked and shared.
 
-The **add form** (press `a`, or click "Add a transaction" in the journal view)
+The **add form** (press `a`, or click "Add a transaction" in the journal view,
+or on a phone the round + button in the corner of the screen)
 adds a transaction to the main journal file, if the [access level](#permissions) allows it.
 It autocompletes account names and descriptions from your existing entries.
 

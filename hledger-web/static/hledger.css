@@ -36,6 +36,8 @@
   --negative: #a94442;           /* negative amounts, and errors */
   --code: black;
   --dialog-border: rgba(0, 0, 0, .2);
+  --add-button: #2e6da4;         /* the round add button on a phone */
+  --add-button-text: #fff;
 
   /* the account sidebar */
   --account: #2f2f2f;
@@ -88,6 +90,8 @@
     --negative: #f28b82;
     --code: #eef0f3;
     --dialog-border: var(--border);
+    --add-button: var(--link);
+    --add-button-text: var(--bg);
 
     --account: var(--text);
     --account-current: #8ec3ff;
@@ -272,6 +276,12 @@ td.date {
 /* The add form shown on a page of its own, after a submission was rejected. */
 .add-page {
   margin-top: 1em;
+}
+
+/* The round add button in the corner of the screen is for phones, where it
+   stands in for the journal's "Add a transaction" button (section 10). */
+#addbutton {
+  display: none;
 }
 
 /*------------------------------------------------------------------------------------------*/
@@ -836,6 +846,41 @@ ul {
   }
   .registerreport .broughtforward td.balance {
     display: block;
+  }
+}
+
+/* The journal's "Add a transaction" button gives way to a round button in
+   the corner of the screen, in reach of a thumb, which is on every page
+   where adding is allowed. It keeps clear of the screen's edges, and of the
+   home indicator on phones that have one. The page ends with room for it,
+   so that it never covers the last row's amount; while the sidebar is open,
+   it is hidden, rather than cover the sidebar's balances. */
+@media screen and (max-width: 767px) {
+  #addformlink {
+    display: none;
+  }
+  #addbutton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 16px;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 1030;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    color: var(--add-button-text);
+    background-color: var(--add-button);
+    box-shadow: 0 3px 9px rgba(0, 0, 0, .3);
+    font-size: 22px;
+    text-decoration: none;
+  }
+  #main-content:has(> #addbutton) {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  }
+  .row-offcanvas.active #addbutton {
+    display: none;
   }
 }
 
