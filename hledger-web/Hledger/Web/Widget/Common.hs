@@ -141,19 +141,19 @@ reportLinks trs here kept menu =
 
 -- | Links to the same report page for each reporting interval, keeping
 -- the search, the period's date span, and the given parameters; the
--- interval being shown is marked. They are labelled by what they change,
--- the report's columns: "Columns: One" says more to someone who does not
--- know hledger's word for it than "Interval: None".
+-- interval being shown is marked. They are labelled in everyday words,
+-- "Period: Whole, Yearly, ..., Daily", which say more to someone who does
+-- not know hledger's than "Interval: None".
 intervalLinks :: Translations -> r -> [(Text, Text)] -> Text -> DateSpan -> Interval -> HtmlUrl r
 intervalLinks trs route kept qparam spn current =
-  -- TRANSLATORS: the label before a report's interval links, which set its columns.
-  linksRow (tr trs "Columns:")
+  -- TRANSLATORS: the label before a report's interval links, which choose a column per year, month etc.
+  linksRow (tr trs "Period:")
     [ (label, title, link mword, ivl == current) | (label, title, mword, ivl) <- intervals ]
   where
-    -- TRANSLATORS: the interval links above a report: each link's text, and its tooltip. "One" is one column.
+    -- TRANSLATORS: the interval links above a report: each link's text, and its tooltip. "Whole" is one column for the whole period.
     intervals :: [(Text, Text, Maybe Text, Interval)]
     intervals =
-      [ (trc trs "columns" "One", tr trs "Show one column for the whole period", Nothing,          NoInterval)
+      [ (trc trs "period" "Whole", tr trs "Show one column for the whole period", Nothing,          NoInterval)
       , (tr trs "Yearly",    tr trs "Show a column per year",               Just "yearly",    Years 1)
       , (tr trs "Quarterly", tr trs "Show a column per quarter",            Just "quarterly", Quarters 1)
       , (tr trs "Monthly",   tr trs "Show a column per month",              Just "monthly",   Months 1)

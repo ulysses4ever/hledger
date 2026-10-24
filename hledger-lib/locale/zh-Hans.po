@@ -892,8 +892,8 @@ msgstr "报告："
 
 #. the label before a report's interval links.
 #: hledger-web/Hledger/Web/Widget/Common.hs
-msgid "Columns:"
-msgstr "列："
+msgid "Period:"
+msgstr "期间："
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs
@@ -902,9 +902,9 @@ msgstr "针对整个期间显示列"
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs
-msgctxt "columns"
-msgid "One"
-msgstr "单列"
+msgctxt "period"
+msgid "Whole"
+msgstr "全部"
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs
