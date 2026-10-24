@@ -245,6 +245,23 @@ For example, this moves the years and the page links below the entries:
 .journal-paging-bottom { display: none; }
 ```
 
+The rows of the journal and of the registers carry, in a `data-account` attribute,
+the full name of the account each entry is mainly about
+(what it paid for, or the income it came from; for a transfer, where the money went;
+in a register, the account other than the register's own),
+and in `data-kind`, what the entry did: `spending`, `earning` or `moving`.
+On a phone, each journal entry begins with an empty icon slot, `.entry-icon`,
+so a stylesheet can give the entries icons by account, matching the start of the name
+(the `i` makes the match ignore case):
+
+```css
+[data-account^="expenses:food" i] .entry-icon::before { content: "🍽️"; }
+[data-account^="income" i] .entry-icon::before { content: "💵"; }
+[data-kind="moving"] .entry-icon::before { content: "⇄"; }
+```
+
+Without such rules there are no icons, and the slot takes no room.
+
 The pages' markup is not a stable interface, and a hledger-web upgrade may change it,
 so keep such a stylesheet small, and check it after upgrading.
 

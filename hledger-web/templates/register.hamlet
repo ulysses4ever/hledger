@@ -24,7 +24,10 @@
 
     <tbody>
       $forall (torig, tacct, split, _acct, amt, bal) <- items
-        <tr ##{transactionFrag torig} data-entry="#{showTransaction torig}">
+        $# data-account and data-kind are for an instance stylesheet, to give
+        $# the row an icon (see the manual's "Customising the look").
+        <tr ##{transactionFrag torig} data-entry="#{showTransaction torig}"
+            data-account="#{mainAccount torig}" data-kind="#{entryKindClass (esKind (summary torig))}">
           <td .date nowrap>
             <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
                title=_{HMsg "Show this entry and the other journal entries on its date"}>

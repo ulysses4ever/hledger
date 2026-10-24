@@ -25,6 +25,7 @@ import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
              (accountNameAsHtml, accountQuery, accountOnlyQuery, mixedAmountAsHtml,
               transactionFragment, removeDates, removeInacct, replaceInacct, journalDayQuery)
+import Hledger.Web.Widget.Entry (EntrySummary(..), entryKindClass, entryMainOtherAccount, summarizeEntry)
 import Hledger.Web.Widget.Period (isAllTime, pagePeriod, periodBand, periodQuery)
 
 -- | The main journal/account register view, with accounts sidebar.
@@ -113,6 +114,10 @@ getRegisterR = do
           [(if secondary then "date2:.." else "date:..") <> showDate start] ++
           removeDates (T.unwords $ removeInacct qparam))])
       transactionFrag = transactionFragment j
+      -- What each row's entry did, and the account it is mainly about
+      -- other than this register's.
+      summary = summarizeEntry (journalAccountType j)
+      mainAccount = entryMainOtherAccount acctQuery . summary
       -- The year links keep this register's mode, and while the default
       -- is a month, the all-years link asks for all dates.
       yearParams = [("period", "all") | not (alltime_ opts)] ++ accumParams

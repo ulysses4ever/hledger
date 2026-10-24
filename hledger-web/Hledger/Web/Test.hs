@@ -1777,3 +1777,16 @@ hledgerWebTest = do
       htmlAnyContain ".entry-amount.moving" "100"
       htmlAnyContain ".entry-accounts" "assets:bank:savings"
       htmlAnyContain ".entry-memo" "saving"
+
+    yit "names each row's main account and kind, for a stylesheet's icons" $ do
+      get JournalR
+      statusIs 200
+      bodyContains "data-account=\"expenses:food:groceries\" data-kind=\"spending\""
+      bodyContains "data-account=\"income:salary\" data-kind=\"earning\""
+      bodyContains "data-account=\"assets:bank:savings\" data-kind=\"moving\""
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:savings"
+      statusIs 200
+      bodyContains "data-account=\"assets:bank:checking\" data-kind=\"moving\""

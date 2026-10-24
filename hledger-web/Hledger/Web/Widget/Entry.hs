@@ -8,13 +8,16 @@ module Hledger.Web.Widget.Entry
   ( EntryKind(..)
   , EntrySummary(..)
   , summarizeEntry
+  , entryAccounts
+  , entryMainAccount
+  , entryMainOtherAccount
   , entryKindClass
   , dayWithWeekday
   , payeeAndNote
   ) where
 
 import Data.List (nub, sortOn)
-import Data.Maybe (listToMaybe)
+import Data.Maybe (fromMaybe, listToMaybe, maybeToList)
 import Data.Ord (Down(..))
 import Data.Text (Text)
 import Data.Text qualified as T
@@ -68,6 +71,29 @@ summarizeEntry atype t
       let accts = nub $ map paccount $ sortOn (Down . size) qs
       in EntrySummary kind (listToMaybe accts) (length accts - 1) amt from to
     size p = sum [abs (aquantity a) | a <- amountsRaw (pamount p)]
+
+-- | The accounts an entry is about, first to last: what it was for, then
+-- where the money came from (a payment), went to (income), or went to and
+-- came from (a transfer).
+entryAccounts :: EntrySummary -> [AccountName]
+entryAccounts es = maybeToList (esAccount es) ++ case esKind es of
+  Spending -> esFrom es
+  Earning  -> esTo es
+  Moving   -> esTo es ++ esFrom es
+
+-- | The account an entry is mainly about: what it was for, or for a
+-- transfer, where the money went. A journal row names it in its
+-- data-account attribute, by which a stylesheet can give it an icon.
+entryMainAccount :: EntrySummary -> AccountName
+entryMainAccount = fromMaybe "" . listToMaybe . entryAccounts
+
+-- | The account an entry is mainly about, other than those of a register
+-- (matched by its account query): for a payment from a card, what it paid
+-- for; for a payment to it, where the money came from. The entry's main
+-- account when they are all the register's own.
+entryMainOtherAccount :: Query -> EntrySummary -> AccountName
+entryMainOtherAccount acctq es =
+  fromMaybe (entryMainAccount es) $ listToMaybe [a | a <- entryAccounts es, not (matchesAccount acctq a)]
 
 -- | The class naming an entry's kind, which colors its amount.
 entryKindClass :: EntryKind -> Text

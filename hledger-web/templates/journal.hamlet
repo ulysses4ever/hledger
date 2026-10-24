@@ -33,7 +33,10 @@ $# given with --css can rearrange them with the order property.
         <th .amount>_{HMsgc "column heading" "Amount"}
 
       $forall (torig, es) <- entries
-        <tr .title ##{transactionFrag torig} data-entry="#{showTransaction torig}">
+        $# data-account and data-kind are for an instance stylesheet, to give
+        $# the entry an icon (see the manual's "Customising the look").
+        <tr .title ##{transactionFrag torig} data-entry="#{showTransaction torig}"
+            data-account="#{entryMainAccount es}" data-kind="#{entryKindClass (esKind es)}">
           <td .date nowrap>
             <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
                title=_{HMsg "Show the journal entries on this date"}>

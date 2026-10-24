@@ -32,8 +32,9 @@ highlighting.
 - `single-sided.spec.js` — the journal shows each entry single-sided, and both sides when
   the box above it is ticked, a choice kept across pages, and without javascript too.
 - `custom-css.spec.js` — `--css`, an instance's own stylesheet: it applies within the
-  Content-Security-Policy, and can rearrange the journal page's parts. This spec starts
-  a second hledger-web, with `--css`.
+  Content-Security-Policy, can rearrange the journal page's parts, and can give the
+  entries icons by the account their rows name. This spec starts a second hledger-web,
+  with `--css`.
 - `month-view.spec.js` — the journal and an account's register open on today's month
   (here `--today`), with links to the months before and after, and the journal says how
   much the month spent and earned. This spec starts a second hledger-web, without the
