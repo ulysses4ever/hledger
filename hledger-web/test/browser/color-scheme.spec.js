@@ -94,7 +94,8 @@ const views = {
   // hledger.js draws it only while the pointer rests on an entry
   'entry tooltip': async page => {
     await page.goto('/journal');
-    await page.locator('#main-content tr.title td').nth(1).hover();
+    // the description, or on a phone the block that stands for the entry
+    await page.locator('#main-content tr.title > td:is(.description, .entry-card):visible').first().hover();
     await expect(page.locator('.entry-tooltip')).toBeVisible();
   },
   'register': page => page.goto('/register?q=inacct:assets:bank:checking'),

@@ -79,9 +79,11 @@ async function tops(row, selectors) {
 test('the journal and register stack their rows, and the running balance is left out', async ({ page }) => {
   await page.setViewportSize(phones[0]);
 
-  // a journal entry: the date and description on a line, then a line per
-  // posting, its account beside its amount
+  // a journal entry showing both sides (single-sided, it is a block of its
+  // own, see phone-journal.spec.js): the date and description on a line,
+  // then a line per posting, its account beside its amount
   await page.goto('/journal');
+  await page.locator('#bothsides').check();
   await expect(page.locator('#main-content .transactionsreport thead')).toBeHidden();
   const title = await tops(page.locator('#main-content tr.title', { hasText: 'Cafe Luna' }), ['td.date', 'td.description']);
   expect(title['td.date']).toEqual(title['td.description']);
@@ -111,7 +113,8 @@ test('account names keep their leaf whole, and their full name as the title', as
   await page.setViewportSize(phones[1]);
   for (const url of ['/journal', '/register?q=inacct:assets:bank:checking']) {
     await page.goto(url);
-    const links = await page.locator('#main-content td.account a').evaluateAll(as => as.map(a => {
+    // (in the journal, the accounts in the block standing for each entry)
+    const links = await page.locator('#main-content :is(td.account, .entry-card) a:has(.account-name):visible').evaluateAll(as => as.map(a => {
       const leaf = a.querySelector('.leaf');
       return {
         title: a.title,
@@ -192,7 +195,7 @@ test('on a phone, a round button in the corner adds a transaction', async ({ pag
   await page.keyboard.press('Escape');
   // scrolled to the end, the page leaves room for it below the last amount
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-  const last = await page.locator('#main-content td.amount .amount:visible').last().boundingBox();
+  const last = await page.locator('#main-content :is(td.amount .amount, .entry-amount):visible').last().boundingBox();
   expect(overlap(last, await button.boundingBox())).toBe(false);
   // on a page without the dialog, it opens the add page
   await page.goto('/balancesheet');

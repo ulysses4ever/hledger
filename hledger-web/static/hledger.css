@@ -41,6 +41,7 @@
   --account-parents: #5f6b7a;    /* an account name's parents, set back from its leaf */
   --band: #f2f4f6;               /* the period band at the top of the journal and registers */
   --income: #2e7d32;             /* money earned */
+  --entry-account: #8a5a2b;      /* on a phone, the account a journal entry paid from or into */
 
   /* the account sidebar */
   --account: #2f2f2f;
@@ -98,6 +99,7 @@
     --account-parents: #98a2ae;
     --band: #262a31;
     --income: #81c995;
+    --entry-account: #d4a373;
 
     --account: var(--text);
     --account-current: #8ec3ff;
@@ -1138,4 +1140,129 @@ a:focus > .account-name > * {
 }
 .period-totals .earned {
   color: var(--income);
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 15. the journal on a phone, as a money app shows it */
+
+/* On a phone, the single-sided journal shows each entry as one block, as
+   phone money apps do: what it was for (the account of its largest expense
+   or income, with +N when it has more, or "Transfer") with how much at the
+   right, red when spent and green when earned; under them its date, and
+   the account the money came from (a payment) or went to (income), or
+   both (a transfer); and under those, its payee and note. Its title row
+   holds the block, in a cell of its own (.entry-card) that is hidden
+   otherwise; the row's other cells and the posting rows are hidden
+   instead. "Show both sides" shows the entries as before.
+
+   The block begins with an icon slot (.entry-icon), empty unless a
+   stylesheet given with --css puts an icon in its ::before, by the row's
+   account (see the manual); it takes no room without one. */
+.transactionsreport td.entry-card {
+  display: none;
+}
+@media screen and (max-width: 767px) {
+  .transactionsreport:not(.both-sides) > tbody > tr.title > td:not(.entry-card),
+  .transactionsreport:not(.both-sides) > tbody > tr.posting {
+    display: none;
+  }
+  .table-responsive > .transactionsreport:not(.both-sides) > tbody > tr.title > td.entry-card {
+    display: grid;
+    flex: auto;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 1px;
+    min-width: 0;
+    padding: 9px 0;
+    white-space: normal;
+  }
+  .entry-card .entry-icon {
+    grid-row: 1 / 4;
+  }
+  .entry-card .entry-icon::before {
+    display: block;
+    width: 34px;
+    margin-right: 10px;
+    font-size: 24px;
+    line-height: 30px;
+    text-align: center;
+  }
+  .entry-card .entry-what {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    font-weight: 600;
+  }
+  .entry-card .entry-what > a {
+    min-width: 0;
+    color: inherit;
+  }
+  .entry-card .entry-what .account-name .parents,
+  .entry-card .entry-what .account-name .sep {
+    font-weight: normal;
+  }
+  .entry-card .entry-what .account-name .leaf {
+    overflow-wrap: normal;
+  }
+  .entry-card .more {
+    flex: none;
+    margin-left: 0.4em;
+    font-size: 14px;
+    font-weight: normal;
+    color: var(--account-parents);
+  }
+  .entry-card .entry-amount {
+    padding-left: 8px;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .entry-card .entry-amount.spending {
+    color: var(--negative);
+  }
+  .entry-card .entry-amount.earning {
+    color: var(--income);
+  }
+  .entry-card .entry-amount.earning::before {
+    content: "+";
+  }
+  .entry-card .entry-when-where,
+  .entry-card .entry-memo {
+    grid-column: 2 / 4;
+    font-size: 15px;
+    color: var(--account-parents);
+  }
+  .entry-card .entry-when-where {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    column-gap: 8px;
+  }
+  .entry-card .entry-date {
+    flex: none;
+    color: inherit;
+    white-space: nowrap;
+  }
+  .entry-card .entry-accounts {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    column-gap: 0.3em;
+    min-width: 0;
+    margin-left: auto;
+    color: var(--entry-account);
+  }
+  .entry-card .entry-accounts > a {
+    min-width: 0;
+    color: inherit;
+  }
+  .entry-card .entry-accounts .account-name .parents,
+  .entry-card .entry-accounts .account-name .sep {
+    color: inherit;
+  }
+  .entry-card .entry-label {
+    color: var(--account-parents);
+  }
+  .entry-card .entry-memo {
+    overflow-wrap: anywhere;
+  }
 }

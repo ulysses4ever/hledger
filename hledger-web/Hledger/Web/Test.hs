@@ -1731,3 +1731,49 @@ hledgerWebTest = do
       statusIs 200
       bodyContains "Could not parse the period"
       htmlAnyContain ".period-name" "All dates"
+
+  -- On a phone, the journal shows each entry as a block summing it up:
+  -- what it was for and how much, by its accounts' types (see
+  -- Hledger.Web.Widget.Entry).
+  cardj <- fmap (either error' id) . runExceptT . journalFinalise biopts "cards.journal" "" =<<
+          readJournal'' (T.pack $ unlines  -- PARTIAL: readJournal'' should not fail
+            ["2025-03-01 Corner Deli | groceries and soap"
+            ,"    expenses:food:groceries   30"
+            ,"    expenses:home:supplies     5"
+            ,"    assets:bank:checking"
+            ,"2025-03-02 Corner Deli | returned the soap"
+            ,"    expenses:home:supplies    -5"
+            ,"    assets:bank:checking"
+            ,"2025-03-03 saving"
+            ,"    assets:bank:savings      100"
+            ,"    assets:bank:checking"
+            ,"2025-03-04 Employer | pay"
+            ,"    assets:bank:checking    1000"
+            ,"    income:salary"])
+  runTests "hledger-web journal entry blocks" [] cardj $ do
+
+    yit "sums up a payment by its largest expense, with how many more, and the account it came from" $ do
+      get JournalR
+      statusIs 200
+      htmlAnyContain ".entry-what" "expenses:food:groceries"
+      htmlAnyContain ".entry-what .more" "+1"
+      htmlAnyContain ".entry-amount.spending" "-35"
+      htmlAnyContain ".entry-date" "2025-03-01 (Sat)"
+      htmlAnyContain ".entry-memo" "Corner Deli · groceries and soap"
+
+    yit "counts a refund, and income, as earning, naming the account it went to" $ do
+      get JournalR
+      statusIs 200
+      htmlAnyContain ".entry-amount.earning" "5"
+      htmlAnyContain ".entry-what" "expenses:home:supplies"
+      htmlAnyContain ".entry-amount.earning" "1000"
+      htmlAnyContain ".entry-what" "income:salary"
+      htmlAnyContain ".entry-memo" "Employer · pay"
+
+    yit "calls money moved between other accounts a transfer, from one to the other" $ do
+      get JournalR
+      statusIs 200
+      htmlAnyContain ".entry-what" "Transfer"
+      htmlAnyContain ".entry-amount.moving" "100"
+      htmlAnyContain ".entry-accounts" "assets:bank:savings"
+      htmlAnyContain ".entry-memo" "saving"

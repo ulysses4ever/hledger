@@ -32,7 +32,7 @@ $# given with --css can rearrange them with the order property.
         <th .account>_{HMsgc "column heading" "Account"}
         <th .amount>_{HMsgc "column heading" "Amount"}
 
-      $forall torig <- items
+      $forall (torig, es) <- entries
         <tr .title ##{transactionFrag torig} data-entry="#{showTransaction torig}">
           <td .date nowrap>
             <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
@@ -41,6 +41,41 @@ $# given with --css can rearrange them with the order property.
           <td .description colspan=2>
             #{textElideRight 60 (tdescription torig)}
           <td .amount>
+          $# On a phone, single-sided, the entry is shown as this block instead
+          $# (hledger.css section 15): what it was for and how much; its date and
+          $# where the money came from or went; its payee and note.
+          <td .entry-card colspan=4>
+            <span .entry-icon>
+            <span .entry-what>
+              $maybe acc <- esAccount es
+                <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
+                  ^{accountNameAsHtml acc}
+                $if esMore es > 0
+                  <span .more title=_{HMsg "and other accounts"}>+#{esMore es}
+              $nothing
+                $# TRANSLATORS: what a journal entry that moved money between two accounts is called, in place of a category.
+                _{HMsg "Transfer"}
+            <span .entry-amount .#{entryKindClass (esKind es)}>#{oneLine (esAmount es)}
+            <span .entry-when-where>
+              <a .entry-date href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
+                 title=_{HMsg "Show the journal entries on this date"}>
+                #{dayWithWeekday (tdate torig)}
+              <span .entry-accounts>
+                $forall acc <- lineFrom es
+                  $if esKind es == Moving
+                    $# TRANSLATORS: in "from bank › checking → to bank › savings", a transfer between two accounts.
+                    <span .entry-label>_{HMsg "from"}
+                  <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
+                    ^{accountNameAsHtml acc}
+                $if bothEnds es
+                  <span .entry-label>→
+                $forall acc <- lineTo es
+                  $if esKind es == Moving
+                    $# TRANSLATORS: in "from bank › checking → to bank › savings", a transfer between two accounts.
+                    <span .entry-label>_{HMsg "to"}
+                  <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
+                    ^{accountNameAsHtml acc}
+            <span .entry-memo>#{payeeAndNote torig}
 
         $forall Posting { paccount = acc, pamount = amt } <- tpostings torig
           <tr .posting :isSource amt:.source>

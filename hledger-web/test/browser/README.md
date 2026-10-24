@@ -21,6 +21,9 @@ highlighting.
   (`color-scheme.spec.js` checks the dark scheme at a phone's width too.)
 - `account-names.spec.js` — the journal and register show account names without their
   top level, with › between the parts, and keep the full name as the title and the text.
+- `phone-journal.spec.js` — on a phone, the single-sided journal shows each entry as one
+  block, as a phone money app does: what it was for and how much, colored by whether it
+  was spent or earned; its date and the account paid from or into; its payee and note.
 - `single-sided.spec.js` — the journal shows each entry single-sided, and both sides when
   the box above it is ticked, a choice kept across pages, and without javascript too.
 - `custom-css.spec.js` — `--css`, an instance's own stylesheet: it applies within the

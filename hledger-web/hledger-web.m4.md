@@ -154,7 +154,11 @@ hledger-web's main views are:
 
 - the **journal view** (the home page), showing journal entries, newest first, with their postings:
   single-sided, the accounts the money came from named on a "from" line under the others,
-  or with every posting and its amount when "Show both sides" is ticked;
+  or with every posting and its amount when "Show both sides" is ticked.
+  On a phone, single-sided, each entry is one block, as phone money apps show it: what it was for
+  (its largest expense or income account, with "+N" if there are more, or "Transfer") and how much,
+  red when spent and green when earned; its date, and the account it was paid from or into;
+  and its payee and note;
 - the **register view**, showing the transactions affecting one account (and its subaccounts),
   with a running balance and a balance chart; and
 - the **report views**, described [below](#reports): the balance sheet, income statement,

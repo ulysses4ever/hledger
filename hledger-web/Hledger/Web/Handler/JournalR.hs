@@ -19,6 +19,7 @@ import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
             (accountNameAsHtml, accountQuery, mixedAmountAsHtml,
              transactionFragment, replaceInacct, journalDayQuery)
+import Hledger.Web.Widget.Entry
 import Hledger.Web.Widget.Period (isAllTime, pagePeriod, periodBand, periodQuery)
 
 -- | The formatted journal view, with sidebar.
@@ -80,6 +81,13 @@ getJournalR = do
       -- While the default is a month, the all-years link asks for all dates.
       yearParams = [("period", "all") | not (alltime_ opts)]
       transactionFrag = transactionFragment j
+      -- Each entry, with the summary a phone shows of it, and the
+      -- accounts that summary names on its second line: where a payment
+      -- came from, where income went, or both, for a transfer.
+      entries = [(t, summarizeEntry atype t) | t <- items]
+      lineFrom es = if esKind es == Earning then [] else take 1 (esFrom es)
+      lineTo es = if esKind es == Spending then [] else take 1 (esTo es)
+      bothEnds es = not (null (lineFrom es) || null (lineTo es))
       -- Is this a posting the money came from, its amounts all negative ?
       -- Single-sided, the journal shows those accounts on a line of their
       -- own, without amounts.
