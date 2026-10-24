@@ -1,7 +1,24 @@
 <h2>
   #{header}
 
+$# An account's page, as phone money apps show one: its balance at the
+$# end of the period, and under the period, the balance before it and
+$# what was paid in and out during it (hledger.css section 17).
+$if isAccountPage
+  <div .account-balance .amount :isNegative endbal:.negative>#{oneLine endbal}
+
 ^{periodBand trs RegisterR qparam accumParams shown noBelow}
+
+$if isAccountPage
+  <dl .account-summary>
+    <dt>_{HMsg "Previous balance"}
+    <dd .amount>#{oneLine prevbal}
+    $# TRANSLATORS: on an account's page, the total of the money that came into it in the period shown.
+    <dt>_{HMsg "Paid in"}
+    <dd .amount .earning>#{oneLine paidin}
+    $# TRANSLATORS: on an account's page, the total of the money that went out of it in the period shown.
+    <dt>_{HMsg "Spent"}
+    <dd .amount .spending>#{oneLine paidout}
 
 ^{yearsRow trs RegisterR qparam yearParams (isAllTime shown) years}
 ^{pagingLinks trs RegisterR qparam page}
@@ -23,26 +40,50 @@
           <a href=@?{accumToggle} title="#{accumToggleTitle}">#{balancelabel}
 
     <tbody>
-      $forall (torig, tacct, split, _acct, amt, bal) <- items
-        $# data-account and data-kind are for an instance stylesheet, to give
-        $# the row an icon (see the manual's "Customising the look").
-        <tr ##{transactionFrag torig} data-entry="#{showTransaction torig}"
-            data-account="#{mainAccount torig}" data-kind="#{entryKindClass (esKind (summary torig))}">
-          <td .date nowrap>
-            <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
-               title=_{HMsg "Show this entry and the other journal entries on its date"}>
-              #{show (tdate tacct)}
-          <td .description>
-            #{textElideRight 30 (tdescription tacct)}
-          <td .account>
-            $forall (acc, comma) <- otherTransAccounts torig
-              <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
-                ^{accountNameAsHtml acc}</a>#{comma}
-          <td .amount>
-            $if not split || not (mixedAmountLooksZero amt)
-              ^{mixedAmountAsHtml amt}
-          <td .amount.balance>
-            ^{mixedAmountAsHtml bal}
+      $forall (day, daytotal, dayitems) <- days
+        $# On a phone, the rows are grouped by day, under a heading with the
+        $# day's total; elsewhere it is hidden.
+        <tr .day-heading>
+          <td colspan=5>
+            <span .day-date>#{dayWithWeekday day}
+            <span .day-total .amount>#{oneLine daytotal}
+        $forall (torig, tacct, split, _acct, amt, bal) <- dayitems
+          $# data-account and data-kind are for an instance stylesheet, to give
+          $# the row an icon (see the manual's "Customising the look").
+          <tr ##{transactionFrag torig} data-entry="#{showTransaction torig}"
+              data-account="#{mainAccount torig}" data-kind="#{entryKindClass (esKind (summary torig))}">
+            <td .date nowrap>
+              <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
+                 title=_{HMsg "Show this entry and the other journal entries on its date"}>
+                #{show (tdate tacct)}
+            <td .description>
+              #{textElideRight 30 (tdescription tacct)}
+            <td .account>
+              $forall (acc, comma) <- otherTransAccounts torig
+                <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
+                  ^{accountNameAsHtml acc}</a>#{comma}
+            <td .amount>
+              $if not split || not (mixedAmountLooksZero amt)
+                ^{mixedAmountAsHtml amt}
+            <td .amount.balance>
+              ^{mixedAmountAsHtml bal}
+            $# On a phone, the row is shown as this block instead (hledger.css
+            $# section 17): the account the entry is mainly about and the
+            $# amount, red when it left this account and green when it came in;
+            $# the payee and note; and the balance after it.
+            <td .entry-card colspan=5>
+              <span .entry-icon>
+              <span .entry-what>
+                <a href="@?{acctlink (mainAccount torig) torig}##{transactionFrag torig}" title="#{mainAccount torig}">
+                  ^{accountNameAsHtml (mainAccount torig)}
+              <span .entry-amount :isNegative amt:.spending :isPositive amt:.earning>
+                $if not split || not (mixedAmountLooksZero amt)
+                  #{oneLine amt}
+              <span .entry-memo>#{payeeAndNote torig}
+              <span .entry-balance>
+                <span .sr-only>_{HMsg "Balance after this entry:"}
+                <span aria-hidden="true">» #
+                #{oneLine (runningBalance bal)}
       $if historical && lastpage
         $maybe start <- mstart
           <tr .broughtforward>

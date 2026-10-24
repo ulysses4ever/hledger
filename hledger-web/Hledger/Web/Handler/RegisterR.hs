@@ -10,7 +10,10 @@
 module Hledger.Web.Handler.RegisterR where
 
 import Data.Aeson.Text (encodeToLazyText)
+import Data.Function (on)
 import Data.List (nub, partition)
+import Data.List.NonEmpty (NonEmpty(..))
+import Data.List.NonEmpty qualified as NE
 import Data.Text qualified as T
 import Safe (tailSafe)
 import Text.Hamlet (hamletFile)
@@ -25,7 +28,8 @@ import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
              (accountNameAsHtml, accountQuery, accountOnlyQuery, mixedAmountAsHtml,
               transactionFragment, removeDates, removeInacct, replaceInacct, journalDayQuery)
-import Hledger.Web.Widget.Entry (EntrySummary(..), entryKindClass, entryMainOtherAccount, summarizeEntry)
+import Hledger.Web.Widget.Entry
+            (EntrySummary(..), dayWithWeekday, entryKindClass, entryMainOtherAccount, payeeAndNote, summarizeEntry)
 import Hledger.Web.Widget.Period (isAllTime, pagePeriod, periodBand, periodQuery)
 
 -- | The main journal/account register view, with accounts sidebar.
@@ -118,6 +122,31 @@ getRegisterR = do
       -- other than this register's.
       summary = summarizeEntry (journalAccountType j)
       mainAccount = entryMainOtherAccount acctQuery . summary
+      -- The account page's summary of the period, of all its matching
+      -- transactions, not only this page's: the balance before it, at its
+      -- end, and the money paid in and out during it.
+      isAccountPage = isJust (inAccount qopts)
+      prevbal
+        | historical = startbal
+        | otherwise  = styleAmounts styles $ fst $
+            accountTransactionsReportWithStart
+              rspec{_rsQuery=qp, _rsReportOpts=ropts{balanceaccum_=Historical}} j acctQuery
+      -- A row's balance, including everything before the period, whatever
+      -- the mode: on a phone, each row shows it.
+      runningBalance bal = if historical then bal else prevbal `maPlus` bal
+      endbal = case allitems of
+        (_, _, _, _, _, bal) : _ -> runningBalance bal
+        []                       -> prevbal
+      paidin = maSum [filterMixedAmount ((> 0) . aquantity) amt | (_, _, _, _, amt, _) <- allitems]
+      paidout = maSum [filterMixedAmount ((< 0) . aquantity) amt | (_, _, _, _, amt, _) <- allitems]
+      oneLine = wbToText . showMixedAmountB oneLineNoCostFmt{displayZeroCommodity = True}
+      isNegative amt = isNegativeMixedAmount amt == Just True
+      isPositive amt = isNegativeMixedAmount amt == Just False && not (mixedAmountLooksZero amt)
+      -- This page's rows by day, newest first, with each day's total: on a
+      -- phone they are grouped under a heading per day.
+      days = [ (rowDay r, maSum [amt | (_, _, _, _, amt, _) <- r : rs], r : rs)
+             | r :| rs <- NE.groupBy ((==) `on` rowDay) items ]
+      rowDay (_, tacct, _, _, _, _) = tdate tacct
       -- The year links keep this register's mode, and while the default
       -- is a month, the all-years link asks for all dates.
       yearParams = [("period", "all") | not (alltime_ opts)] ++ accumParams

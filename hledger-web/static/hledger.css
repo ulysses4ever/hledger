@@ -1130,7 +1130,8 @@ a:focus > .account-name > * {
 
    The block begins with an icon slot (.entry-icon), empty unless a
    stylesheet given with --css puts an icon in its ::before, by the row's
-   account (see the manual); it takes no room without one. */
+   account (see the manual); it takes no room without one. An account's
+   register shows its rows as such blocks too (section 17). */
 .transactionsreport td.entry-card {
   display: none;
 }
@@ -1335,5 +1336,103 @@ a:focus > .account-name > * {
      javascript the tab's link targets it. */
   #searchform:not(.searching, .open, :target, :focus-within) {
     display: none;
+  }
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 17. an account's page */
+
+/* An account's register begins as phone money apps show an account: its
+   balance at the end of the period shown, red when negative; and under
+   the period band, the balance before the period, and what was paid in
+   (green) and out (red) during it. */
+.account-balance {
+  margin: -4px 0 10px;
+  font-size: 26px;
+  font-weight: 600;
+  text-align: left;
+}
+.account-balance.negative {
+  color: var(--negative);
+}
+.account-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  row-gap: 2px;
+  column-gap: 1em;
+  max-width: 24em;
+  margin: 0 0 12px;
+  padding: 0 4px;
+}
+.account-summary dt {
+  font-weight: normal;
+  color: var(--account-parents);
+}
+.account-summary dd {
+  margin: 0;
+  text-align: right;
+}
+.account-summary .earning {
+  color: var(--income);
+}
+.account-summary .spending {
+  color: var(--negative);
+}
+
+/* On a phone, the rows are grouped under a heading per day, with the day's
+   total, and each row is a block, as the journal's entries are (section
+   15): the account the entry is mainly about, other than this one, and
+   the amount, red when it left the account and green when it came in;
+   the payee and note; and in small type, the balance after it, including
+   everything before the period whatever the mode, so that the newest
+   row's is the balance at the top. Elsewhere the headings and the blocks
+   are hidden, and the table is as it was. */
+.registerreport tr.day-heading,
+.registerreport td.entry-card {
+  display: none;
+}
+@media screen and (max-width: 767px) {
+  .account-summary {
+    max-width: none;
+  }
+  .registerreport > tbody > tr.day-heading {
+    display: block;
+  }
+  .table-responsive > .registerreport > tbody > tr.day-heading > td {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 8px;
+    border-top: 0;
+    font-size: 14px;
+    color: var(--account-parents);
+    background-color: var(--band);
+  }
+  .registerreport > tbody > tr:not(.day-heading, .broughtforward) > td:not(.entry-card) {
+    display: none;
+  }
+  .table-responsive > .registerreport > tbody > tr > td.entry-card {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 1px;
+    min-width: 0;
+    padding: 9px 0;
+    white-space: normal;
+  }
+  .registerreport > tbody > tr.day-heading + tr > td.entry-card {
+    border-top: 0;
+  }
+  .registerreport .entry-card .entry-icon {
+    grid-row: 1 / 4;
+  }
+  .registerreport .entry-card .entry-memo,
+  .registerreport .entry-card .entry-balance {
+    grid-column: 2 / 4;
+  }
+  .registerreport .entry-card .entry-balance {
+    font-size: 13px;
+    text-align: right;
+    color: var(--account-parents);
   }
 }

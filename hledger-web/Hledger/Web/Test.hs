@@ -841,7 +841,9 @@ hledgerWebTest = do
       statusIs 200
       bodyContains ">Period Total</a>"
       htmlAnyContain "#main-content tbody td.amount" "-10"
-      bodyNotContains ">90<"
+      -- (the balance at the top, and on a phone each row's, include what
+      -- came before the period; the table's column does not)
+      htmlNoneContain "#main-content tbody td.balance" "90"
       bodyNotContains "Balance brought forward"
       bodyNotContains "name=\"accum\""
       -- the balance column's heading switches to historical mode
@@ -1479,7 +1481,7 @@ hledgerWebTest = do
         addGetParam "q" "inacct:assets:cash"
         addGetParam "page" "3"
       statusIs 200
-      rid <- attrOfFirst "#main-content tbody tr" "id"  -- transaction-F-N, as in the journal
+      rid <- attrOfFirst "#main-content tbody tr[data-entry]" "id"  -- transaction-F-N, as in the journal
       request $ do
         setMethod "GET"
         setUrl RegisterR
@@ -1510,7 +1512,7 @@ hledgerWebTest = do
         addGetParam "q" "inacct:assets:cash"
         addGetParam "page" "2"
       statusIs 200
-      rid2 <- attrOfFirst "#main-content tbody tr" "id"
+      rid2 <- attrOfFirst "#main-content tbody tr[data-entry]" "id"
       let rtxn2 = T.unpack $ T.takeWhileEnd (/= '-') rid2
       bodyContains ("&amp;txn=" ++ rtxn2 ++ "#" ++ T.unpack rid2 ++ "\"")
 
@@ -1553,7 +1555,7 @@ hledgerWebTest = do
         setUrl RegisterR
         addGetParam "q" "inacct:assets:cash not:acct:expenses date:2024"
       statusIs 200
-      rows <- htmlQuery "#main-content tbody tr"
+      rows <- htmlQuery "#main-content tbody tr[data-entry]"
       assertEq "the rows the years row counts" (length rows) 366
       bodyNotContains "Showing "
       bodyContains "title=\"Show only 2024\">2024</a>"
@@ -1790,3 +1792,39 @@ hledgerWebTest = do
         addGetParam "q" "inacct:assets:bank:savings"
       statusIs 200
       bodyContains "data-account=\"assets:bank:checking\" data-kind=\"moving\""
+
+  -- An account's page: its balance at the end of the period, the balance
+  -- before it, what was paid in and out, and on a phone, the rows under a
+  -- heading per day, each with the balance after it.
+  runTestsByMonth "hledger-web account page" [("today","2025-02-14")] bj $ do
+
+    yit "shows the account's balance, and the period's previous balance, paid in and spent" $ do
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:checking"
+      statusIs 200
+      htmlAnyContain ".account-balance" "90"
+      bodyContains "<dt>Previous balance</dt>\n<dd class=\"amount\">100</dd>"
+      bodyContains "<dt>Paid in</dt>\n<dd class=\"amount earning\">0</dd>"
+      bodyContains "<dt>Spent</dt>\n<dd class=\"amount spending\">-10</dd>"
+      htmlCount ".account-summary dt" 3  -- no net line
+
+    yit "groups the rows under a heading per day, with its total, and gives each row its balance" $ do
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:checking"
+      statusIs 200
+      htmlAnyContain "tr.day-heading .day-date" "2025-02-05 (Wed)"
+      htmlAnyContain "tr.day-heading .day-total" "-10"
+      htmlAnyContain ".entry-card .entry-what" "expenses:food"
+      htmlAnyContain ".entry-card .entry-amount.spending" "-10"
+      htmlAnyContain ".entry-card .entry-memo" "lunch"
+      htmlAnyContain ".entry-card .entry-balance" "90"
+
+    yit "shows no account balance or summary on the register of all accounts" $ do
+      get RegisterR
+      statusIs 200
+      htmlCount ".account-balance" 0
+      htmlCount ".account-summary" 0

@@ -92,7 +92,7 @@ test('a date in the search replaces the month, and All shows every date', async 
 test("an account's register opens on this month too, and keeps the account as it steps", async ({ page }) => {
   await page.goto(URL + '/register?q=' + encodeURIComponent('inacct:assets:bank:checking'));
   await expect(page.locator('.period-name')).toHaveText('February 2025');
-  await expect(page.locator('.registerreport tbody tr')).toHaveCount(3);
+  await expect(page.locator('.registerreport tbody tr:not(.day-heading)')).toHaveCount(3);
   await page.locator('.period-band a.period-prev').click();
   await expect(page).toHaveURL(/q=inacct%3Aassets%3Abank%3Achecking&period=2025-01/);
   await expect(page.locator('.period-name')).toHaveText('January 2025');

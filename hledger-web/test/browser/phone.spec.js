@@ -1,7 +1,7 @@
 // Browser tests at a phone's width (#340).
 //
-// Below 768px wide, where the sidebar goes off-canvas, the journal and the
-// register stack each row, the register leaves out its running balance,
+// Below 768px wide, where the sidebar goes off-canvas, the journal (showing
+// both sides) stacks each row, the register shows each as a block,
 // the add form shares its rows out differently, and a report with one
 // column of amounts lays out each row by itself (see section 10 of
 // hledger.css). These tests check what a reader holding a phone would
@@ -76,7 +76,7 @@ async function tops(row, selectors) {
   return out;
 }
 
-test('the journal and register stack their rows, and the running balance is left out', async ({ page }) => {
+test('the journal, showing both sides, stacks its rows, and the register shows each as a block', async ({ page }) => {
   await page.setViewportSize(phones[0]);
 
   // a journal entry showing both sides (single-sided, it is a block of its
@@ -92,16 +92,17 @@ test('the journal and register stack their rows, and the running balance is left
   expect(line['td.account']).toEqual(line['td.amount']);
   expect(line['td.account']).toBeGreaterThan(title['td.date']);
 
-  // a register row: the date and description, then the other account and
-  // the amount; no running balance, and no column headings
+  // a register row: a block, under its day's heading (see
+  // account-page.spec.js), with the other account and the amount on a
+  // line; the table's cells and column headings are hidden
   await page.goto('/register?q=inacct:assets:bank:checking');
   await expect(page.locator('#main-content .registerreport thead')).toBeHidden();
   await expect(page.locator('#main-content .registerreport td.balance').first()).toBeHidden();
   const row = page.locator('#main-content .registerreport tbody tr', { hasText: 'Cafe Luna' });
-  const cells = await tops(row, ['td.date', 'td.description', 'td.account', 'td.amount:not(.balance)']);
-  expect(cells['td.date']).toEqual(cells['td.description']);
-  expect(cells['td.account']).toEqual(cells['td.amount:not(.balance)']);
-  expect(cells['td.account']).toBeGreaterThan(cells['td.date']);
+  await expect(row.locator('td.date')).toBeHidden();
+  const cells = await tops(row, ['.entry-what', '.entry-amount', '.entry-memo']);
+  expect(cells['.entry-what']).toEqual(cells['.entry-amount']);
+  expect(cells['.entry-memo']).toBeGreaterThan(cells['.entry-what']);
 
   // on a wide screen it is a table again, with the running balance
   await page.setViewportSize({ width: 1280, height: 800 });

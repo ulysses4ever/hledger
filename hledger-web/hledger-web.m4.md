@@ -160,7 +160,10 @@ hledger-web's main views are:
   red when spent and green when earned; its date, and the account it was paid from or into;
   and its payee and note;
 - the **register view**, showing the transactions affecting one account (and its subaccounts),
-  with a running balance and a balance chart; and
+  with a running balance and a balance chart, under the account's balance at the end of the period
+  shown and a summary of the period: the balance before it, and what was paid in and spent.
+  On a phone, its transactions are grouped under a heading per day, with the day's total,
+  and each shows the balance after it; and
 - the **report views**, described [below](#reports): the balance sheet, income statement,
   and cashflow statement, linked from the sidebar, and the balance sheet with equity and
   the general balance report, linked from those.

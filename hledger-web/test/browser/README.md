@@ -16,10 +16,12 @@ highlighting.
   for printing.
 - `phone.spec.js` — the pages at a phone's width (#340): none is wider than the
   screen or scrolls sideways inside, every amount is in view, the journal (showing both
-  sides) and register stack their rows and the register leaves out its running balance,
-  account names wrap rather than being cut off, and the add form's fields have room for
-  what they hold.
+  sides) stacks its rows and the register shows each as a block, account names wrap
+  rather than being cut off, and the add form's fields have room for what they hold.
   (`color-scheme.spec.js` checks the dark scheme at a phone's width too.)
+- `account-page.spec.js` — an account's register as phone money apps show an account: its
+  balance, the period's previous balance and what was paid in and spent, and on a phone the
+  rows under a heading per day with its total, each with the balance after it.
 - `account-names.spec.js` — the journal and register show account names without their
   top level, with › between the parts, and keep the full name as the title and the text.
 - `phone-journal.spec.js` — on a phone, the single-sided journal shows each entry as one
