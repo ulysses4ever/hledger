@@ -16,6 +16,9 @@ module.exports = async () => {
 
   const { child } = await startServer([
     '-f', journal, '--serve', '--host', '127.0.0.1', '--port', PORT, '--allow=edit',
+    // the fixture is dated 2025, and most tests expect all of it; the
+    // default, this month, is tested in month-view.spec.js
+    '--all-time',
   ]);
   fs.writeFileSync(path.join(os.tmpdir(), 'hledger-web-browser.pid'), String(child.pid));
 };

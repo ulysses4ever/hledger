@@ -129,16 +129,18 @@ datelessQuery today qparam
     rest = removeDates qparam
 
 -- | The years in which a search matches transactions, each a link to the
--- search narrowed to that year, after an All link that widens it again.
--- Nothing when there is only one year, which has nowhere to go. More than
+-- search narrowed to that year, after an All link that widens it again
+-- (with the given parameters, and marked current when all dates are shown).
+-- Nothing when there is only one year and all dates are shown, which has
+-- nowhere to go. More than
 -- twenty years are grouped by decade, a row each.
-yearsRow :: Translations -> r -> Text -> [Day] -> HtmlUrl r
-yearsRow trs here qparam days = $(hamletFile "templates/years.hamlet")
+yearsRow :: Translations -> r -> Text -> [(Text, Text)] -> Bool -> [Day] -> HtmlUrl r
+yearsRow trs here qparam allparams showingall days = $(hamletFile "templates/years.hamlet")
   where
     showOnly y = trf trs "Show only {year}" [("year", T.pack (show y))]
     years :: [Integer]
     years = S.toAscList $ S.fromList [y | d <- days, let (y, _, _) = toGregorian d]
-    manyYears = length years > 1
+    manyYears = length years > 1 || not showingall && not (null years)
     byDecade = if length years > 20 then map decadeRow $ groupBy ((==) `on` decade) years else []
     decadeRow ys@(y:_) = (show (decade y * 10) ++ "s", ys)
     decadeRow [] = ("", [])
@@ -150,9 +152,12 @@ yearsRow trs here qparam days = $(hamletFile "templates/years.hamlet")
     -- A year is current when the search names it as a whole, in the form
     -- the year links use; a year written another way is not recognized.
     isCurrent y = ("date:" <> T.pack (show y)) `elem` terms
-    allCurrent = not $ any isDateTerm terms
+    -- All is current when the page shows all dates, which without date
+    -- terms it need not (a journal or register opens on a month); its link
+    -- carries the given parameters to say so.
+    allCurrent = showingall && not (any isDateTerm terms)
     yearlink y = (here, [("q", T.unwords $ ("date:" <> T.pack (show y)) : rest)])
-    alllink = (here, [("q", T.unwords rest) | not (null rest)])
+    alllink = (here, [("q", T.unwords rest) | not (null rest)] ++ allparams)
 
 -- | A count with thousands separators, as English prose has it: 1,234.
 withCommas :: Int -> Text

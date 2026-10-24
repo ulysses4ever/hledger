@@ -26,6 +26,10 @@ highlighting.
 - `custom-css.spec.js` — `--css`, an instance's own stylesheet: it applies within the
   Content-Security-Policy, and can rearrange the journal page's parts. This spec starts
   a second hledger-web, with `--css`.
+- `month-view.spec.js` — the journal and an account's register open on today's month
+  (here `--today`), with links to the months before and after, and the journal says how
+  much the month spent and earned. This spec starts a second hledger-web, without the
+  `--all-time` the others use.
 - `paging.spec.js` — the journal and register views page their transactions (#586):
   what only a browser shows, a paged page loading without policy violations or
   errors, the register chart drawn from the page's rows, and a link to a
@@ -44,7 +48,8 @@ node only to run it.
 
 Each run starts its own hledger-web on port 5099 (override with `HLEDGER_WEB_PORT`)
 against a scratch copy of `fixture.journal`, and stops it afterwards. The tests add
-and edit transactions, so they need `--allow=edit`, which the setup passes.
+and edit transactions, so they need `--allow=edit`, which the setup passes, with
+`--all-time`, so that the journal and registers show all of the fixture's dates.
 
 ## Setup (once)
 

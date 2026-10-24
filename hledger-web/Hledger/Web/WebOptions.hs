@@ -102,6 +102,10 @@ webflags =
       (\s opts -> Right $ setopt "base-url" s opts)
       "BASEURL"
       "set the base url (default: http://IPADDR:PORT)"
+  , flagNone
+      ["all-time"]
+      (setboolopt "all-time")
+      "open the journal and the registers on all their transactions, rather than this month's"
   , flagReq
       ["css"]
       (\s opts -> Right $ setopt "css" s opts)
@@ -163,6 +167,7 @@ data WebOpts = WebOpts
   , cliopts_            :: !CliOpts
   , socket_             :: !(Maybe String)
   , css_                :: !(Maybe FilePath)
+  , alltime_            :: !Bool
   } deriving (Show)
 
 defwebopts :: WebOpts
@@ -177,6 +182,7 @@ defwebopts = WebOpts
   , cliopts_            = def
   , socket_             = Nothing
   , css_                = Nothing
+  , alltime_            = False
   }
 
 instance Default WebOpts where def = defwebopts
@@ -222,6 +228,7 @@ rawOptsToWebOpts rawopts =
       , cliopts_ = cliopts
       , socket_ = sock
       , css_ = css
+      , alltime_ = boolopt "all-time" rawopts
       }
   where
     stripTrailingSlash = reverse . dropWhile (== '/') . reverse -- yesod don't like it

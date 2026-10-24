@@ -39,6 +39,8 @@
   --add-button: #2e6da4;         /* the round add button on a phone */
   --add-button-text: #fff;
   --account-parents: #5f6b7a;    /* an account name's parents, set back from its leaf */
+  --band: #f2f4f6;               /* the period band at the top of the journal and registers */
+  --income: #2e7d32;             /* money earned */
 
   /* the account sidebar */
   --account: #2f2f2f;
@@ -94,6 +96,8 @@
     --add-button: var(--link);
     --add-button-text: var(--bg);
     --account-parents: #98a2ae;
+    --band: #262a31;
+    --income: #81c995;
 
     --account: var(--text);
     --account-current: #8ec3ff;
@@ -1076,7 +1080,8 @@ a:focus > .account-name > * {
 
 /* The journal page's parts are a flex column, which looks as a column of
    blocks always did, but lets a stylesheet given with --css rearrange them
-   with the order property: .journal-heading; .journal-actions, the row
+   with the order property: .journal-heading; .journal-period, the period
+   band (section 14); .journal-actions, the row
    holding the add button (#addformlink) and the "Show both sides" box
    (.both-sides-toggle), which display: contents on the row lets move
    apart; .journal-years; .journal-paging-top, with the "Showing ..." line
@@ -1085,4 +1090,52 @@ a:focus > .account-name > * {
 .journal-page {
   display: flex;
   flex-direction: column;
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 14. the period band */
+
+/* At the top of the journal and the registers, the period shown, between
+   links to the period before and the one after (when it is a day, month,
+   quarter or year), and under it, on the journal, how much its entries
+   spent and earned. */
+.period-band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 6px 4px;
+  background-color: var(--band);
+  border-radius: 4px;
+}
+.period-band .period-prev,
+.period-band .period-next {
+  flex: none;
+  width: 1.6em;
+  font-size: 28px;
+  line-height: 1;
+  text-align: center;
+  color: var(--account-parents);
+  text-decoration: none;
+}
+.period-band .period-mid {
+  min-width: 0;
+  text-align: center;
+}
+.period-band .period-name {
+  font-size: 18px;
+  font-weight: 600;
+}
+.period-totals {
+  font-size: 14px;
+  color: var(--account-parents);
+}
+.period-totals .amount {
+  font-variant-numeric: tabular-nums;
+}
+.period-totals .spent {
+  color: var(--negative);
+}
+.period-totals .earned {
+  color: var(--income);
 }

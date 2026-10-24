@@ -37,7 +37,7 @@ test.beforeAll(async () => {
   }
   const journal = path.join(tmpdir, 'browse.journal');
   fs.copyFileSync(path.join(__dirname, 'fixture.journal'), journal);
-  ({ child: server, url: URL } = await startServer(['-f', journal, '--host', '127.0.0.1', '--port', '0'],
+  ({ child: server, url: URL } = await startServer(['-f', journal, '--host', '127.0.0.1', '--port', '0', '--all-time'],
     { PATH: tmpdir + path.delimiter + process.env.PATH }));
 });
 

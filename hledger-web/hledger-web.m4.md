@@ -84,6 +84,8 @@ Flags:
      --socket=SOCKET        listen on the given unix socket instead of an IP
                             address and port (unix only; implies --serve)
      --base-url=BASEURL     set the base url (default: http://IPADDR:PORT)
+     --all-time             open the journal and the registers on all their
+                            transactions, rather than this month's
      --css=FILE             add this stylesheet to every page, after
                             hledger-web's own, to change the look; it is read
                             again when it changes
@@ -159,11 +161,19 @@ hledger-web's main views are:
   and cashflow statement, linked from the sidebar, and the balance sheet with equity and
   the general balance report, linked from those.
 
+The journal and register views open on the current month, named in a band at the top
+between arrows to the month before and the month after; the journal's band also says how much
+the month's entries spent and earned (the total of their postings to expense accounts, and to
+income accounts, by [account type](hledger.md#account-types)).
+A search shows all the transactions it matches, and a date in it (eg `date:2026`) chooses the
+period instead; so does a `period` parameter in the URL, a period expression such as `2026-10`,
+or `all` for all dates. With `--all-time`, they open on all dates, as they did before.
+
 The journal and register views show the newest 1000 matching transactions, with links to the older
 and newer pages and to pages by number, so that a page stays a reasonable size
 however large the journal is (a `page` parameter in the URL names the page).
-When the matching transactions span more than one year, a row of years above the table
-links to each year's transactions; "All" widens the view again.
+When the matching transactions span more than one year, or a month is shown, a row of years
+above the table links to each year's transactions; "All" widens the view to all dates.
 When they span more than twenty years, the years are shown one row per decade.
 
 In the journal and register views, account names are shown without their top level

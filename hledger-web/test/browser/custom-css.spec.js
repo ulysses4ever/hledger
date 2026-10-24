@@ -26,7 +26,7 @@ test.beforeAll(async () => {
     '.journal-heading { letter-spacing: 3px; }',
   ].join('\n'));
   ({ child: server, url: URL } = await startServer(
-    ['-f', journal, '--serve', '--host', '127.0.0.1', '--port', '0', '--css', path.join(tmpdir, 'custom.css')]));
+    ['-f', journal, '--serve', '--host', '127.0.0.1', '--port', '0', '--all-time', '--css', path.join(tmpdir, 'custom.css')]));
 });
 
 test.afterAll(() => {

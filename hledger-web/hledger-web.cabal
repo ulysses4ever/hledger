@@ -70,6 +70,7 @@ extra-source-files:
     templates/journal.hamlet
     templates/manage.hamlet
     templates/paging.hamlet
+    templates/period-band.hamlet
     templates/register.hamlet
     templates/upload-form.hamlet
     templates/years.hamlet
@@ -119,6 +120,7 @@ library
       Hledger.Web.WebOptions
       Hledger.Web.Widget.AddForm
       Hledger.Web.Widget.Common
+      Hledger.Web.Widget.Period
   other-modules:
       Paths_hledger_web
   autogen-modules:

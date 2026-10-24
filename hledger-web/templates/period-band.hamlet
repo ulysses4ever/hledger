@@ -1,0 +1,12 @@
+<div .period-band>
+  $maybe prev <- mprev
+    <a .period-prev href=@?{prev} title=#{tr trs "Show the period before"} aria-label=#{tr trs "Show the period before"}>‹
+  $nothing
+    <span .period-prev>
+  <div .period-mid>
+    <div .period-name>#{label}
+    ^{below}
+  $maybe next <- mnext
+    <a .period-next href=@?{next} title=#{tr trs "Show the period after"} aria-label=#{tr trs "Show the period after"}>›
+  $nothing
+    <span .period-next>

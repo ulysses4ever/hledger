@@ -26,7 +26,7 @@ test.beforeAll(async () => {
     day.setUTCDate(day.getUTCDate() + 1);
   }
   fs.writeFileSync(journal, entries.join('\n'));
-  ({ child: server, url: URL } = await startServer(['-f', journal, '--serve', '--host', '127.0.0.1', '--port', '0']));
+  ({ child: server, url: URL } = await startServer(['-f', journal, '--serve', '--host', '127.0.0.1', '--port', '0', '--all-time']));
 });
 
 test.afterAll(() => {

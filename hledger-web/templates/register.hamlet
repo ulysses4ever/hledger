@@ -1,7 +1,9 @@
 <h2>
   #{header}
 
-^{yearsRow trs RegisterR qparam years}
+^{periodBand trs RegisterR qparam accumParams shown noBelow}
+
+^{yearsRow trs RegisterR qparam yearParams (isAllTime shown) years}
 ^{pagingLinks trs RegisterR qparam page}
 
 <div>

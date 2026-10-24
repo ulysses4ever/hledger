@@ -4,6 +4,9 @@ $# given with --css can rearrange them with the order property.
   <h2 .journal-heading>
     #{title'}
 
+  <div .journal-period>
+    ^{periodBand trs JournalR qparam noParams shown totals}
+
   <div .journal-actions>
     $if elem AddPermission perms
       <a #addformlink .btn .btn-default href=@{AddR} role="button"
@@ -17,7 +20,7 @@ $# given with --css can rearrange them with the order property.
       _{HMsg "Show both sides"}
 
   <div .journal-years>
-    ^{yearsRow trs JournalR qparam years}
+    ^{yearsRow trs JournalR qparam yearParams (isAllTime shown) years}
   <div .journal-paging-top>
     ^{pagingLinks trs JournalR qparam page}
 

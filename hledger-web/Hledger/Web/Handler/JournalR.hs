@@ -19,6 +19,7 @@ import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
             (accountNameAsHtml, accountQuery, mixedAmountAsHtml,
              transactionFragment, replaceInacct, journalDayQuery)
+import Hledger.Web.Widget.Period (isAllTime, pagePeriod, periodBand, periodQuery)
 
 -- | The formatted journal view, with sidebar.
 getJournalR :: Handler Html
@@ -30,6 +31,12 @@ getJournalR = do
   -- The journal shows each entry single-sided unless "Show both sides" was
   -- ticked, which hledger.js remembers in this cookie.
   bothSides <- (== Just "1") . lookup "journalbothsides" . reqCookies <$> getRequest
+  -- The period shown: the search's dates, or the period parameter, or this
+  -- month (see pagePeriod).
+  mperiod <- lookupGetParam "period"
+  shown <- case pagePeriod today (alltime_ opts) qparam q mperiod of
+    Right p -> return p
+    Left err -> PeriodAll <$ setMessage (toHtml $ "Could not parse the period: " <> T.pack err)
   let title = case inAccount qopts of
         Nothing         -> tr trs "General Journal"
         Just (a, True)  -> trf trs "Transactions in {account}" [("account", a)]
@@ -38,16 +45,40 @@ getJournalR = do
       -- An account's register, opened on the page holding this transaction.
       acctlink a t = (RegisterR, [("q", replaceInacct qparam $ accountQuery a), ("txn", T.pack $ show $ tindex t)])
       q' = filterQuery (not . queryIsDepth) q
-      rspec = (reportspec_ $ cliopts_ opts){_rsQuery = q'}
+      -- the search, and the period's dates if they are not the search's own
+      qp | filterQuery queryIsDateOrDate2 q' /= Any = q'
+         | otherwise = simplifyQuery $ And [q', periodQuery shown]
+      rspec = (reportspec_ $ cliopts_ opts){_rsQuery = qp}
       -- The matching transactions, newest first; this page shows one page of them.
       alltxns = reverse $
         styleAmounts (journalCommodityStylesWith HardRounding j) $
         entriesReport rspec j
       (page, items) = pageOf pagereq tindex alltxns
-      -- The years the search matches in, ignoring any date term in it.
+      -- The years the search matches in, ignoring its dates and the period's.
       years = map tdate $
-        maybe alltxns (\dq -> entriesReport rspec{_rsQuery = filterQuery (not . queryIsDepth) dq} j) $
-        datelessQuery today qparam
+        entriesReport rspec{_rsQuery = maybe q' (filterQuery (not . queryIsDepth)) $ datelessQuery today qparam} j
+      -- How much the period's entries spent and earned: their postings to
+      -- expense accounts, and to revenue accounts, by account type.
+      atype = journalAccountType j
+      typeTotal ty = sumPostings [p | t <- alltxns, p <- tpostings t, maybe False (`isAccountSubtypeOf` ty) $ atype (paccount p)]
+      spent = typeTotal Expense
+      earned = maNegate $ typeTotal Revenue
+      oneLine = wbToText . showMixedAmountB oneLineNoCostFmt{displayZeroCommodity = True}
+      -- the period band, with the totals under it
+      -- TRANSLATORS: under the period at the top of the journal, as in
+      -- "spent $120.00 · earned $3,200.00": the total of its expenses, and
+      -- of its income.
+      totals = [hamlet|
+        <div .period-totals>
+          <span .totals-label>#{tr trs "spent"} #
+          <span .amount .spent>#{oneLine spent}
+          \ · #
+          <span .totals-label>#{tr trs "earned"} #
+          <span .amount .earned>#{oneLine earned}
+        |]
+      noParams = []
+      -- While the default is a month, the all-years link asks for all dates.
+      yearParams = [("period", "all") | not (alltime_ opts)]
       transactionFrag = transactionFragment j
       -- Is this a posting the money came from, its amounts all negative ?
       -- Single-sided, the journal shows those accounts on a line of their

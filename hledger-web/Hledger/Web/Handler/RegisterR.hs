@@ -25,6 +25,7 @@ import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
              (accountNameAsHtml, accountQuery, accountOnlyQuery, mixedAmountAsHtml,
               transactionFragment, removeDates, removeInacct, replaceInacct, journalDayQuery)
+import Hledger.Web.Widget.Period (isAllTime, pagePeriod, periodBand, periodQuery)
 
 -- | The main journal/account register view, with accounts sidebar.
 getRegisterR :: Handler Html
@@ -38,6 +39,12 @@ getRegisterR = do
   -- so that the balance ends on the figure clicked.
   historical <- (== Just "historical") <$> lookupGetParam "accum"
   pagereq <- pageRequest
+  -- The period shown: the search's dates, or the period parameter, or this
+  -- month (see pagePeriod).
+  mperiod <- lookupGetParam "period"
+  shown <- case pagePeriod today (alltime_ opts) qparam q mperiod of
+    Right p -> return p
+    Left err -> PeriodAll <$ setMessage (toHtml $ "Could not parse the period: " <> T.pack err)
 
   let title = case inAccount qopts of
         Nothing         -> tr trs "all accounts"
@@ -66,11 +73,14 @@ getRegisterR = do
           fitAccountNames 40 . nub . map paccount . preferReal . otherTransactionAccounts j displayq acctQuery
       displayq = if isJust (inAccount qopts) then filterQuery (not . queryIsType) q else q
       styles = journalCommodityStylesWith HardRounding j
+      -- the search, and the period's dates if they are not the search's own
+      qp | filterQuery queryIsDateOrDate2 q /= Any = q
+         | otherwise = simplifyQuery $ And [q, periodQuery shown]
       -- The matching transactions, newest first, and the balance brought
       -- forward from before them; this page shows one page of them.
       (startbal, allitems) =
         bimap (styleAmounts styles) (styleAmounts styles) $
-        accountTransactionsReportWithStart rspec{_rsQuery=q} j acctQuery
+        accountTransactionsReportWithStart rspec{_rsQuery=qp} j acctQuery
       (page, items) = pageOf pagereq (tindex . triOrigTransaction) allitems
       -- The brought-forward row is older than every transaction, so it
       -- ends the last page.
@@ -80,8 +90,7 @@ getRegisterR = do
       -- against each posting's date, so a transaction with postings dated in
       -- two years is counted once and shown in both.
       years = map triDate $
-        maybe allitems (\dq -> accountTransactionsReport rspec{_rsQuery = dq} j acctQuery) $
-        datelessQuery today qparam
+        accountTransactionsReport rspec{_rsQuery = fromMaybe q $ datelessQuery today qparam} j acctQuery
       balancelabel
         | historical               = trc trs "column heading" "Historical Total"
         | isJust (inAccount qopts) = trc trs "column heading" "Period Total"
@@ -96,7 +105,7 @@ getRegisterR = do
       -- before the period: those before the start date by the kind of
       -- date (primary or secondary) the report took it from, as the
       -- report chooses the balance's cutoff.
-      mstart = asum [ (,) secondary <$> queryStartDate secondary q
+      mstart = asum [ (,) secondary <$> queryStartDate secondary qp
                     | secondary <- [date2_ ropts, not $ date2_ ropts] ]
       broughtForwardLink (secondary, start) =
         (RegisterR, [("q", T.unwords $
@@ -104,6 +113,10 @@ getRegisterR = do
           [(if secondary then "date2:.." else "date:..") <> showDate start] ++
           removeDates (T.unwords $ removeInacct qparam))])
       transactionFrag = transactionFragment j
+      -- The year links keep this register's mode, and while the default
+      -- is a month, the all-years link asks for all dates.
+      yearParams = [("period", "all") | not (alltime_ opts)] ++ accumParams
+      noBelow = const mempty
   defaultLayout $ do
     -- TRANSLATORS: the browser tab title of this page.
     setTitleI (HMsg "register - hledger-web")

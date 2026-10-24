@@ -339,7 +339,11 @@ getViewData = do
     appOpts=opts0@WebOpts{ cliopts_=copts@CliOpts{ reportspec_=rspec@ReportSpec{_rsReportOpts, _rsQuery} } },
     appJournal
   } <- getYesod
-  let today = _rsDay rspec
+  -- Today: the date --today gave, or else this request's, so that a server
+  -- left running moves on with the calendar (to a new month, say).
+  today <- case maybestringopt "today" (rawopts_ copts) of
+    Just _  -> return $ _rsDay rspec
+    Nothing -> liftIO getCurrentDay
   -- the request's language, applied to the options too so that any
   -- report text rendered by hledger-lib matches the page
   trs <- requestTranslations

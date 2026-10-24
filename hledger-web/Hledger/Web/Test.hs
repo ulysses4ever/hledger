@@ -81,8 +81,16 @@ import Hledger.Cli hiding (prognameandversion)
 -- Be cautious - without a [("file", "somepath")], perhaps journalReload could load
 -- the user's default journal.
 --
+-- The journal and registers show all dates here (--all-time), as most of
+-- these tests' journals are dated in the past; 'runTestsByMonth' tests the
+-- default, a month.
 runTests :: String -> [(String,String)] -> Journal -> YesodSpec App -> IO ()
-runTests testsdesc rawopts j tests = do
+runTests testsdesc rawopts = runTestsByMonth testsdesc (("all-time",""):rawopts)
+
+-- | Like 'runTests', with the journal and registers opening on a month, as
+-- they do by default.
+runTestsByMonth :: String -> [(String,String)] -> Journal -> YesodSpec App -> IO ()
+runTestsByMonth testsdesc rawopts j tests = do
   wopts <- rawOptsToWebOpts $ mkRawOpts rawopts
   let yconf = AppConfig{  -- :: AppConfig DefaultEnv Extra
           appEnv = Testing
@@ -1633,3 +1641,93 @@ hledgerWebTest = do
       assertEq "2019 ends the 2010s row" (T.isInfixOf "date%3A2019\"" row2010s) True
       assertEq "2009 is not in the 2010s row" (T.isInfixOf "date%3A2009\"" row2010s) False
       assertEq "2020 is not in the 2010s row" (T.isInfixOf "date%3A2020\"" row2010s) False
+
+  -- The journal and registers open on today's month, with a band naming
+  -- it between links to the months before and after, and on the journal,
+  -- how much its entries spent and earned. Date terms in the search, or a
+  -- period parameter, choose another period; a search shows all dates.
+  runTestsByMonth "hledger-web month view" [("today","2025-02-14")] tj $ do
+
+    yit "opens the journal on today's month, with links to the months before and after" $ do
+      get JournalR
+      statusIs 200
+      htmlAnyContain ".period-name" "February 2025"
+      bodyContains "lunch</td>"
+      bodyNotContains "pay</td>"
+      bodyContains ("<a class=\"period-prev\" href=\"" ++ base ++ "/journal?period=2025-01\"")
+      bodyContains ("<a class=\"period-next\" href=\"" ++ base ++ "/journal?period=2025-03\"")
+
+    yit "totals the month's expenses and income, by account type" $ do
+      get JournalR
+      statusIs 200
+      bodyContains "<span class=\"amount spent\">11</span>"
+      bodyContains "<span class=\"amount earned\">0</span>"
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "period" "2025-01"
+      statusIs 200
+      htmlAnyContain ".period-name" "January 2025"
+      bodyContains "pay</td>"
+      bodyNotContains "lunch</td>"
+      bodyContains "<span class=\"amount spent\">0</span>"
+      bodyContains "<span class=\"amount earned\">100</span>"
+
+    yit "shows all dates with period=all, and for a search" $ do
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "period" "all"
+      statusIs 200
+      htmlAnyContain ".period-name" "All dates"
+      htmlCount ".period-prev[href]" 0
+      bodyContains "pay</td>"
+      bodyContains "lunch</td>"
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "q" "desc:pay"
+      statusIs 200
+      htmlAnyContain ".period-name" "All dates"
+      bodyContains "pay</td>"
+
+    yit "lets a date in the search replace the month, and steps from it without the date term" $ do
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "q" "date:2025-01-05 desc:pay"
+      statusIs 200
+      htmlAnyContain ".period-name" "2025-01-05 (Sun)"
+      bodyContains "pay</td>"
+      bodyContains ("<a class=\"period-next\" href=\"" ++ base ++ "/journal?q=desc%3Apay&amp;period=2025-01-06\"")
+
+    yit "links All in the years row to all dates" $ do
+      get JournalR
+      statusIs 200
+      bodyContains ("<a href=\"" ++ base ++ "/journal?period=all\" title=\"Show all years\">All</a>")
+
+    yit "opens an account's register on today's month too, keeping its account in the links" $ do
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:checking"
+      statusIs 200
+      htmlAnyContain ".period-name" "February 2025"
+      bodyNotContains "pay</td>"
+      bodyContains ("<a class=\"period-prev\" href=\"" ++ base ++ "/register?q=inacct%3Aassets%3Abank%3Achecking&amp;period=2025-01\"")
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:checking"
+        addGetParam "period" "2025-01"
+      statusIs 200
+      bodyContains "pay</td>"
+
+    yit "reports a period it cannot read, and shows all dates" $ do
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "period" "nonsense"
+      statusIs 200
+      bodyContains "Could not parse the period"
+      htmlAnyContain ".period-name" "All dates"
