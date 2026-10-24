@@ -748,15 +748,15 @@ ul {
   }
 }
 
-/* A report's rows of links (to the other reports, the intervals, the
-   balance report's modes) give way to their drop-down lists, side by
-   side, each named above it as a column is: a line or two instead of most
-   of the screen. Only with javascript, which makes picking a choice go to
-   it; without, the rows stay. */
+/* A report's rows of links (to the other reports, a statement's sections,
+   the intervals, the balance report's modes) give way to their drop-down
+   lists, two to a line, each named above it as a column is: a line or two
+   instead of most of the screen. Only with javascript, which makes
+   picking a choice go to it; without, the rows stay. */
 @media screen and (max-width: 767px) {
   .js .report-choices {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px 12px;
     margin-bottom: 15px;
   }
@@ -765,10 +765,8 @@ ul {
   }
   .js .report-choice {
     display: flex;
-    flex: 1 1 8em;
     flex-direction: column;
     min-width: 0;
-    max-width: 100%;
     margin: 0;
     font-weight: normal;
   }

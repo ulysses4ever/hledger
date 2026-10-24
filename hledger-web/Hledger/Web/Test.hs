@@ -906,8 +906,11 @@ hledgerWebTest = do
             ,"    liabilities:card"])
   runTests "hledger-web financial statements" [] tj $ do
 
-    yit "serves the balance sheet, with ending balances, in sections" $ do
-      get BalancesheetR
+    yit "serves the balance sheet, with ending balances, in sections, when asked for all of them" $ do
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "section" "all"
       statusIs 200
       bodyContains "<h2>Balance Sheet 2025-02-06</h2>"
       bodyContains "<tr class=\"section\"><th colspan=\"2\" scope=\"rowgroup\">Assets</th></tr>"
@@ -925,6 +928,51 @@ hledgerWebTest = do
       -- shown as positive amounts, and without inline styles
       bodyNotContains "class=\"amount negative\""
       bodyNotContains "style=\""
+
+    yit "opens the balance sheet on its assets, untitled, with their total as the table's" $ do
+      get BalancesheetR
+      statusIs 200
+      bodyContains "href=\"register?q=inacct:assets:bank:checking+type:A&amp;accum=historical\""
+      bodyNotContains "inacct:liabilities:card"
+      bodyNotContains "<tr class=\"section\">"
+      bodyNotContains "<tr class=\"subtotal\">"
+      bodyContains "<tfoot>"
+      bodyContains "href=\"register?q=type:A+date:2025-01-01..2025-02-07&amp;accum=historical\""
+      bodyNotContains "Net:"
+
+    yit "opens the income statement on its expenses" $ do
+      get IncomestatementR
+      statusIs 200
+      bodyContains "inacct:expenses:food"
+      bodyNotContains "inacct:income:salary"
+
+    yit "shows the section asked for, and links to each section and to all, keeping the period, the mode and the search" $ do
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "section" "liabilities"
+        addGetParam "period" "monthly"
+        addGetParam "accum" "change"
+        addGetParam "q" "card"
+      statusIs 200
+      bodyContains "inacct:liabilities:card"
+      bodyNotContains "inacct:assets:bank:checking"
+      bodyContains "Section:"
+      -- the page's own section needs no parameter
+      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Assets</a>")
+      bodyContains ("class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=liabilities&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Liabilities</a>")
+      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=all&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show every section, and the net total\">All</a>")
+      -- the interval links keep the section
+      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=yearly&amp;q=card&amp;accum=change&amp;section=liabilities\"")
+
+    yit "shows the page's own section for a section it does not have" $ do
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "section" "revenues"
+      statusIs 200
+      bodyContains "inacct:assets:bank:checking"
+      bodyNotContains "inacct:liabilities:card"
 
     yit "serves the multi-period balance sheet, headed by end dates linking to this report" $ do
       request $ do
@@ -970,7 +1018,10 @@ hledgerWebTest = do
       bodyNotContains "<tfoot>"
 
     yit "serves the income statement, with changes, revenues shown positive" $ do
-      get IncomestatementR
+      request $ do
+        setMethod "GET"
+        setUrl IncomestatementR
+        addGetParam "section" "all"
       statusIs 200
       bodyContains "<h2>Income Statement 2025-01-01..2025-02-06</h2>"
       bodyContains ">Revenues</th>"
@@ -984,20 +1035,26 @@ hledgerWebTest = do
         setMethod "GET"
         setUrl IncomestatementR
         addGetParam "accum" "historical"
+        addGetParam "section" "revenues"
       statusIs 200
       bodyContains "<h2>Income Statement 2025-02-06 (Historical Ending Balances)</h2>"
       bodyContains "<input type=\"hidden\" name=\"accum\" value=\"historical\">"
       bodyContains "href=\"register?q=inacct:income:salary+type:R&amp;accum=historical\""
 
-    yit "serves the cashflow statement, with one section and no net total" $ do
+    yit "serves the cashflow statement, its one section untitled, with its total as the table's, and no net total" $ do
       get CashflowR
       statusIs 200
       bodyContains "<h2>Cashflow Statement 2025-01-01..2025-02-06</h2>"
-      bodyContains ">Cash flows</th>"
-      bodyNotContains "<tfoot>"
+      bodyNotContains ">Cash flows</th>"
+      bodyNotContains "Section:"
+      bodyContains "<tfoot>"
+      bodyNotContains "Net:"
 
     yit "serves the balance sheet with equity" $ do
-      get BalancesheetequityR
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetequityR
+        addGetParam "section" "all"
       statusIs 200
       bodyContains "<h2>Balance Sheet With Equity 2025-02-06</h2>"
       bodyContains ">Equity</th>"
@@ -1057,7 +1114,10 @@ hledgerWebTest = do
       bodyContains ("colspan=\"2\"><a href=\"" ++ defbaseurl defhost defport ++ "/incomestatement?q=date%3A2025\" title=\"Show revenues and expenses\">")
 
     yit "shows a statement's account names part by part, leaving out the top level its section names" $ do
-      get BalancesheetR
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "section" "all"
       statusIs 200
       bodyContains "<span class=\"account-name\"><span class=\"top\">assets<span class=\"sep\"><span>:</span></span></span><span class=\"parents\">bank</span><span class=\"sep\"><span>:</span></span><span class=\"leaf\">checking</span></span></a>"
       bodyContains "<span class=\"account-name\"><span class=\"top\">liabilities<span class=\"sep\"><span>:</span></span></span><span class=\"leaf\">card</span></span></a>"

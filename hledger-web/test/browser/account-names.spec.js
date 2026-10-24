@@ -85,7 +85,7 @@ const reportRows = '#main-content tbody td.account a';
 
 test('the statements show account names without the top level their sections name', async ({ page }) => {
   const errors = watchPageErrors(page);
-  expect(await shownNames(page, '/incomestatement', reportRows))
+  expect(await shownNames(page, '/incomestatement?section=all', reportRows))
     .toEqual(expect.arrayContaining(['salary', 'food › dining', 'food › groceries', 'transport › transit']));
   expect(await shownNames(page, '/balancesheet', reportRows)).toContain('bank › checking');
   expect(errors).toEqual([]);
