@@ -56,6 +56,11 @@ getRegisterR = do
         Just (a, True)  -> a
         Just (a, False) -> trf trs "{account} (excluding subaccounts)" [("account", a)]
       header = if q /= Any then trf trs "{title}, filtered" [("title", title)] else title
+      -- An account's own page names it in full in its heading, its parts
+      -- set apart as in the rows, but keeping the top level.
+      headingAccount = case inAccount qopts of
+        Just (a, True) | q == Any -> Just a
+        _ -> Nothing
 
   let rspec0 = reportspec_ (cliopts_ opts)
       ropts = (_rsReportOpts rspec0){balanceaccum_ = if historical then Historical else PerPeriod}

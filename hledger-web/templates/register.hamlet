@@ -1,5 +1,8 @@
-<h2>
-  #{header}
+<h2 .account-heading>
+  $maybe a <- headingAccount
+    ^{accountNameAsHtml a}
+  $nothing
+    #{header}
 
 $# An account's page, as phone money apps show one: its balance at the
 $# end of the period, and under the period, the balance before it and

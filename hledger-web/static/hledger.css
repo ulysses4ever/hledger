@@ -1009,6 +1009,15 @@ a:hover > .account-name > *,
 a:focus > .account-name > * {
   text-decoration: underline;
 }
+/* An account's own page names it in full in its heading, top level
+   included: Liabilities › US › Chase › Slate. */
+.account-heading .account-name .top {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip-path: none;
+}
 
 /*------------------------------------------------------------------------------------------*/
 /* 12. the journal, single-sided */
