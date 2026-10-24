@@ -222,6 +222,11 @@ td.date,
 .report-links .current {
   font-weight: bold;
 }
+/* A report's rows of links come as drop-down lists too (see linksRow),
+   which only a phone shows (section 10). */
+.report-choice {
+  display: none;
+}
 /* The pages row keeps its shape from page to page: the newer and older
    links hold their places when absent, and each page number has a cell
    of its own, so the numbers do not shift when a link or a digit
@@ -740,6 +745,40 @@ ul {
   .input-group-addon,
   .btn {
     font-size: 16px;
+  }
+}
+
+/* A report's rows of links (to the other reports, the intervals, the
+   balance report's modes) give way to their drop-down lists, side by
+   side, each named above it as a column is: a line or two instead of most
+   of the screen. Only with javascript, which makes picking a choice go to
+   it; without, the rows stay. */
+@media screen and (max-width: 767px) {
+  .js .report-choices {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 12px;
+    margin-bottom: 15px;
+  }
+  .js .report-choices > .report-links {
+    display: none;
+  }
+  .js .report-choice {
+    display: flex;
+    flex: 1 1 8em;
+    flex-direction: column;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    font-weight: normal;
+  }
+  .report-choice-name {
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
   }
 }
 

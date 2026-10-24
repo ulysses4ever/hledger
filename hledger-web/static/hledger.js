@@ -109,6 +109,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // A report's choices as drop-down lists, which a phone shows instead of
+  // the rows of links (see linksRow): picking one goes to it. A page
+  // brought back from the history may have a list as it was left, showing
+  // a choice that is not the page's; each is set back to the page's own.
+  var choices = document.querySelectorAll('select[data-navigate]');
+  var resetChoices = function() {
+    choices.forEach(function(s) {
+      s.querySelectorAll('option').forEach(function(o) { o.selected = o.defaultSelected; });
+    });
+  };
+  resetChoices();
+  window.addEventListener('pageshow', function(e) {
+    if (e.persisted) { resetChoices(); }
+  });
+  choices.forEach(function(s) {
+    s.addEventListener('change', function() {
+      if (s.value) { window.location.href = s.value; }
+    });
+  });
+
   // On a phone, the tab bar's Search tab opens the search form, which is
   // out of sight there until asked for, and puts the cursor in it.
   document.querySelectorAll('#tabbar .tab-search').forEach(function(el) {

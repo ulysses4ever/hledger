@@ -31,7 +31,7 @@ import Hledger.Write.Spreadsheet qualified as Spr
 import Hledger.Web.Import
 import Hledger.Web.ReportPage
 import Hledger.Web.WebOptions
-import Hledger.Web.Widget.Common (accountNameHtml, helplink, intervalLinks, removeInacct, reportLinks)
+import Hledger.Web.Widget.Common (accountNameHtml, helplink, intervalLinks, removeInacct, reportChoices, reportLinks)
 
 getBalancesheetR, getBalancesheetequityR, getIncomestatementR, getCashflowR :: Handler Html
 -- TRANSLATORS: the browser tab titles of the statement pages.
@@ -99,8 +99,10 @@ statementPage here tabtitle spec = do
             -- An empty report with zero balances hidden may have them all: look again showing them.
             zerosHidden = hideEmpty && not (noRows $ compoundBalanceReport rspec{_rsReportOpts = ropts{empty_ = True}} j (cbcqueries spec))
         Yesod.toWidget $ H.h2 $ H.toHtml $ withFilter $ cbrTitle cbr
-        Yesod.toWidget $ reportLinks trs here menuParams menu
-        Yesod.toWidget $ intervalLinks trs here accumParams qparam rpSpan rpInterval
+        Yesod.toWidget $ reportChoices
+          [ reportLinks trs here menuParams menu
+          , intervalLinks trs here accumParams qparam rpSpan rpInterval
+          ]
         if empty
           then Yesod.toWidget $ emptyNotice trs zerosHidden (q == Any && rpSpan == nulldatespan)
           -- The sections name the accounts' top levels (Assets, Liabilities,

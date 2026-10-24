@@ -1074,6 +1074,25 @@ hledgerWebTest = do
       bodyContains "<span class=\"account-name\"><span class=\"parents\">assets<span class=\"sep\"><span>:</span></span>bank</span><span class=\"sep\"><span>:</span></span><span class=\"leaf\">checking</span></span></a>"
       bodyContains "<span class=\"account-name\"><span class=\"leaf\">food</span></span></a>"
 
+    yit "offers a report's rows of links as drop-down lists too, the page's own choices selected" $ do
+      get BalancesheetR
+      statusIs 200
+      bodyContains "<span class=\"report-choice-name\">Report</span>"
+      bodyContains "<select class=\"form-control\" data-navigate autocomplete=\"off\">"
+      bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" selected title=\"Show assets, liabilities, and net worth\">Balance sheet</option>")
+      bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/incomestatement\" title=\"Show revenues and expenses\">Income statement</option>")
+      bodyContains "<span class=\"report-choice-name\">Interval</span>"
+      bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly\" title=\"Show a column per month\">Monthly</option>")
+      bodyNotContains "<option value=\"\" selected disabled>"
+
+    yit "selects no choice in a list when the page shows none of them, rather than a wrong one" $ do
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "period" "every 2 months"
+      statusIs 200
+      bodyContains "<option value=\"\" selected disabled></option>"
+
     yit "escapes account names and search terms in the statements" $ do
       get IncomestatementR
       statusIs 200

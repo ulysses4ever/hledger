@@ -9,6 +9,7 @@ module Hledger.Web.Widget.Common
   , accountOnlyQuery
   , balanceReportAsHtml
   , linksRow
+  , reportChoices
   , reportLinks
   , intervalLinks
   , accumulationLinks
@@ -113,8 +114,23 @@ balanceReportAsHtml (journalR, registerR) here reports reportParams hideEmpty tr
 -- Each label and title is a whole phrase, not a word slotted into a
 -- sentence: an adjective that fits one language's sentence does not fit
 -- another's, so a translation cannot be assembled from parts.
+-- The same choices come as a drop-down list too, which a phone shows
+-- instead of the row (see 'reportChoices').
 linksRow :: Text -> [(Text, Text, (r, [(Text, Text)]), Bool)] -> HtmlUrl r
 linksRow rowlabel items = $(hamletFile "templates/balance-links.hamlet")
+  where
+    -- The list's label goes above it, where a field's label has no colon.
+    choicename = T.dropWhileEnd (`elem` (":\65306 " :: String)) rowlabel
+    nonecurrent = not $ or [current | (_, _, _, current) <- items]
+
+-- | A report page's rows of links ('reportLinks', 'intervalLinks',
+-- 'accumulationLinks'), together. On a phone, with javascript, the rows
+-- give way to their drop-down lists, side by side, which take a line or
+-- two where the rows took most of the screen (see hledger.css and
+-- hledger.js); elsewhere the rows show, and the lists do not.
+reportChoices :: [HtmlUrl r] -> HtmlUrl r
+reportChoices rows render =
+  H.div ! A.class_ "report-choices" $ mapM_ ($ render) rows
 
 -- | Links to the report pages, given as route, label, and title,
 -- keeping the given parameters; the page being shown is marked.

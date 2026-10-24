@@ -2,3 +2,11 @@
   #{rowlabel}
   $forall (label, title, link, current) <- items
     <a href=@?{link} :current:.current title=#{title}>#{label}
+$# The same choices as a drop-down list; picking one goes to it (hledger.js).
+<label .report-choice>
+  <span .report-choice-name>#{choicename}
+  <select .form-control data-navigate autocomplete=off>
+    $if nonecurrent
+      <option value="" selected disabled>
+    $forall (label, title, link, current) <- items
+      <option value=@?{link} :current:selected title=#{title}>#{label}
