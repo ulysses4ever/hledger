@@ -125,3 +125,19 @@ test('on a phone, a report row wraps an account name that does not fit, after a 
   expect(r.past).toBeLessThanOrEqual(0);
   expect(errors).toEqual([]);
 });
+
+test('on a wider screen, a report row keeps an account name on one line, the table scrolling instead', async ({ page }) => {
+  const errors = watchPageErrors(page);
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/balance');
+  const lines = await page.evaluate(() => {
+    // a table too narrow for its names, as when a long total row takes the width
+    document.querySelector('#main-content .report-table').style.width = '150px';
+    const link = [...document.querySelectorAll('#main-content tbody td.account a')]
+      .find(a => a.textContent === 'expenses:food:groceries');
+    const name = link.querySelector('.account-name');
+    return Math.round(name.getBoundingClientRect().height / name.querySelector('.leaf').getBoundingClientRect().height);
+  });
+  expect(lines).toBe(1);
+  expect(errors).toEqual([]);
+});

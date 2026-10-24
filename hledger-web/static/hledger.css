@@ -1023,7 +1023,7 @@ a:focus > .account-name > * {
 }
 /* In a report's table and in the sidebar, a name is laid out as its text
    alone would be, the column or the sidebar fitting it rather than it
-   them: it wraps where the cell's text may, which on a phone is at any
+   them: on a phone it wraps where the cell's text may, which is at any
    point (see section 10), but rather after a › than before it; and the
    sidebar cuts it short at its end. */
 .balancereport td.account .account-name,
@@ -1039,6 +1039,14 @@ a:focus > .account-name > * {
 .balancereport td.account .account-name .sep::before,
 #sidebar-menu .account-name .sep::before {
   content: "\A0\203A\20";
+}
+/* On a wider screen a report's names do not wrap, as they did not when
+   their parts were joined by colons: the table makes room for them, or
+   scrolls sideways, rather than giving a long total row the width. */
+@media screen and (min-width: 768px) {
+  .balancereport td.account {
+    white-space: nowrap;
+  }
 }
 
 /*------------------------------------------------------------------------------------------*/
