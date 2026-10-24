@@ -31,7 +31,7 @@ import Hledger.Write.Spreadsheet qualified as Spr
 import Hledger.Web.Import
 import Hledger.Web.ReportPage
 import Hledger.Web.WebOptions
-import Hledger.Web.Widget.Common (helplink, intervalLinks, removeInacct, reportLinks)
+import Hledger.Web.Widget.Common (accountNameHtml, helplink, intervalLinks, removeInacct, reportLinks)
 
 getBalancesheetR, getBalancesheetequityR, getIncomestatementR, getCashflowR :: Handler Html
 -- TRANSLATORS: the browser tab titles of the statement pages.
@@ -103,7 +103,9 @@ statementPage here tabtitle spec = do
         Yesod.toWidget $ intervalLinks trs here accumParams qparam rpSpan rpInterval
         if empty
           then Yesod.toWidget $ emptyNotice trs zerosHidden (q == Any && rpSpan == nulldatespan)
-          else Yesod.toWidget $ reportTable [header] sections cbrpNetRows
+          -- The sections name the accounts' top levels (Assets, Liabilities,
+          -- ...), so the names leave them out, as the journal's do.
+          else Yesod.toWidget $ reportTable (accountNameHtml True) [header] sections cbrpNetRows
 
 -- | What an empty statement shows instead of a table: that its accounts
 -- all have zero balances, which are hidden; or, for the whole journal,

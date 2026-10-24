@@ -1056,10 +1056,28 @@ hledgerWebTest = do
       statusIs 200
       bodyContains ("colspan=\"2\"><a href=\"" ++ defbaseurl defhost defport ++ "/incomestatement?q=date%3A2025\" title=\"Show revenues and expenses\">")
 
+    yit "shows a statement's account names part by part, leaving out the top level its section names" $ do
+      get BalancesheetR
+      statusIs 200
+      bodyContains "<span class=\"account-name\"><span class=\"top\">assets<span class=\"sep\"><span>:</span></span></span><span class=\"parents\">bank</span><span class=\"sep\"><span>:</span></span><span class=\"leaf\">checking</span></span></a>"
+      bodyContains "<span class=\"account-name\"><span class=\"top\">liabilities<span class=\"sep\"><span>:</span></span></span><span class=\"leaf\">card</span></span></a>"
+
+    yit "shows the balance report's account names part by part, in full" $ do
+      get BalanceR
+      statusIs 200
+      bodyContains "href=\"register?q=inacct:assets:bank:checking\" title=\"Show transactions affecting this account and subaccounts\"><span class=\"account-name\"><span class=\"parents\">assets<span class=\"sep\"><span>:</span></span>bank</span><span class=\"sep\"><span>:</span></span><span class=\"leaf\">checking</span></span></a>"
+
+    yit "shows the sidebar's account names part by part, in full" $ do
+      get JournalR
+      statusIs 200
+      -- the sidebar's tree names assets:bank:checking in one row, its parents having nothing else in them
+      bodyContains "<span class=\"account-name\"><span class=\"parents\">assets<span class=\"sep\"><span>:</span></span>bank</span><span class=\"sep\"><span>:</span></span><span class=\"leaf\">checking</span></span></a>"
+      bodyContains "<span class=\"account-name\"><span class=\"leaf\">food</span></span></a>"
+
     yit "escapes account names and search terms in the statements" $ do
       get IncomestatementR
       statusIs 200
-      bodyContains "title=\"Show transactions affecting this account and subaccounts\">expenses:snacks&lt;i&gt;x</a>"
+      bodyContains "<span class=\"leaf\">snacks&lt;i&gt;x</span></span></a>"
       bodyNotContains "snacks<i>x"
       request $ do
         setMethod "GET"

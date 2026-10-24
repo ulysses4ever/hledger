@@ -956,20 +956,23 @@ ul {
 }
 
 /*------------------------------------------------------------------------------------------*/
-/* 11. account names in the journal and the register */
+/* 11. account names */
 
-/* An account name (see accountNameAsHtml) is shown without its top level
-   when it has other parts: utilities › phone rather than
-   expenses:utilities:phone. The full name is the link's title, and the top
-   level and the colons are still in the text, out of sight, so that a
-   screen reader, or a name pasted into a field, has the real one (pasted
-   where lines can break, its parts come on lines of their own, being flex
-   items). The other parents are set back from the leaf, in a muted color,
-   and › stands between the parts. When there is not room for the whole
-   name, the parents give way first, cut short with an ellipsis; the leaf
-   is never cut, and wraps if it alone does not fit. A name underlines
-   under the pointer, as other links do, though its parts, as flex items,
-   do not inherit that. */
+/* In the journal, the register and the statements (whose sections name
+   the top levels), an account name (see accountNameAsHtml) is shown
+   without its top level when it has other parts: utilities › phone rather
+   than expenses:utilities:phone. The sidebar and the balance report, where
+   nothing names the top levels, show every part (wholeAccountNameAsHtml).
+   The top level and the colons are still in the text, out of sight, so
+   that a screen reader, or a name pasted into a field, has the real one
+   (pasted where lines can break, its parts come on lines of their own,
+   being flex items); in the journal and the register, the full name is
+   also the link's title. The other parents are set back from the leaf, in
+   a muted color, and › stands between the parts. When there is not room
+   for the whole name, the parents give way first, cut short with an
+   ellipsis; the leaf is never cut, and wraps if it alone does not fit. A
+   name underlines under the pointer, as other links do, though its parts,
+   as flex items, do not inherit that. */
 .account-name {
   display: inline-flex;
   max-width: 100%;
@@ -1017,6 +1020,25 @@ a:focus > .account-name > * {
   height: auto;
   overflow: visible;
   clip-path: none;
+}
+/* In a report's table and in the sidebar, a name is laid out as its text
+   alone would be, the column or the sidebar fitting it rather than it
+   them: it wraps where the cell's text may, which on a phone is at any
+   point (see section 10), but rather after a › than before it; and the
+   sidebar cuts it short at its end. */
+.balancereport td.account .account-name,
+#sidebar-menu .account-name {
+  display: inline;
+}
+.balancereport td.account .account-name .parents,
+.balancereport td.account .account-name .sep,
+#sidebar-menu .account-name .parents,
+#sidebar-menu .account-name .sep {
+  white-space: inherit;
+}
+.balancereport td.account .account-name .sep::before,
+#sidebar-menu .account-name .sep::before {
+  content: "\A0\203A\20";
 }
 
 /*------------------------------------------------------------------------------------------*/

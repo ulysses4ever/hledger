@@ -14,6 +14,8 @@ module Hledger.Web.Widget.Common
   , accumulationLinks
   , helplink
   , accountNameAsHtml
+  , wholeAccountNameAsHtml
+  , accountNameHtml
   , mixedAmountAsHtml
   , fromFormSuccess
   , writeJournalTextIfValidAndChanged
@@ -178,19 +180,35 @@ accountOnlyQuery = ("inacctonly:" <>) . quoteIfSpaced
 -- separators as it likes. The text is still the whole name, colons
 -- included, so that copying it, or a screen reader, still gets the name.
 accountNameAsHtml :: AccountName -> HtmlUrl a
-accountNameAsHtml a _ =
+accountNameAsHtml a _ = accountNameHtml True a
+
+-- | An account name as html with every part of it shown, for where nothing
+-- around it names its top level, such as the sidebar: like
+-- 'accountNameAsHtml', but with no "top" span, the top level being one of
+-- the parents.
+wholeAccountNameAsHtml :: AccountName -> HtmlUrl a
+wholeAccountNameAsHtml a _ = accountNameHtml False a
+
+-- | An account name as html, in the spans described at 'accountNameAsHtml':
+-- with its top level in a span of its own if the flag is set, otherwise
+-- with every part but the leaf among the parents.
+accountNameHtml :: Bool -> AccountName -> Html
+accountNameHtml topApart a =
   H.span ! A.class_ "account-name" $
     case accountNameComponents a of
-      top : rest@(_ : _) -> do
+      top : rest@(_ : _) | topApart -> do
         H.span ! A.class_ "top" $ toHtml top >> sep
-        let (leaf : rparents) = reverse rest
-        unless (null rparents) $ do
-          H.span ! A.class_ "parents" $ sequence_ $ intersperse sep $ map toHtml $ reverse rparents
-          sep
-        H.span ! A.class_ "leaf" $ toHtml leaf
+        parentsAndLeaf rest
+      parts@(_ : _ : _) -> parentsAndLeaf parts
       _ -> H.span ! A.class_ "leaf" $ toHtml a
   where
     sep = H.span ! A.class_ "sep" $ H.span ":"
+    parentsAndLeaf parts = do
+      let (leaf : rparents) = reverse parts
+      unless (null rparents) $ do
+        H.span ! A.class_ "parents" $ sequence_ $ intersperse sep $ map toHtml $ reverse rparents
+        sep
+      H.span ! A.class_ "leaf" $ toHtml leaf
 
 mixedAmountAsHtml :: MixedAmount -> HtmlUrl a
 mixedAmountAsHtml b _ =

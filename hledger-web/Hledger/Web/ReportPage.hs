@@ -38,7 +38,8 @@ import Hledger.Cli.Anchor (dateTerm, renderPeriodHeading)
 import Hledger.Web.Widget.Common (removeDates)
 import Hledger.Query qualified as Query
 import Hledger.Write.Html (Html, formatCell, nl)
-import Hledger.Write.Spreadsheet (Cell(..), NumLines)
+import Hledger.Write.Spreadsheet (Cell(..), NumLines, Style(..))
+import Hledger.Write.Spreadsheet qualified as Spr
 
 -- | A report page's parameters, resolved.
 data ReportParams = ReportParams {
@@ -171,14 +172,18 @@ relinkDateHeaders trs heading link = go
 -- subtotal rows), then the total rows as the table's footer. It scrolls
 -- sideways within the page when it is wider (see .report-table in
 -- hledger.css; bootstrap's .table-responsive does that only on a phone).
+-- The rows' account names, which are full names (the pages' reports are
+-- lists, not trees), are shown by the given function, such as
+-- 'accountNameHtml'; the other cells, and the subtotal and total rows'
+-- headings, are shown as they are.
 reportTable ::
-  [[Cell NumLines Text]] -> [(Maybe Text, [[Cell NumLines Text]], [[Cell NumLines Text]])] -> [[Cell NumLines Text]] -> Html
-reportTable header sections footer =
+  (Text -> Html) -> [[Cell NumLines Text]] -> [(Maybe Text, [[Cell NumLines Text]], [[Cell NumLines Text]])] -> [[Cell NumLines Text]] -> Html
+reportTable accountHtml header sections footer =
   H.div ! A.class_ "table-responsive report-table" $
     H.table ! A.class_ "balancereport table table-condensed" $ do
-      H.thead $ rows Nothing header
+      H.thead $ rows Nothing H.toHtml header
       traverse_ section sections
-      unless (null footer) $ H.tfoot $ rows Nothing footer
+      unless (null footer) $ H.tfoot $ rows Nothing H.toHtml footer
   where
     ncols = maybe 1 length $ listToMaybe header
     section (mtitle, body, subtotals) =
@@ -186,7 +191,11 @@ reportTable header sections footer =
         for_ mtitle $ \t ->
           H.tr ! A.class_ "section" $
             H.th ! A.colspan (H.toValue ncols) ! H.customAttribute "scope" "rowgroup" $ H.toHtml t
-        rows Nothing body
-        rows (Just "subtotal") subtotals
-    rows mcls = traverse_ $ \r ->
-      maybe id (\cls -> (! A.class_ cls)) mcls H.tr (traverse_ (formatCell . fmap H.toHtml) r) <> nl
+        rows Nothing accountHtml body
+        rows (Just "subtotal") H.toHtml subtotals
+    rows mcls acctHtml = traverse_ $ \r ->
+      maybe id (\cls -> (! A.class_ cls)) mcls H.tr (traverse_ (formatCell . cellHtml acctHtml) r) <> nl
+    cellHtml acctHtml c
+      | isAccountCell c = fmap acctHtml c
+      | otherwise       = fmap H.toHtml c
+    isAccountCell c = cellStyle c /= Head && Spr.textFromClass (cellClass c) == "account"

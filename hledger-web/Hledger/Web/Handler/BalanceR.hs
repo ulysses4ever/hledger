@@ -17,7 +17,7 @@ import Hledger.Utils.I18n (tr, trf)
 import Hledger.Web.Import
 import Hledger.Web.ReportPage
 import Hledger.Web.WebOptions
-import Hledger.Web.Widget.Common (accumulationLinks, intervalLinks, removeInacct, reportLinks)
+import Hledger.Web.Widget.Common (accountNameHtml, accumulationLinks, intervalLinks, removeInacct, reportLinks)
 
 
 -- | The balance or multi-period balance view, with sidebar.
@@ -79,7 +79,8 @@ getBalanceR = do
         Yesod.toWidget $ reportLinks trs BalanceR menuParams $ reportLinkItems reportMenu
         Yesod.toWidget $ accumulationLinks trs BalanceR (periodParams ++ qParams) accum
         Yesod.toWidget $ intervalLinks trs BalanceR accumParams qparam rpSpan rpInterval
-        Yesod.toWidget $ reportTable header [(Nothing, body, [])] totals
+        -- Nothing here names the accounts' top levels, so the names keep them.
+        Yesod.toWidget $ reportTable (accountNameHtml False) header [(Nothing, body, [])] totals
 
 -- | The heading for a report: --title if one was given, otherwise the
 -- given default.
