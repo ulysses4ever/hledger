@@ -38,6 +38,9 @@
   --dialog-border: rgba(0, 0, 0, .2);
   --add-button: #2e6da4;         /* the round add button on a phone */
   --add-button-text: #fff;
+  --tabbar: #f8f9fa;             /* the tab bar at the foot of a phone's screen */
+  --tabbar-rule: #dfe3e8;
+  --tab-current: #2e6da4;        /* the tab of the page shown */
   --account-parents: #5f6b7a;    /* an account name's parents, set back from its leaf */
   --band: #f2f4f6;               /* the period band at the top of the journal and registers */
   --income: #2e7d32;             /* money earned */
@@ -96,6 +99,9 @@
     --dialog-border: var(--border);
     --add-button: var(--link);
     --add-button-text: var(--bg);
+    --tabbar: var(--surface);
+    --tabbar-rule: var(--rule);
+    --tab-current: var(--link);
     --account-parents: #98a2ae;
     --band: #262a31;
     --income: #81c995;
@@ -289,12 +295,6 @@ td.date,
 /* The add form shown on a page of its own, after a submission was rejected. */
 .add-page {
   margin-top: 1em;
-}
-
-/* The round add button in the corner of the screen is for phones, where it
-   stands in for the journal's "Add a transaction" button (section 10). */
-#addbutton {
-  display: none;
 }
 
 /*------------------------------------------------------------------------------------------*/
@@ -873,37 +873,10 @@ ul {
   }
 }
 
-/* The journal's "Add a transaction" button gives way to a round button in
-   the corner of the screen, in reach of a thumb, which is on every page
-   where adding is allowed. It keeps clear of the screen's edges, and of the
-   home indicator on phones that have one. The page ends with room for it,
-   so that it never covers the last row's amount; while the sidebar is open,
-   it is hidden, rather than cover the sidebar's balances. */
+/* The journal's "Add a transaction" button gives way to the round + in
+   the tab bar (section 16), in reach of a thumb on every page. */
 @media screen and (max-width: 767px) {
   #addformlink {
-    display: none;
-  }
-  #addbutton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    right: 16px;
-    bottom: calc(16px + env(safe-area-inset-bottom));
-    z-index: 1030;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    color: var(--add-button-text);
-    background-color: var(--add-button);
-    box-shadow: 0 3px 9px rgba(0, 0, 0, .3);
-    font-size: 22px;
-    text-decoration: none;
-  }
-  #main-content:has(> #addbutton) {
-    padding-bottom: calc(88px + env(safe-area-inset-bottom));
-  }
-  .row-offcanvas.active #addbutton {
     display: none;
   }
 }
@@ -1264,5 +1237,103 @@ a:focus > .account-name > * {
   }
   .entry-card .entry-memo {
     overflow-wrap: anywhere;
+  }
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 16. the tab bar on a phone */
+
+/* On a phone, a bar of tabs along the foot of the screen, in reach of a
+   thumb, leads to the journal, the accounts (the balance sheet), adding a
+   transaction (a raised round +), the reports (the income statement), and
+   the search form. It stands in for the sidebar, whose toggle button it
+   replaces, and for the journal's add button. The tab of the page shown
+   is marked, in the accent color. The bar keeps clear of the home
+   indicator, and of the rounded corners of phones held sideways, and the
+   page ends with room for it, so that it never covers the last row. At
+   768px and up it is hidden. */
+#tabbar {
+  display: none;
+}
+@media screen and (max-width: 767px) {
+  #tabbar {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1030;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+    border-top: 1px solid var(--tabbar-rule);
+    background-color: var(--tabbar);
+  }
+  #tabbar .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-width: 0;
+    height: 56px;
+    font-size: 12px;
+    line-height: 1.2;
+    color: var(--account-parents);
+    text-decoration: none;
+  }
+  #tabbar .tab[aria-current="page"] {
+    font-weight: 600;
+    color: var(--tab-current);
+  }
+  #tabbar svg {
+    flex: none;
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  #tabbar .tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  #tabbar .tab-add-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-top: -20px;
+    border-radius: 50%;
+    color: var(--add-button-text);
+    background-color: var(--add-button);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, .3);
+  }
+  #tabbar .tab-add-button svg {
+    width: 28px;
+    height: 28px;
+    stroke-width: 2.4;
+  }
+  body:has(#tabbar) {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+  /* The sidebar's toggle button gives way to the tab bar, and the file
+     name has the width of the screen. */
+  #spacer {
+    display: none;
+  }
+  #topbar {
+    width: 100%;
+  }
+  /* The search form is out of sight until the Search tab opens it (or, to
+     hledger.js, the f key), unless a search is in force; without
+     javascript the tab's link targets it. */
+  #searchform:not(.searching, .open, :target, :focus-within) {
+    display: none;
   }
 }

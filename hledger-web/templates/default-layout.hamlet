@@ -49,7 +49,10 @@ $if elem ViewPermission perms
   $maybe m <- msg
     <div #message .alert.alert-info>#{m}
   $if elem ViewPermission perms
-    <form#searchform.input-group method=GET>
+    $# On a phone the search form is out of sight unless a search is in
+    $# force (more than an account's register's own term) or it is asked
+    $# for (the tab bar's Search tab, below).
+    <form#searchform.input-group :searching:.searching method=GET>
       <input .form-control name=q value=#{qparam} placeholder=_{HMsgc "search box" "Search"}
         title=_{HMsg "Enter hledger search patterns to filter the data below"}>
       $forall (name, value) <- keptParams
@@ -67,13 +70,39 @@ $if elem ViewPermission perms
            title=_{HMsg "Show search and general help"}>
           <span .glyphicon .glyphicon-question-sign>
   ^{widget}
-  $# On a phone, a round button in the corner of the screen adds a
-  $# transaction (see hledger.css): in the dialog, on a page that has it,
-  $# otherwise on the add page.
-  $if elem AddPermission perms && not (here == AddR)
-    <a #addbutton href=@{AddR} data-toggle="modal" data-target="#addmodal"
-       title=_{HMsg "Add a transaction"} aria-label=_{HMsg "Add a transaction"}>
-      <span .glyphicon .glyphicon-plus aria-hidden="true">
+
+$# On a phone, a bar of tabs along the foot of the screen (hledger.css
+$# section 16), marking the one for the page shown: the journal; the
+$# accounts (the balance sheet, and the registers); adding a transaction
+$# (in the dialog on a page that has it, otherwise on the add page); the
+$# reports (the income statement); and the search form, which hledger.js
+$# opens and focuses (without javascript, the link shows it).
+$if elem ViewPermission perms
+  <nav #tabbar aria-label=_{HMsgc "tab bar" "Pages"}>
+    <a .tab href=@{JournalR} :onJournal:aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M5 6h14M5 12h14M5 18h14">
+      <span .tab-label>_{HMsgc "tab bar" "Journal"}
+    <a .tab href=@{BalancesheetR} :onAccounts:aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M3 10l9-5 9 5M5 10v8M9 10v8M15 10v8M19 10v8M3 20h18">
+      <span .tab-label>_{HMsgc "tab bar" "Accounts"}
+    $if elem AddPermission perms
+      <a .tab .tab-add href=@{AddR} data-toggle="modal" data-target="#addmodal" :onAdd:aria-current="page"
+         title=_{HMsg "Add a transaction"} aria-label=_{HMsg "Add a transaction"}>
+        <span .tab-add-button>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 5v14M5 12h14">
+    <a .tab href=@{IncomestatementR} :onReports:aria-current="page">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 3v9h9A9 9 0 1 1 12 3z">
+        <path d="M15 3.5A9 9 0 0 1 20.5 9H15z">
+      <span .tab-label>_{HMsgc "tab bar" "Reports"}
+    <a .tab .tab-search href="#searchform" aria-controls="searchform">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="11" cy="11" r="6">
+        <path d="M16 16l5 5">
+      <span .tab-label>_{HMsgc "tab bar" "Search"}
 
 <dialog #helpmodal tabindex=-1 aria-labelledby="helpLabel">
   <div .modal-header>

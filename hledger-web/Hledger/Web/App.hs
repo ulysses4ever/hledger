@@ -206,6 +206,14 @@ instance Yesod App where
         mainShowmd = if showSidebar then "col-md-8" else "col-md-12" :: Text
         mainShowsm = if showSidebar then "col-sm-8" else "col-sm-12" :: Text
 
+        -- The phone's tab bar marks the tab of the page shown; an
+        -- account's register is under Accounts.
+        onJournal = here `elem` [RootR, JournalR]
+        onAccounts = here `elem` [BalancesheetR, BalancesheetequityR, BalanceR, RegisterR]
+        onAdd = here == AddR
+        onReports = here `elem` [IncomestatementR, CashflowR]
+        searching = not $ T.null $ T.unwords $ removeInacct qparam
+
     -- We break up the default layout into two components:
     -- default-layout is the contents of the body tag, and
     -- default-layout-wrapper is the entire page. Since the final

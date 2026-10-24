@@ -109,6 +109,16 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
+  // On a phone, the tab bar's Search tab opens the search form, which is
+  // out of sight there until asked for, and puts the cursor in it.
+  document.querySelectorAll('#tabbar .tab-search').forEach(function(el) {
+    el.addEventListener('click', function(e) {
+      if (!document.getElementById('searchform')) { return; }
+      e.preventDefault();
+      focusSearch();
+    });
+  });
+
   document.querySelectorAll('[data-toggle="offcanvas"]').forEach(function(el) {
     el.addEventListener('click', function() {
       var row = document.querySelector('.row-offcanvas');
@@ -186,8 +196,12 @@ function isoDate() {
   return new Date().toLocaleDateString("sv");  // https://stackoverflow.com/a/58633651/84401
 }
 
+// Focus the search form, opening it first on a phone (see hledger.css).
 function focusSearch() {
-  var q = document.querySelector('#searchform input');
+  var form = document.getElementById('searchform');
+  if (!form) { return; }
+  form.classList.add('open');
+  var q = form.querySelector('input');
   if (q) { q.focus(); }
 }
 

@@ -189,12 +189,16 @@ and multiple commodities are shown one above the other).
 Click an account name to see its register, or an amount to see the transactions it is
 made of. In the journal and register views, click a date to see that day's journal entries.
 
+On a phone, a **tab bar** along the foot of the screen takes the sidebar's place: Journal,
+Accounts (the balance sheet), a round + to add a transaction, Reports (the income statement),
+and Search, which opens the search form, out of sight there until asked for or a search is in force.
+
 The **search form** filters every view with hledger's [query](hledger.md#queries) syntax,
 eg `expenses date:thismonth`; the help dialog summarises the query types.
 The current view and search are reflected in the URL, so views can be bookmarked and shared.
 
 The **add form** (press `a`, or click "Add a transaction" in the journal view,
-or on a phone the round + button in the corner of the screen)
+or on a phone the round + in the tab bar)
 adds a transaction to the main journal file, if the [access level](#permissions) allows it.
 It autocompletes account names and descriptions from your existing entries.
 

@@ -15,15 +15,20 @@ highlighting.
   hard to read in it, and the register chart is drawn again when the scheme changes, and
   for printing.
 - `phone.spec.js` — the pages at a phone's width (#340): none is wider than the
-  screen or scrolls sideways inside, every amount is in view, the journal and register
-  stack their rows and the register leaves out its running balance, account names wrap
-  rather than being cut off, and the add form's fields have room for what they hold.
+  screen or scrolls sideways inside, every amount is in view, the journal (showing both
+  sides) and register stack their rows and the register leaves out its running balance,
+  account names wrap rather than being cut off, and the add form's fields have room for
+  what they hold.
   (`color-scheme.spec.js` checks the dark scheme at a phone's width too.)
 - `account-names.spec.js` — the journal and register show account names without their
   top level, with › between the parts, and keep the full name as the title and the text.
 - `phone-journal.spec.js` — on a phone, the single-sided journal shows each entry as one
   block, as a phone money app does: what it was for and how much, colored by whether it
   was spent or earned; its date and the account paid from or into; its payee and note.
+- `tabbar.spec.js` — on a phone, the tab bar along the foot of the screen: its tabs'
+  names and links, the one for the page shown marked, the + opening the add dialog, Search
+  opening the search form (without javascript too), the page never covered, and no bar on
+  a wide screen.
 - `single-sided.spec.js` — the journal shows each entry single-sided, and both sides when
   the box above it is ticked, a choice kept across pages, and without javascript too.
 - `custom-css.spec.js` — `--css`, an instance's own stylesheet: it applies within the
