@@ -859,8 +859,8 @@ msgstr "Informe:"
 
 #. the label before a report's interval links.
 #: hledger-web/Hledger/Web/Widget/Common.hs
-msgid "Interval:"
-msgstr "Intervalo:"
+msgid "Columns:"
+msgstr "Columnas:"
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs
@@ -869,9 +869,9 @@ msgstr "Mostrar una columna para todo el período"
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs
-msgctxt "interval"
-msgid "None"
-msgstr "Ninguno"
+msgctxt "columns"
+msgid "One"
+msgstr "Una"
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs

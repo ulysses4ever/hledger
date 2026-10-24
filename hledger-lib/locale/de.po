@@ -754,12 +754,12 @@ msgid "Register"
 msgstr "Register"
 
 #. hledger-web: the balance page's interval and accumulation links, and the register's balance mode.
-msgid "Interval:"
-msgstr "Intervall:"
+msgid "Columns:"
+msgstr "Spalten:"
 
-msgctxt "interval"
-msgid "None"
-msgstr "Keins"
+msgctxt "columns"
+msgid "One"
+msgstr "Eine"
 
 msgid "Show one column for the whole period"
 msgstr "Eine Spalte für den ganzen Zeitraum anzeigen"

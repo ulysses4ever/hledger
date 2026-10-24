@@ -858,7 +858,7 @@ msgstr ""
 
 #. the label before a report's interval links.
 #: hledger-web/Hledger/Web/Widget/Common.hs
-msgid "Interval:"
+msgid "Columns:"
 msgstr ""
 
 #. the interval links above a report: each link's text, and its tooltip.
@@ -868,8 +868,8 @@ msgstr ""
 
 #. the interval links above a report: each link's text, and its tooltip.
 #: hledger-web/Hledger/Web/Widget/Common.hs
-msgctxt "interval"
-msgid "None"
+msgctxt "columns"
+msgid "One"
 msgstr ""
 
 #. the interval links above a report: each link's text, and its tooltip.

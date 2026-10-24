@@ -444,7 +444,7 @@ hledgerWebTest = do
       statusIs 200
       bodyContains "<title>Salden - hledger-web</title>"
       bodyContains "<h2>Saldenbericht</h2>"
-      bodyContains "Intervall:"
+      bodyContains "Spalten:"
       bodyContains "title=\"Eine Spalte pro Monat anzeigen\">Monatlich</a>"
 
   runTests "hledger-web with --lang" [("lang","de")] nulljournal $ do
@@ -1141,7 +1141,7 @@ hledgerWebTest = do
       bodyContains "<select class=\"form-control\" data-navigate autocomplete=\"off\">"
       bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" selected title=\"Show assets, liabilities, and net worth\">Balance sheet</option>")
       bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/incomestatement\" title=\"Show revenues and expenses\">Income statement</option>")
-      bodyContains "<span class=\"report-choice-name\">Interval</span>"
+      bodyContains "<span class=\"report-choice-name\">Columns</span>"
       bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly\" title=\"Show a column per month\">Monthly</option>")
       bodyNotContains "<option value=\"\" selected disabled>"
 

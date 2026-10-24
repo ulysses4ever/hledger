@@ -1,5 +1,5 @@
 // Browser tests for a report's choices on a phone: the rows of links above
-// a report (Report, Section, Show, Interval) give way to drop-down lists,
+// a report (Report, Section, Show, Columns) give way to drop-down lists,
 // side by side, and picking a choice goes to it (see linksRow in
 // Widget/Common.hs, section 10 of hledger.css, and hledger.js). Run with:
 // npx playwright test report-choices  (see README.md)
@@ -20,14 +20,14 @@ test.describe('on a phone', () => {
     await expect(lists(page)).toHaveCount(3);
     const [a, b] = [await lists(page).nth(0).boundingBox(), await lists(page).nth(1).boundingBox()];
     expect(Math.abs(a.y - b.y)).toBeLessThan(1);
-    await expect(page.locator('#main-content .report-choice-name')).toHaveText(['Report', 'Section', 'Interval']);
+    await expect(page.locator('#main-content .report-choice-name')).toHaveText(['Report', 'Section', 'Columns']);
     await expect(picked(page, 0)).toHaveText('Balance sheet');
     await expect(picked(page, 1)).toHaveText('Assets');
-    await expect(picked(page, 2)).toHaveText('None');
+    await expect(picked(page, 2)).toHaveText('One');
     expect(errors).toEqual([]);
   });
 
-  test('picking a report or an interval goes to it', async ({ page }) => {
+  test('picking a report or the columns goes to it', async ({ page }) => {
     const errors = watchPageErrors(page);
     await page.goto('/balancesheet');
     await lists(page).nth(0).selectOption({ label: 'Income statement' });
@@ -63,7 +63,7 @@ test.describe('on a phone', () => {
 
   test('the balance report\'s modes are a list too', async ({ page }) => {
     await page.goto('/balance');
-    await expect(page.locator('#main-content .report-choice-name')).toHaveText(['Report', 'Show', 'Interval']);
+    await expect(page.locator('#main-content .report-choice-name')).toHaveText(['Report', 'Show', 'Columns']);
     await lists(page).nth(1).selectOption({ label: 'Ending balances' });
     await expect(page).toHaveURL(/\/balance\?accum=historical$/);
     await expect(picked(page, 1)).toHaveText('Ending balances');
