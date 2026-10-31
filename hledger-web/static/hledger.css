@@ -288,23 +288,24 @@ td.date,
   margin: -5px 0 15px;
 }
 
-/* The date picker button. */
+/* The date picker button, and the date input that lies over it, unseen
+   but the full size of the button, so that a tap or click on the button
+   reaches the real control. */
 #datebutton {
+  position: relative;
   cursor: pointer;
 }
-
-/* The date input that backs the picker button. It must be rendered for
-   showPicker to work, so it is placed under the button rather than hidden.
-   On a phone it is the date field itself (section 10). */
 #datepicked {
   position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 1px;
-  height: 1px;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   padding: 0;
   border: 0;
   opacity: 0;
+  cursor: pointer;
   pointer-events: none;
 }
 
@@ -788,28 +789,6 @@ ul {
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--muted);
-  }
-}
-
-/* On a phone the add form's date is the browser's own date control, which
-   opens the phone's picker when tapped; the text field (still the one
-   submitted, kept in step by hledger.js) and the picker button are hidden. */
-@media screen and (max-width: 767px) {
-  #addform #dateWrap input[name=date],
-  #addform #datebutton {
-    display: none;
-  }
-  #addform #datepicked {
-    position: static;
-    width: 100%;
-    height: auto;
-    padding: 10px 16px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    opacity: 1;
-    font-size: 16px;
-    color: var(--text);
-    background-color: var(--surface);
   }
 }
 

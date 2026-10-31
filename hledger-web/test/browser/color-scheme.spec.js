@@ -84,8 +84,7 @@ const views = {
   // a rejected submission shows the form, with its errors, on a page of its own
   'rejected add': async page => {
     await views['add dialog'](page);
-    // the text field is what is submitted; on a phone it sits hidden behind the date control
-    await page.locator('#addform input[name=date]').evaluate(el => { el.value = 'nonsense'; });
+    await page.locator('#addform input[name=date]').fill('nonsense');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');

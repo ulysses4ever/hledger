@@ -49,15 +49,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   // The date field is a text input, so hledger's smart dates ("today", "2/15")
-  // keep working. The button beside it opens the browser's own calendar, via
-  // the hidden date input, and what you pick is written back as an iso date.
+  // keep working. The unseen date input over the button beside it opens the
+  // browser's own calendar: a phone does that for any tap on it; a desktop
+  // browser opens it only from its own icon, so it is asked to (showPicker,
+  // where there is one). What you pick is written back as an iso date.
   var datebutton = document.getElementById('datebutton');
   var datepicked = document.getElementById('datepicked');
   if (datebutton && datepicked) {
-    datebutton.addEventListener('click', function() {
+    datepicked.addEventListener('click', function() {
       var datefield = document.querySelector('#addform input[name=date]');
       datepicked.value = /^\d{4}-\d{2}-\d{2}$/.test(datefield.value) ? datefield.value : isoDate();
-      if (datepicked.showPicker) { datepicked.showPicker(); }
+      if (datepicked.showPicker && !window.matchMedia('(pointer: coarse)').matches) {
+        try { datepicked.showPicker(); } catch (e) { /* the browser opens it itself */ }
+      }
     });
     datepicked.addEventListener('change', function() {
       var datefield = document.querySelector('#addform input[name=date]');
@@ -213,15 +217,8 @@ function addformFocus() {
   var addform = document.getElementById('addform');
   if (!addform) { return; }
   addform.querySelector('input[name=date]').value = isoDate();
-  // The date control that is the field on a phone starts on today too, and
-  // can be reached there; elsewhere it stays out of the way behind the button.
   var datepicked = document.getElementById('datepicked');
-  if (datepicked) {
-    datepicked.value = isoDate();
-    var phone = window.matchMedia('(max-width: 767px)').matches;
-    datepicked.tabIndex = phone ? 0 : -1;
-    datepicked.setAttribute('aria-hidden', phone ? 'false' : 'true');
-  }
+  if (datepicked) { datepicked.value = isoDate(); }
   addform.querySelectorAll('select[name=account]').forEach(function(sel) {
     var saved = getCookie('addaccount' + sel.dataset.row);
     if (!saved) { return; }

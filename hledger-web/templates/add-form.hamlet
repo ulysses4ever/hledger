@@ -4,13 +4,15 @@
   <div .col-md-3.col-sm-5.col-xs-12 :isJust (fvErrors dateView):.has-error>
     $# The date field stays a text input so that hledger's smart dates
     $# ("today", "2/15") still work. The button opens the browser's own date
-    $# picker, via the hidden date input next to it. On a phone that date
-    $# input is the field itself (see hledger.css and addformFocus).
+    $# picker: an unseen date input lies over the button (see hledger.css),
+    $# so a tap on the button is a tap on the real control, which every
+    $# phone browser answers with its picker; what is picked is written
+    $# back as an iso date (hledger.js).
     <div #dateWrap .form-group.input-group.date>
       ^{fvInput dateView}
-      <input #datepicked type=date tabindex=-1 aria-hidden=true>
       <div #datebutton .input-group-addon title=_{HMsg "Pick a date"}>
         <span .glyphicon .glyphicon-calendar>
+        <input #datepicked type=date tabindex=-1 aria-hidden=true>
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
   <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
