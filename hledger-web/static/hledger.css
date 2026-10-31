@@ -309,6 +309,11 @@ td.date,
   border: 0;
   opacity: 0;
   cursor: pointer;
+  z-index: 1;
+}
+/* The icon never takes the click itself. */
+#datebutton .glyphicon {
+  pointer-events: none;
 }
 
 /* The add form shown on a page of its own, after a submission was rejected. */
