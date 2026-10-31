@@ -920,3 +920,39 @@ msgstr "Alle"
 #, python-brace-format
 msgid "Show only {year}"
 msgstr "Nur {year} anzeigen"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Account"
+msgstr "Konto"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Amount"
+msgstr "Betrag"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Category"
+msgstr "Kategorie"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Subcategory"
+msgstr "Unterkategorie"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgctxt "placeholder"
+msgid "Payee"
+msgstr "Empfänger"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Transfer"
+msgstr "Überweisung"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Add a row"
+msgstr "Zeile hinzufügen"

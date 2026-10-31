@@ -154,6 +154,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  // The add page shows the form outside the dialog; set it up as the
+  // dialog does when it opens.
+  if (addform && !addform.closest('#addmodal')) { addformFocus(); }
+
   entryTooltipInit();
   registerChartInit();
 });
@@ -219,11 +223,18 @@ function addformFocus() {
   addform.querySelector('input[name=date]').value = isoDate();
   var datepicked = document.getElementById('datepicked');
   if (datepicked) { datepicked.value = isoDate(); }
+  addformCategoryInit();
   addform.querySelectorAll('select[name=account]').forEach(function(sel) {
     var saved = getCookie('addaccount' + sel.dataset.row);
     if (!saved) { return; }
     var value = decodeURIComponent(saved);
-    if ([].some.call(sel.options, function(o) { return o.value === value; })) { sel.value = value; }
+    if (sel.dataset.row === '1') {
+      // the category is remembered; the account within it is picked each time
+      var o = addformAccountOptions[0].find(function(o) { return o.value === value; });
+      if (o) { addformSetCategory(o.dataset.category); }
+    } else if ([].some.call(sel.options, function(o) { return o.value === value; })) {
+      sel.value = value;
+    }
   });
   // Deferred, so the field is focusable: http://stackoverflow.com/a/7046837
   setTimeout(function() {
@@ -244,6 +255,44 @@ function focusSearch() {
   if (q) { q.focus(); }
 }
 
+// The first row's account list, narrowed to the category picked beside
+// it: every account until a category is picked, since a phone cannot hide
+// single options, the list is rebuilt from a kept copy of all of them.
+var addformAccountOptions = [];
+function addformCategoryInit() {
+  var category = document.querySelector('#addform .category-select');
+  var account = document.querySelector('#addform select[name=account][data-row="1"]');
+  if (!category || !account) { return; }
+  if (!addformAccountOptions.length) {
+    addformAccountOptions = [[].slice.call(account.options, 1)];
+    category.addEventListener('change', function() { addformSetCategory(category.value); });
+    // an account picked from the full list sets the category beside it
+    account.addEventListener('change', function() {
+      var o = account.options[account.selectedIndex];
+      if (o && o.dataset.category && category.value !== o.dataset.category) {
+        category.value = o.dataset.category;
+        addformSetCategory(o.dataset.category, o.value);
+      }
+    });
+  }
+  var chosen = account.options[account.selectedIndex];
+  category.value = chosen && chosen.dataset.category ? chosen.dataset.category : '';
+  addformSetCategory(category.value, chosen ? chosen.value : '');
+}
+function addformSetCategory(key, keep) {
+  var category = document.querySelector('#addform .category-select');
+  var account = document.querySelector('#addform select[name=account][data-row="1"]');
+  if (!category || !account) { return; }
+  if (category.value !== key) { category.value = key; }
+  var placeholder = account.options[0];
+  var options = addformAccountOptions[0].filter(function(o) { return !key || o.dataset.category === key; });
+  while (account.options.length > 1) { account.remove(1); }
+  options.forEach(function(o) { account.add(o); });
+  if (keep && options.some(function(o) { return o.value === keep; })) { account.value = keep; }
+  else if (key && options.length === 1) { account.value = options[0].value; }
+  else { placeholder.selected = true; account.value = ''; }
+}
+
 // Insert another posting row in the add form.
 function addformAddPosting() {
   var addform = document.getElementById('addform');
@@ -262,6 +311,7 @@ function addformAddPosting() {
   account.value = '';
   account.dataset.row = num;
   amount.value = '';
+
   // The placeholder templates come from the page, in its language.
   var postings = addform.querySelector('.account-postings');
   account.options[0].textContent = (postings.dataset.accountPlaceholder || 'Account {n}').replace('{n}', num);

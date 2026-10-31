@@ -83,12 +83,21 @@ test.describe('add form', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('the first row lists expenses first, the second assets first', async ({ page }) => {
+  test('the first row picks a category, then an account within it; the second row lists assets first', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    const groups = n => page.locator('#addform select[name=account]').nth(n).locator('optgroup').evaluateAll(gs => gs.map(g => g.label));
-    expect(await groups(0)).toEqual(['Expenses', 'Income', 'Assets', 'Equity']);
-    expect(await groups(1)).toEqual(['Assets', 'Equity', 'Expenses', 'Income']);
+    const category = page.locator('#addform .category-select');
+    expect(await category.locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Expenses', 'Income', 'Transfer']);
+    expect(await category.locator('optgroup[label="Expenses"] option').allTextContents()).toEqual(['food', 'transport']);
+    await category.selectOption('expenses:food');
+    const account = page.locator('#addform select[name=account]').nth(0);
+    expect(await account.locator('option').allTextContents()).toEqual(['Subcategory', 'dining', 'dining › xss<script>alert(1)</script>', 'groceries']);
+    await account.selectOption('expenses:food:groceries');
+    // picking from the full list sets the category too
+    await category.selectOption('');
+    await account.selectOption('income:salary');
+    await expect(category).toHaveValue('income:salary');
+    expect(await page.locator('#addform select[name=account]').nth(1).locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Assets', 'Equity', 'Expenses', 'Income']);
   });
 
   // Completion is a native <datalist>. The browser draws its dropdown outside
@@ -98,9 +107,11 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     const first = page.locator('#addform select[name=account]').first();
-    await expect(first.locator('optgroup[label="Expenses"] option[value="expenses:food:dining"]')).toHaveText('food › dining');
-    await expect(first.locator('optgroup[label="Assets"] option[value="assets:bank:checking"]')).toHaveCount(1);
+    // the first row lists every account until a category is picked, each labelled within its category
+    await expect(first.locator('option[value="expenses:food:dining"][data-category="expenses:food"]')).toHaveText('dining');
+    await expect(first.locator('option[value="assets:bank:checking"][data-category="assets"]')).toHaveText('bank › checking');
     await expect(first).toHaveValue('');
+    await expect(page.locator('#addform select[name=account]').nth(1).locator('optgroup[label="Assets"] option[value="assets:bank:checking"]')).toHaveCount(1);
     // the second row starts on the account the books use most
     await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('assets:bank:checking');
     await expect(page.locator('#addform input[name=description]'))
@@ -118,7 +129,10 @@ test.describe('add form', () => {
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#main-content')).toContainText('remembered');
     await openAddForm(page);
-    await expect(page.locator('#addform select[name=account]').nth(0)).toHaveValue('expenses:food:groceries');
+    // the first row remembers the category, and lists its accounts; the second the account itself
+    await expect(page.locator('#addform .category-select')).toHaveValue('expenses:food');
+    await expect(page.locator('#addform select[name=account]').nth(0)).toHaveValue('');
+    expect(await page.locator('#addform select[name=account]').nth(0).locator('option').allTextContents()).toEqual(['Subcategory', 'dining', 'dining › xss<script>alert(1)</script>', 'groceries']);
     await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('equity:opening');
   });
 

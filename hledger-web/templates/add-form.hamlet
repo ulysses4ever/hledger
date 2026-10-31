@@ -12,7 +12,7 @@
       ^{fvInput dateView}
       <div #datebutton .input-group-addon title=_{HMsg "Pick a date"}>
         <span .glyphicon .glyphicon-calendar>
-        <input #datepicked type=date tabindex=-1 aria-hidden=true>
+        <input #datepicked type=date aria-label=_{HMsg "Pick a date"}>
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
   <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
@@ -25,18 +25,35 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
 <div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder}>
   $forall (n, (acc, amt, accE, amtE)) <- displayRows
     <div .form-group .row .account-group>
+      $# Lists to pick from, rather than fields to type in: on a phone typing
+      $# an account name is the hard part of an entry, and the books accept
+      $# no new accounts anyway. The first row picks a category, then an
+      $# account within it (hledger.js narrows the second list to the
+      $# category; until one is picked it lists every account). The second
+      $# row starts on the account the books use most, and hledger.js keeps
+      $# each browser's last choices (see addformFocus).
+      $if n == 1
+        <div .col-xs-12>
+          <select .category-select.form-control.input-lg data-row=#{n} aria-label=_{HMsg "Category"}>
+            <option value="" selected>_{HMsg "Category"}
+            $forall (grp, cats) <- categoryGroups
+              <optgroup label=#{grp}>
+                $forall (key, label, _) <- cats
+                  <option value=#{key}>#{label}
       <div .col-sm-9.col-xs-7 :isJust accE:.has-error>
-        $# A list to pick from, grouped by top-level account, rather than a
-        $# field to type in: on a phone typing an account name is the hard
-        $# part of an entry, and the books accept no new accounts anyway.
-        $# The second row starts on the account the books use most, and
-        $# hledger.js then keeps each browser's last choices (see addformFocus).
         <select .account-input.form-control.input-lg name=account data-row=#{n}>
-          <option value="" :T.null (chosen n acc):selected>#{numbered accountPlaceholder n}
-          $forall (grp, opts) <- accountGroupsFor n
-            <optgroup label=#{grp}>
-              $forall (v, l) <- opts
-                <option value=#{v} :v == chosen n acc:selected>#{l}
+          $if n == 1
+            <option value="" :T.null (chosen n acc):selected>_{HMsg "Subcategory"}
+            $forall (_, cats) <- categoryGroups
+              $forall (key, _, items) <- cats
+                $forall (v, l) <- items
+                  <option value=#{v} data-category=#{key} :v == chosen n acc:selected>#{l}
+          $else
+            <option value="" :T.null (chosen n acc):selected>#{accountLabel n}
+            $forall (grp, opts) <- accountGroupsFor n
+              <optgroup label=#{grp}>
+                $forall (v, l) <- opts
+                  <option value=#{v} :v == chosen n acc:selected>#{l}
         $maybe err <- accE
           <span .help-block .error-block>_{err}
       $# The last row's amount is left to hledger (see hledger.css), so a
@@ -44,7 +61,7 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
       $# from. Another row shows it again.
       <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
         <input .amount-input.form-control.input-lg type=text
-          name=amount placeholder=#{numbered amountPlaceholder n} value="#{amt}">
+          name=amount placeholder=#{amountLabel n} value="#{amt}">
         $maybe err <- amtE
           <span .help-block .error-block>_{err}
 <div .add-row>

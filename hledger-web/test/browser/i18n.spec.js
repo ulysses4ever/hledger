@@ -26,8 +26,9 @@ test.describe('translations', () => {
     await page.locator('body').press('a');
     await expect(page.locator('#addmodal')).toBeVisible();
     const accounts = page.locator('#addform select[name=account]');
-    await expect(accounts.first().locator('option').first()).toHaveText('Konto 1');
-    await expect(accounts.nth(1).locator('option').first()).toHaveText('Konto 2');
+    await expect(page.locator('#addform .category-select option').first()).toHaveText('Kategorie');
+    await expect(accounts.first().locator('option').first()).toHaveText('Unterkategorie');
+    await expect(accounts.nth(1).locator('option').first()).toHaveText('Konto');
     // the button under the rows makes the page add a third row
     await page.locator('#addrow').click();
     await expect(accounts).toHaveCount(3);

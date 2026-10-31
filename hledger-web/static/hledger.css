@@ -287,6 +287,9 @@ td.date,
 #addform .add-row {
   margin: -5px 0 15px;
 }
+#addform .account-group .col-xs-12 {
+  margin-bottom: 10px;
+}
 
 /* The date picker button, and the date input that lies over it, unseen
    but the full size of the button, so that a tap or click on the button

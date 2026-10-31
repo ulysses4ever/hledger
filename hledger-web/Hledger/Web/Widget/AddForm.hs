@@ -15,7 +15,7 @@ import Control.Monad.State.Strict (evalStateT)
 import Data.Bifunctor (first)
 import Data.Foldable (toList)
 import Data.Function (on)
-import Data.List (dropWhileEnd, elemIndex, groupBy, maximumBy, sortOn, unfoldr)
+import Data.List (dropWhileEnd, elemIndex, groupBy, maximumBy, nub, sortOn, unfoldr)
 import Data.Map.Strict qualified as M
 import Data.Maybe (isJust, fromMaybe)
 import Data.Ord (comparing)
@@ -57,6 +57,43 @@ addForm j today = identifyForm "add" $ \extra -> do
     accountPlaceholder = tr trs "Account {n}"
     amountPlaceholder = tr trs "Amount {n}"
     numbered template n = substitutePlaceholders [("n", T.pack (show n))] template
+    -- The second row is the account the entry is paid from or into; later
+    -- rows are numbered.
+    accountLabel :: Int -> Text
+    accountLabel 2 = tr trs "Account"
+    accountLabel n = numbered accountPlaceholder n
+    amountLabel :: Int -> Text
+    amountLabel 1 = tr trs "Amount"
+    amountLabel n = numbered amountPlaceholder n
+    -- The first row picks a category, then an account within it: under
+    -- Expenses and Income, each second-level account (food, utilities, ...)
+    -- is a category whose accounts are listed by their remaining parts; the
+    -- other top-level accounts are each one category, under "Transfer".
+    -- Each category: its key (an account name), its label, and its accounts.
+    isCategoryTop t = T.toLower t `elem` ["expenses", "income", "revenues"]
+    categoryKey a = case accountNameComponents a of
+      t : c : _ | isCategoryTop t -> t <> ":" <> c
+      t : _ -> t
+      [] -> a
+    categoryLabel k = case accountNameComponents k of
+      _ : c : _ -> c
+      t : _ -> T.toTitle t
+      [] -> k
+    withinLabel k a = case drop (length (accountNameComponents k)) (accountNameComponents a) of
+      [] -> categoryLabel k
+      rest -> T.intercalate " \8250 " rest
+    names = journalAccountNamesDeclaredOrImplied j
+    -- A category's accounts are those under it; one with none is itself the account.
+    within k = case [(a, withinLabel k a) | a <- names, categoryKey a == k, a /= k, not (isCategoryTop a)] of
+      [] -> [(k, categoryLabel k)]
+      subs -> subs
+    categoryKeys = nub $ map categoryKey [a | a <- names, not (isCategoryTop a)]
+    categoryGroups :: [(Text, [(Text, Text, [(Text, Text)])])]
+    categoryGroups =
+      [ (grp, cats)
+      | (grp, isIn) <- [(tr trs "Expenses", (== "expenses") . T.toLower . topOf), (tr trs "Income", (`elem` ["income", "revenues"]) . T.toLower . topOf), (tr trs "Transfer", not . isCategoryTop . topOf)]
+      , let cats = [ (k, categoryLabel k, within k) | k <- categoryKeys, isIn k ]
+      , not (null cats) ]
     -- The accounts to pick from, grouped by top-level account, each shown
     -- without that top level: under "Expenses", "food › groceries". The
     -- first row is usually the expense or income, the others the account
@@ -96,7 +133,7 @@ addForm j today = identifyForm "add" $ \extra -> do
           first (const (tr trs "Invalid date format")) $
           fixSmartDateStrEither' today (T.strip s)
     dateSettings = FieldSettings "date" Nothing Nothing (Just "date") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Date")]
-    descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Description"), ("size", "40"), ("list", "descriptionnames")]
+    descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Payee"), ("size", "40"), ("list", "descriptionnames")]
   (dateRes, dateView) <- mreq dateField dateSettings Nothing
   (descRes, descView) <- mopt textField descSettings Nothing
   (acctsRes, _)       <- mreq listField acctSettings Nothing

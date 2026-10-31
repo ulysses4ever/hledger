@@ -1297,3 +1297,39 @@ msgstr "Mostrar todos los años"
 msgctxt "years row"
 msgid "All"
 msgstr "Todos"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Account"
+msgstr "Cuenta"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Amount"
+msgstr "Importe"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Category"
+msgstr "Categoría"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Subcategory"
+msgstr "Subcategoría"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgctxt "placeholder"
+msgid "Payee"
+msgstr "Beneficiario"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Transfer"
+msgstr "Transferencia"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Add a row"
+msgstr "Añadir fila"

@@ -1380,3 +1380,39 @@ msgstr "全部"
 
 #~ msgid "Show the daily balance report"
 #~ msgstr "显示每日余额报表"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Account"
+msgstr "账户"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Amount"
+msgstr "金额"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Category"
+msgstr "类别"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Subcategory"
+msgstr "子类别"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgctxt "placeholder"
+msgid "Payee"
+msgstr "收款人"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Transfer"
+msgstr "转账"
+
+#. hledger-web: the add form's fields.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgid "Add a row"
+msgstr "添加一行"
