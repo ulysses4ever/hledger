@@ -15,7 +15,7 @@ import Control.Monad.State.Strict (evalStateT)
 import Data.Bifunctor (first)
 import Data.Foldable (toList)
 import Data.Function (on)
-import Data.List (dropWhileEnd, groupBy, maximumBy, unfoldr)
+import Data.List (dropWhileEnd, elemIndex, groupBy, maximumBy, sortOn, unfoldr)
 import Data.Map.Strict qualified as M
 import Data.Maybe (isJust, fromMaybe)
 import Data.Ord (comparing)
@@ -57,14 +57,21 @@ addForm j today = identifyForm "add" $ \extra -> do
     accountPlaceholder = tr trs "Account {n}"
     amountPlaceholder = tr trs "Amount {n}"
     numbered template n = substitutePlaceholders [("n", T.pack (show n))] template
-    -- The accounts to pick from, grouped by top-level account in the
-    -- journal's order, each shown without that top level: under "Expenses",
-    -- "food › groceries".
+    -- The accounts to pick from, grouped by top-level account, each shown
+    -- without that top level: under "Expenses", "food › groceries". The
+    -- first row is usually the expense or income, the others the account
+    -- that pays or receives, so each row lists its likely groups first;
+    -- every group is in every row, since a transfer names two accounts.
     topOf = T.takeWhile (/= ':')
     accountGroups :: [(Text, [(Text, Text)])]
     accountGroups =
       [ (T.toTitle (topOf (head g)), [(a, optionLabel a) | a <- g])
       | g <- groupBy ((==) `on` topOf) (journalAccountNamesDeclaredOrImplied j) ]
+    accountGroupsFor :: Int -> [(Text, [(Text, Text)])]
+    accountGroupsFor n = sortOn (rank . fst) accountGroups
+      where
+        first = if n == 1 then ["expenses", "income", "revenues"] else ["assets", "liabilities", "equity"]
+        rank g = fromMaybe (length first) $ elemIndex (T.toLower g) first
     optionLabel a = case accountNameComponents a of
       _ : rest@(_ : _) -> T.intercalate " \8250 " rest
       _ -> a
@@ -191,11 +198,11 @@ validatePostings trs acctsRes amtsRes = let
       xs -> xs
 
   -- Prepare rows for rendering - resolve Eithers into error messages and pad to
-  -- at least four rows
+  -- at least two rows (the form has a button for more)
   display' = flip fmap result $ \(acc, amt, res) -> case res of
     Left (mAccountErr, mAmountErr) -> (acc, amt, mAccountErr, mAmountErr)
     Right _ -> (acc, amt, Nothing, Nothing)
-  display = display' ++ replicate (4 - length display') ("", "", Nothing, Nothing)
+  display = display' ++ replicate (2 - length display') ("", "", Nothing, Nothing)
 
   -- And finally prepare the final FormResult [Posting]
   formResult = case traverse (\(_, _, x) -> x) result of

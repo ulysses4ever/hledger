@@ -33,15 +33,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
-  // Typing in the last amount field adds another posting row. Delegating from
-  // the form means the handler does not have to be moved as rows come and go.
+  // The button under the posting rows adds another.
   var addform = document.getElementById('addform');
   if (addform) {
-    addform.addEventListener('keypress', function(e) {
-      if (!e.target.classList.contains('amount-input')) { return; }
-      var amounts = addform.querySelectorAll('.amount-input');
-      if (e.target === amounts[amounts.length - 1]) { addformAddPosting(); }
-    });
+    var addrow = document.getElementById('addrow');
+    if (addrow) { addrow.addEventListener('click', addformAddPosting); }
     // Remember the first two rows' accounts for the next entry (see addformFocus).
     addform.addEventListener('submit', function() {
       addform.querySelectorAll('select[name=account]').forEach(function(sel) {
@@ -275,6 +271,7 @@ function addformAddPosting() {
   amount.placeholder = (postings.dataset.amountPlaceholder || 'Amount {n}').replace('{n}', num);
 
   addform.querySelector('.account-postings').appendChild(newrow);
+  newrow.querySelector('select[name=account]').focus();
 }
 
 //----------------------------------------------------------------------

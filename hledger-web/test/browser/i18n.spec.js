@@ -27,12 +27,12 @@ test.describe('translations', () => {
     await expect(page.locator('#addmodal')).toBeVisible();
     const accounts = page.locator('#addform select[name=account]');
     await expect(accounts.first().locator('option').first()).toHaveText('Konto 1');
-    await expect(accounts.nth(3).locator('option').first()).toHaveText('Konto 4');
-    // a keypress in the last amount field makes the page add a fifth row
-    await page.locator('#addform input[name=amount]').nth(3).press('1');
-    await expect(accounts).toHaveCount(5);
-    await expect(accounts.nth(4).locator('option').first()).toHaveText('Konto 5');
-    await expect(page.locator('#addform input[name=amount]').nth(4)).toHaveAttribute('placeholder', 'Betrag 5');
+    await expect(accounts.nth(1).locator('option').first()).toHaveText('Konto 2');
+    // the button under the rows makes the page add a third row
+    await page.locator('#addrow').click();
+    await expect(accounts).toHaveCount(3);
+    await expect(accounts.nth(2).locator('option').first()).toHaveText('Konto 3');
+    await expect(page.locator('#addform input[name=amount]').nth(2)).toHaveAttribute('placeholder', 'Betrag 3');
   });
 
   test('an explicit _LANG choice overrides the browser language and is remembered', async ({ page }) => {

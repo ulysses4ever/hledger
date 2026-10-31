@@ -31,17 +31,22 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
         $# hledger.js then keeps each browser's last choices (see addformFocus).
         <select .account-input.form-control.input-lg name=account data-row=#{n}>
           <option value="" :T.null (chosen n acc):selected>#{numbered accountPlaceholder n}
-          $forall (grp, opts) <- accountGroups
+          $forall (grp, opts) <- accountGroupsFor n
             <optgroup label=#{grp}>
               $forall (v, l) <- opts
                 <option value=#{v} :v == chosen n acc:selected>#{l}
         $maybe err <- accE
           <span .help-block .error-block>_{err}
+      $# The last row's amount is left to hledger (see hledger.css), so a
+      $# two-row entry is one account, one amount, and the account it comes
+      $# from. Another row shows it again.
       <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
         <input .amount-input.form-control.input-lg type=text
           name=amount placeholder=#{numbered amountPlaceholder n} value="#{amt}">
         $maybe err <- amtE
           <span .help-block .error-block>_{err}
+<div .add-row>
+  <button type=button #addrow .btn .btn-default>_{HMsg "Add a row"}
 
 <div .row>
   <div .col-sm-9.col-xs-7>

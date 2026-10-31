@@ -278,6 +278,16 @@ td.date,
   font-weight: bold;
 }
 
+/* The last posting row's amount is hledger's to work out, so it is not
+   asked for; adding a row shows the previous last row's. The button that
+   adds a row sits under the rows, set a little apart. */
+#addform .account-group:last-child .amount-input {
+  display: none;
+}
+#addform .add-row {
+  margin: -5px 0 15px;
+}
+
 /* The date picker button. */
 #datebutton {
   cursor: pointer;

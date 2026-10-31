@@ -161,6 +161,7 @@ test.describe('the content security policy', () => {
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
+    await page.locator('#addrow').click();  // the second amount shows once a third row exists
     await page.locator('#addform input[name=amount]').nth(1).fill('99.00');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toBeVisible();

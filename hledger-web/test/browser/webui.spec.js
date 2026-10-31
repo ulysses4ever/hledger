@@ -64,18 +64,31 @@ test.describe('page initialization', () => {
 
 test.describe('add form', () => {
 
-  test('starts with four posting rows', async ({ page }) => {
+  test('starts with two posting rows, the second without an amount', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    await expect(page.locator('#addform .account-group')).toHaveCount(4);
+    await expect(page.locator('#addform .account-group')).toHaveCount(2);
+    await expect(page.locator('#addform input[name=amount]').nth(0)).toBeVisible();
+    await expect(page.locator('#addform input[name=amount]').nth(1)).toBeHidden();
   });
 
-  test('typing in the last amount field adds a posting row', async ({ page }) => {
+  test('the button under the rows adds a posting row, and the previous last row gets its amount', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    await page.locator('#addform input[name=amount]').last().press('5');
-    await expect(page.locator('#addform .account-group')).toHaveCount(5);
+    await page.locator('#addrow').click();
+    await expect(page.locator('#addform .account-group')).toHaveCount(3);
+    await expect(page.locator('#addform input[name=amount]').nth(1)).toBeVisible();
+    await expect(page.locator('#addform input[name=amount]').nth(2)).toBeHidden();
+    await expect(page.locator('#addform select[name=account]').nth(2)).toBeFocused();
     expect(pageErrors).toEqual([]);
+  });
+
+  test('the first row lists expenses first, the second assets first', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    const groups = n => page.locator('#addform select[name=account]').nth(n).locator('optgroup').evaluateAll(gs => gs.map(g => g.label));
+    expect(await groups(0)).toEqual(['Expenses', 'Income', 'Assets', 'Equity']);
+    expect(await groups(1)).toEqual(['Assets', 'Equity', 'Expenses', 'Income']);
   });
 
   // Completion is a native <datalist>. The browser draws its dropdown outside
@@ -137,6 +150,7 @@ test.describe('add form', () => {
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
+    await page.locator('#addrow').click();  // the second amount shows once a third row exists
     await page.locator('#addform input[name=amount]').nth(1).fill('99.00');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toBeVisible();
