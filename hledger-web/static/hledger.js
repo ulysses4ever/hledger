@@ -255,9 +255,9 @@ function focusSearch() {
   if (q) { q.focus(); }
 }
 
-// The first row's account list, narrowed to the category picked beside
-// it: every account until a category is picked, since a phone cannot hide
-// single options, the list is rebuilt from a kept copy of all of them.
+// The first row's account list, narrowed to the category picked above
+// it, and empty until one is: since a phone cannot hide single options,
+// the list is rebuilt from a kept copy of all of them.
 var addformAccountOptions = [];
 function addformCategoryInit() {
   var category = document.querySelector('#addform .category-select');
@@ -285,7 +285,8 @@ function addformSetCategory(key, keep) {
   if (!category || !account) { return; }
   if (category.value !== key) { category.value = key; }
   var placeholder = account.options[0];
-  var options = addformAccountOptions[0].filter(function(o) { return !key || o.dataset.category === key; });
+  // nothing to pick from until a category is picked
+  var options = addformAccountOptions[0].filter(function(o) { return key && o.dataset.category === key; });
   while (account.options.length > 1) { account.remove(1); }
   options.forEach(function(o) { account.add(o); });
   if (keep && options.some(function(o) { return o.value === keep; })) { account.value = keep; }

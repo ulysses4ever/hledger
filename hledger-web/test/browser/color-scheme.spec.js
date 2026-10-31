@@ -85,6 +85,7 @@ const views = {
   'rejected add': async page => {
     await views['add dialog'](page);
     await page.locator('#addform input[name=date]').fill('nonsense');
+    await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');

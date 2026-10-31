@@ -158,6 +158,7 @@ test.describe('the content security policy', () => {
     await expectNoViolations(page, violations);
     // a rejected submission re-renders the form on a page of its own
     await page.locator('#addform input[name=description]').fill('CspUnbalanced');
+    await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');

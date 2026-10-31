@@ -134,14 +134,21 @@ addForm j today = identifyForm "add" $ \extra -> do
           fixSmartDateStrEither' today (T.strip s)
     dateSettings = FieldSettings "date" Nothing Nothing (Just "date") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Date")]
     descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Payee"), ("size", "40"), ("list", "descriptionnames")]
+    noteSettings = FieldSettings "note" Nothing Nothing (Just "note") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Note"), ("size", "40")]
   (dateRes, dateView) <- mreq dateField dateSettings Nothing
   (descRes, descView) <- mopt textField descSettings Nothing
+  (noteRes, noteView) <- mopt textField noteSettings Nothing
   (acctsRes, _)       <- mreq listField acctSettings Nothing
   (amtsRes, _)        <- mreq listField amtSettings  Nothing
   (fileRes, fileView) <- mopt fileField' fileSettings Nothing
   let
     (postingsRes, displayRows) = validatePostings trs acctsRes amtsRes
-    formRes = validateTransaction deffile dateRes descRes postingsRes fileRes
+    -- hledger keeps a note after the payee in the description: "Payee | note".
+    descWithNote = joinNote <$> descRes <*> noteRes
+    joinNote mpayee mnote = case (T.strip <$> mpayee, T.strip <$> mnote) of
+      (payee, Just note) | not (T.null note) -> Just (fromMaybe "" payee <> " | " <> note)
+      (payee, _) -> payee
+    formRes = validateTransaction deffile dateRes descWithNote postingsRes fileRes
   return (formRes, $(widgetFile "add-form"))
   where
     listField = Field

@@ -1333,3 +1333,9 @@ msgstr "Transferencia"
 #: hledger-web/Hledger/Web/Widget/AddForm.hs
 msgid "Add a row"
 msgstr "Añadir fila"
+
+#. hledger-web: the add form's note field.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgctxt "placeholder"
+msgid "Note"
+msgstr "Nota"

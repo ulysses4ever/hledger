@@ -20,6 +20,11 @@
       ^{fvInput descView}
     $maybe err <- fvErrors descView
       <span .help-block .error-block>#{err}
+$# A free note, kept after the payee in the description ("Payee | note").
+<div .row>
+  <div .col-xs-12>
+    <div .form-group>
+      ^{fvInput noteView}
 
 $# The placeholder templates are also read by hledger.js when it adds rows.
 <div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder}>

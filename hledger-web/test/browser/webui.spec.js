@@ -93,10 +93,9 @@ test.describe('add form', () => {
     const account = page.locator('#addform select[name=account]').nth(0);
     expect(await account.locator('option').allTextContents()).toEqual(['Subcategory', 'dining', 'dining › xss<script>alert(1)</script>', 'groceries']);
     await account.selectOption('expenses:food:groceries');
-    // picking from the full list sets the category too
-    await category.selectOption('');
-    await account.selectOption('income:salary');
-    await expect(category).toHaveValue('income:salary');
+    // a category with one account picks it at once
+    await category.selectOption('income:salary');
+    await expect(account).toHaveValue('income:salary');
     expect(await page.locator('#addform select[name=account]').nth(1).locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Assets', 'Equity', 'Expenses', 'Income']);
   });
 
@@ -107,8 +106,11 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     const first = page.locator('#addform select[name=account]').first();
-    // the first row lists every account until a category is picked, each labelled within its category
+    // the first row's list is empty until a category is picked, then holds that category's accounts
+    await expect(first.locator('option')).toHaveCount(1);
+    await page.locator('#addform .category-select').selectOption('expenses:food');
     await expect(first.locator('option[value="expenses:food:dining"][data-category="expenses:food"]')).toHaveText('dining');
+    await page.locator('#addform .category-select').selectOption('assets');
     await expect(first.locator('option[value="assets:bank:checking"][data-category="assets"]')).toHaveText('bank › checking');
     await expect(first).toHaveValue('');
     await expect(page.locator('#addform select[name=account]').nth(1).locator('optgroup[label="Assets"] option[value="assets:bank:checking"]')).toHaveCount(1);
@@ -122,6 +124,7 @@ test.describe('add form', () => {
   test('the add form remembers this browser\'s last accounts', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
+    await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:groceries');
     await page.locator('#addform select[name=account]').nth(1).selectOption('equity:opening');
     await page.locator('#addform input[name=description]').fill('remembered');
@@ -149,6 +152,7 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     await page.locator('#addform input[name=description]').fill('E2eCreatePlain');
+    await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('12.34');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
@@ -161,6 +165,7 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     await page.locator('#addform input[name=description]').fill('E2eUnbalanced');
+    await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
@@ -399,4 +404,19 @@ test('the add form\'s calendar button reaches the date input beneath the pointer
   // what the picker gives is written back to the field as an iso date
   await page.locator('#datepicked').evaluate(d => { d.value = '2025-02-15'; d.dispatchEvent(new Event('change')); });
   await expect(page.locator('#addform input[name=date]')).toHaveValue('2025-02-15');
+});
+
+test('a note goes after the payee in the description', async ({ page }) => {
+  await page.goto('/journal');
+  await page.locator('body').press('a');
+  await expect(page.locator('#addmodal')).toBeVisible();
+  await page.locator('#addform input[name=description]').fill('Cafe Noted');
+  await page.locator('#addform input[name=note]').fill('with a note');
+  await page.locator('#addform .category-select').selectOption('expenses:food');
+  await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
+  await page.locator('#addform input[name=amount]').nth(0).fill('3');
+  await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
+  await page.locator('#addform button[type=submit]').click();
+  await expect(page.locator('#main-content')).toContainText('Cafe Noted');
+  await expect(page.locator('#main-content')).toContainText('with a note');
 });

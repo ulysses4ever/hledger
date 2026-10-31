@@ -956,3 +956,9 @@ msgstr "Überweisung"
 #: hledger-web/Hledger/Web/Widget/AddForm.hs
 msgid "Add a row"
 msgstr "Zeile hinzufügen"
+
+#. hledger-web: the add form's note field.
+#: hledger-web/Hledger/Web/Widget/AddForm.hs
+msgctxt "placeholder"
+msgid "Note"
+msgstr "Notiz"
