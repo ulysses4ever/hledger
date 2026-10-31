@@ -10,11 +10,15 @@ module Hledger.Web.Widget.AddForm
   , addModal
   ) where
 
+import Control.Applicative ((<|>))
 import Control.Monad.State.Strict (evalStateT)
 import Data.Bifunctor (first)
 import Data.Foldable (toList)
-import Data.List (dropWhileEnd, unfoldr)
+import Data.Function (on)
+import Data.List (dropWhileEnd, groupBy, maximumBy, unfoldr)
+import Data.Map.Strict qualified as M
 import Data.Maybe (isJust, fromMaybe)
+import Data.Ord (comparing)
 import Data.Set qualified as S
 import Data.Text (Text)
 import Data.Text qualified as T
@@ -53,6 +57,31 @@ addForm j today = identifyForm "add" $ \extra -> do
     accountPlaceholder = tr trs "Account {n}"
     amountPlaceholder = tr trs "Amount {n}"
     numbered template n = substitutePlaceholders [("n", T.pack (show n))] template
+    -- The accounts to pick from, grouped by top-level account in the
+    -- journal's order, each shown without that top level: under "Expenses",
+    -- "food › groceries".
+    topOf = T.takeWhile (/= ':')
+    accountGroups :: [(Text, [(Text, Text)])]
+    accountGroups =
+      [ (T.toTitle (topOf (head g)), [(a, optionLabel a) | a <- g])
+      | g <- groupBy ((==) `on` topOf) (journalAccountNamesDeclaredOrImplied j) ]
+    optionLabel a = case accountNameComponents a of
+      _ : rest@(_ : _) -> T.intercalate " \8250 " rest
+      _ -> a
+    -- The second row's default: the asset or liability account with the most
+    -- postings, which is what most entries are paid from. An account's type is
+    -- the journal's, else what its name says (Assets, liabilities:card, ...).
+    accountType a = journalAccountType j a <|> accountNameInferType a
+    fundingDefault =
+      case M.toList $ M.fromListWith (+) [(paccount p, 1 :: Int) | p <- journalPostings j, accountType (paccount p) `elem` [Just Asset, Just Cash, Just Liability]] of
+        [] -> ""
+        counts -> fst $ maximumBy (comparing snd) counts
+    -- The account a row shows: what was submitted, else the row's default.
+    chosen :: Int -> Text -> Text
+    chosen n acc
+      | not (T.null acc) = acc
+      | n == 2 = fundingDefault
+      | otherwise = ""
     -- custom fields
     dateField = textField & checkMMap (pure . right fromEFDay . validateDate) (T.pack . show)
       where

@@ -25,13 +25,13 @@ test.describe('translations', () => {
     await page.goto('/journal');
     await page.locator('body').press('a');
     await expect(page.locator('#addmodal')).toBeVisible();
-    const accounts = page.locator('#addform input[name=account]');
-    await expect(accounts.first()).toHaveAttribute('placeholder', 'Konto 1');
-    await expect(accounts.nth(3)).toHaveAttribute('placeholder', 'Konto 4');
+    const accounts = page.locator('#addform select[name=account]');
+    await expect(accounts.first().locator('option').first()).toHaveText('Konto 1');
+    await expect(accounts.nth(3).locator('option').first()).toHaveText('Konto 4');
     // a keypress in the last amount field makes the page add a fifth row
     await page.locator('#addform input[name=amount]').nth(3).press('1');
     await expect(accounts).toHaveCount(5);
-    await expect(accounts.nth(4)).toHaveAttribute('placeholder', 'Konto 5');
+    await expect(accounts.nth(4).locator('option').first()).toHaveText('Konto 5');
     await expect(page.locator('#addform input[name=amount]').nth(4)).toHaveAttribute('placeholder', 'Betrag 5');
   });
 

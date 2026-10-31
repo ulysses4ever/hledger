@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
       var amounts = addform.querySelectorAll('.amount-input');
       if (e.target === amounts[amounts.length - 1]) { addformAddPosting(); }
     });
+    // Remember the first two rows' accounts for the next entry (see addformFocus).
+    addform.addEventListener('submit', function() {
+      addform.querySelectorAll('select[name=account]').forEach(function(sel) {
+        if ((sel.dataset.row === '1' || sel.dataset.row === '2') && sel.value) {
+          setCookie('addaccount' + sel.dataset.row, encodeURIComponent(sel.value));
+        }
+      });
+    });
   }
 
   // The date field is a text input, so hledger's smart dates ("today", "2/15")
@@ -202,10 +210,28 @@ function addformReset(showmsg) {
 }
 
 // Pre-fill today's date and focus the description field in the add form.
+// The first two account rows start on what this browser last saved
+// (cookies addaccount1 and addaccount2, written on submit), if the
+// books still have those accounts; else on the page's own defaults.
 function addformFocus() {
   var addform = document.getElementById('addform');
   if (!addform) { return; }
   addform.querySelector('input[name=date]').value = isoDate();
+  // The date control that is the field on a phone starts on today too, and
+  // can be reached there; elsewhere it stays out of the way behind the button.
+  var datepicked = document.getElementById('datepicked');
+  if (datepicked) {
+    datepicked.value = isoDate();
+    var phone = window.matchMedia('(max-width: 767px)').matches;
+    datepicked.tabIndex = phone ? 0 : -1;
+    datepicked.setAttribute('aria-hidden', phone ? 'false' : 'true');
+  }
+  addform.querySelectorAll('select[name=account]').forEach(function(sel) {
+    var saved = getCookie('addaccount' + sel.dataset.row);
+    if (!saved) { return; }
+    var value = decodeURIComponent(saved);
+    if ([].some.call(sel.options, function(o) { return o.value === value; })) { sel.value = value; }
+  });
   // Deferred, so the field is focusable: http://stackoverflow.com/a/7046837
   setTimeout(function() {
     addform.querySelector('input[name=description]').focus();
@@ -238,13 +264,14 @@ function addformAddPosting() {
   newrow.querySelectorAll('.has-error').forEach(function(el) { el.classList.remove('has-error'); });
   newrow.querySelectorAll('.error-block').forEach(function(el) { el.remove(); });
 
-  var account = newrow.querySelector('input[name=account]');
+  var account = newrow.querySelector('select[name=account]');
   var amount = newrow.querySelector('input[name=amount]');
   account.value = '';
+  account.dataset.row = num;
   amount.value = '';
   // The placeholder templates come from the page, in its language.
   var postings = addform.querySelector('.account-postings');
-  account.placeholder = (postings.dataset.accountPlaceholder || 'Account {n}').replace('{n}', num);
+  account.options[0].textContent = (postings.dataset.accountPlaceholder || 'Account {n}').replace('{n}', num);
   amount.placeholder = (postings.dataset.amountPlaceholder || 'Amount {n}').replace('{n}', num);
 
   addform.querySelector('.account-postings').appendChild(newrow);

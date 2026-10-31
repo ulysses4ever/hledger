@@ -4,12 +4,13 @@
   <div .col-md-3.col-sm-5.col-xs-12 :isJust (fvErrors dateView):.has-error>
     $# The date field stays a text input so that hledger's smart dates
     $# ("today", "2/15") still work. The button opens the browser's own date
-    $# picker, via the hidden date input next to it.
+    $# picker, via the hidden date input next to it. On a phone that date
+    $# input is the field itself (see hledger.css and addformFocus).
     <div #dateWrap .form-group.input-group.date>
       ^{fvInput dateView}
       <input #datepicked type=date tabindex=-1 aria-hidden=true>
       <div #datebutton .input-group-addon title=_{HMsg "Pick a date"}>
-        <span .glyphicon .glyphicon-th>
+        <span .glyphicon .glyphicon-calendar>
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
   <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
@@ -23,8 +24,17 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
   $forall (n, (acc, amt, accE, amtE)) <- displayRows
     <div .form-group .row .account-group>
       <div .col-sm-9.col-xs-7 :isJust accE:.has-error>
-        <input .account-input.form-control.input-lg type=text list=accountnames
-          name=account placeholder=#{numbered accountPlaceholder n} value="#{acc}">
+        $# A list to pick from, grouped by top-level account, rather than a
+        $# field to type in: on a phone typing an account name is the hard
+        $# part of an entry, and the books accept no new accounts anyway.
+        $# The second row starts on the account the books use most, and
+        $# hledger.js then keeps each browser's last choices (see addformFocus).
+        <select .account-input.form-control.input-lg name=account data-row=#{n}>
+          <option value="" :T.null (chosen n acc):selected>#{numbered accountPlaceholder n}
+          $forall (grp, opts) <- accountGroups
+            <optgroup label=#{grp}>
+              $forall (v, l) <- opts
+                <option value=#{v} :v == chosen n acc:selected>#{l}
         $maybe err <- accE
           <span .help-block .error-block>_{err}
       <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
@@ -45,12 +55,9 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
   <div .col-sm-3.col-xs-5.text-right>
     <button type=submit .btn .btn-default .btn-lg name=submit>_{HMsg "Save"}
 
-$# Completion data for the account and description fields. The browser filters
-$# these itself, so there is no javascript and no library involved, and hamlet's
-$# escaping keeps journal text inert.
-<datalist #accountnames>
-  $forall acct <- journalAccountNamesDeclaredOrImplied j
-    <option value=#{acct}>
+$# Completion data for the description field. The browser filters it itself,
+$# so there is no javascript and no library involved, and hamlet's escaping
+$# keeps journal text inert.
 <datalist #descriptionnames>
   $forall desc <- toList descriptions
     <option value=#{desc}>

@@ -71,8 +71,8 @@ test.describe('journal data is rendered as text, not markup', () => {
     // the payload is offered as a completion, as a value rather than markup
     expect(await page.locator('#descriptionnames option[value*="onerror"]').count())
       .toBeGreaterThan(0);
-    expect(await page.locator('#descriptionnames img, #accountnames img').count()).toBe(0);
-    expect(await page.locator('#descriptionnames script, #accountnames script').count()).toBe(0);
+    expect(await page.locator('#descriptionnames img, #addform select[name=account] img').count()).toBe(0);
+    expect(await page.locator('#descriptionnames script, #addform select[name=account] script').count()).toBe(0);
     expect(await xssFired(page)).toBe(false);
   });
 
@@ -158,9 +158,9 @@ test.describe('the content security policy', () => {
     await expectNoViolations(page, violations);
     // a rejected submission re-renders the form on a page of its own
     await page.locator('#addform input[name=description]').fill('CspUnbalanced');
-    await page.locator('#addform input[name=account]').nth(0).fill('expenses:food:dining');
+    await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
-    await page.locator('#addform input[name=account]').nth(1).fill('assets:bank:checking');
+    await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
     await page.locator('#addform input[name=amount]').nth(1).fill('99.00');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toBeVisible();

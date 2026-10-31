@@ -81,15 +81,32 @@ test.describe('add form', () => {
   // Completion is a native <datalist>. The browser draws its dropdown outside
   // the page, so a test can only check that the field is wired to a list and
   // that the list offers the journal's accounts and descriptions.
-  test('the account and description fields offer completions', async ({ page }) => {
+  test('the account fields are lists grouped by top-level account, and the description field offers completions', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    await expect(page.locator('#addform input[name=account]').first())
-      .toHaveAttribute('list', 'accountnames');
+    const first = page.locator('#addform select[name=account]').first();
+    await expect(first.locator('optgroup[label="Expenses"] option[value="expenses:food:dining"]')).toHaveText('food › dining');
+    await expect(first.locator('optgroup[label="Assets"] option[value="assets:bank:checking"]')).toHaveCount(1);
+    await expect(first).toHaveValue('');
+    // the second row starts on the account the books use most
+    await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('assets:bank:checking');
     await expect(page.locator('#addform input[name=description]'))
       .toHaveAttribute('list', 'descriptionnames');
-    await expect(page.locator('#accountnames option[value="assets:bank:checking"]')).toHaveCount(1);
     await expect(page.locator('#descriptionnames option[value="Cafe Luna"]')).toHaveCount(1);
+  });
+
+  test('the add form remembers this browser\'s last accounts', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:groceries');
+    await page.locator('#addform select[name=account]').nth(1).selectOption('equity:opening');
+    await page.locator('#addform input[name=description]').fill('remembered');
+    await page.locator('#addform input[name=amount]').nth(0).fill('1');
+    await page.locator('#addform button[type=submit]').click();
+    await expect(page.locator('#main-content')).toContainText('remembered');
+    await openAddForm(page);
+    await expect(page.locator('#addform select[name=account]').nth(0)).toHaveValue('expenses:food:groceries');
+    await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('equity:opening');
   });
 
   test('the date field offers a picker and accepts a typed date', async ({ page }) => {
@@ -105,9 +122,9 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     await page.locator('#addform input[name=description]').fill('E2eCreatePlain');
-    await page.locator('#addform input[name=account]').nth(0).fill('expenses:food:dining');
+    await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('12.34');
-    await page.locator('#addform input[name=account]').nth(1).fill('assets:bank:checking');
+    await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toContainText('Transaction added.');
     expect(fs.readFileSync(process.env.BROWSER_JOURNAL, 'utf8')).toContain('E2eCreatePlain');
@@ -117,9 +134,9 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     await page.locator('#addform input[name=description]').fill('E2eUnbalanced');
-    await page.locator('#addform input[name=account]').nth(0).fill('expenses:food:dining');
+    await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
-    await page.locator('#addform input[name=account]').nth(1).fill('assets:bank:checking');
+    await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
     await page.locator('#addform input[name=amount]').nth(1).fill('99.00');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toBeVisible();
