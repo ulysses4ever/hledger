@@ -389,3 +389,14 @@ test.describe('entry tooltip', () => {
   });
 
 });
+
+test('the add form\'s calendar button reaches the date input beneath the pointer', async ({ page }) => {
+  await page.goto('/add');
+  await page.evaluate(() => { window.__picker = 0; document.getElementById('datepicked').showPicker = function() { window.__picker++; }; });
+  const b = await page.locator('#datebutton').boundingBox();
+  await page.mouse.click(b.x + b.width / 2, b.y + b.height / 2);
+  expect(await page.evaluate(() => window.__picker)).toBe(1);
+  // what the picker gives is written back to the field as an iso date
+  await page.locator('#datepicked').evaluate(d => { d.value = '2025-02-15'; d.dispatchEvent(new Event('change')); });
+  await expect(page.locator('#addform input[name=date]')).toHaveValue('2025-02-15');
+});

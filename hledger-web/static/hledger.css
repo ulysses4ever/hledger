@@ -309,7 +309,6 @@ td.date,
   border: 0;
   opacity: 0;
   cursor: pointer;
-  pointer-events: none;
 }
 
 /* The add form shown on a page of its own, after a submission was rejected. */
