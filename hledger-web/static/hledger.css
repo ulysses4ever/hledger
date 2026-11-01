@@ -316,6 +316,27 @@ td.date,
   pointer-events: none;
 }
 
+/* The pencil that opens an entry's page: muted beside the description,
+   showing itself under the pointer; on a phone a tap target in the
+   entry's corner (section 15). */
+.entry-edit {
+  margin-right: 0.4em;
+  color: var(--muted);
+  opacity: 0.5;
+}
+tr:hover .entry-edit,
+.entry-edit:hover,
+.entry-edit:focus {
+  opacity: 1;
+  text-decoration: none;
+}
+.transaction-heading {
+  color: var(--muted);
+}
+#deleteform {
+  margin-top: 1em;
+}
+
 /* The add form shown on a page of its own, after a submission was rejected. */
 .add-page {
   margin-top: 1em;
@@ -1238,7 +1259,7 @@ a:focus > .account-name > * {
   .table-responsive > .transactionsreport:not(.both-sides) > tbody > tr.title > td.entry-card {
     display: grid;
     flex: auto;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     row-gap: 1px;
     min-width: 0;
     padding: 9px 0;
@@ -1293,6 +1314,16 @@ a:focus > .account-name > * {
   }
   .entry-card .entry-amount.earning::before {
     content: "+";
+  }
+  /* the pencil is a column of its own at the right edge, the height of the
+     block: a tap target of its own, beside the amount and the lines under it */
+  .entry-card .entry-edit {
+    grid-column: 4;
+    grid-row: 1 / 4;
+    align-self: center;
+    margin: 0;
+    padding: 8px 0 8px 8px;
+    opacity: 0.6;
   }
   .entry-card .entry-when-where,
   .entry-card .entry-memo {
@@ -1509,7 +1540,7 @@ a:focus > .account-name > * {
   .table-responsive > .registerreport > tbody > tr > td.entry-card {
     display: grid;
     grid-column: 1 / -1;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
     row-gap: 1px;
     min-width: 0;
     padding: 9px 0;

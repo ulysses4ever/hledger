@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (addrow) { addrow.addEventListener('click', addformAddPosting); }
     // Remember the first two rows' accounts for the next entry (see addformFocus).
     addform.addEventListener('submit', function() {
+      if ('editing' in addform.dataset) { return; }
       addform.querySelectorAll('select[name=account]').forEach(function(sel) {
         if ((sel.dataset.row === '1' || sel.dataset.row === '2') && sel.value) {
           setCookie('addaccount' + sel.dataset.row, encodeURIComponent(sel.value));
@@ -155,8 +156,15 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // The add page shows the form outside the dialog; set it up as the
-  // dialog does when it opens.
+  // dialog does when it opens. So does an entry's own page.
   if (addform && !addform.closest('#addmodal')) { addformFocus(); }
+  // Deleting an entry asks first.
+  var deleteform = document.getElementById('deleteform');
+  if (deleteform) {
+    deleteform.addEventListener('submit', function(e) {
+      if (!window.confirm(deleteform.dataset.confirm || 'Delete this entry?')) { e.preventDefault(); }
+    });
+  }
 
   entryTooltipInit();
   registerChartInit();
@@ -220,6 +228,9 @@ function addformReset(showmsg) {
 function addformFocus() {
   var addform = document.getElementById('addform');
   if (!addform) { return; }
+  // An existing entry's page shows that entry: no today's date, no remembered
+  // accounts; only the category list is set from the entry's own account.
+  if ('editing' in addform.dataset) { addformCategoryInit(); return; }
   addform.querySelector('input[name=date]').value = isoDate();
   var datepicked = document.getElementById('datepicked');
   if (datepicked) { datepicked.value = isoDate(); }
@@ -433,7 +444,11 @@ function entryTooltipInit() {
     clicked = true;
   });
   document.addEventListener('keydown', hide);
-  document.addEventListener('scroll', hide, true);
+  // A scroll before the entry has appeared leaves it pending, so that the
+  // scroll a browser makes to bring a row under the pointer (eg for a
+  // script) does not cancel it; the browsers' own pointer move after a
+  // scroll puts the pointer over the right row.
+  document.addEventListener('scroll', function() { if (!tip.hidden) { hide(); } }, true);
   window.addEventListener('blur', hide);
 }
 

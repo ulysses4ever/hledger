@@ -42,6 +42,9 @@ $# given with --css can rearrange them with the order property.
                title=_{HMsg "Show the journal entries on this date"}>
               #{show (tdate torig)}
           <td .description colspan=2>
+            $if elem AddPermission perms
+              <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
+                <span .glyphicon .glyphicon-pencil aria-hidden="true">
             #{textElideRight 60 (tdescription torig)}
           <td .amount>
           $# On a phone, single-sided, the entry is shown as this block instead
@@ -79,6 +82,9 @@ $# given with --css can rearrange them with the order property.
                   <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
                     ^{accountNameAsHtml acc}
             <span .entry-memo>#{payeeAndNote torig}
+            $if elem AddPermission perms
+              <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
+                <span .glyphicon .glyphicon-pencil aria-hidden="true">
 
         $forall Posting { paccount = acc, pamount = amt } <- tpostings torig
           <tr .posting :isSource amt:.source>

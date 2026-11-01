@@ -178,6 +178,57 @@ test.describe('add form', () => {
 
 });
 
+test.describe('transaction page', () => {
+
+  // Each test adds the entry it works on, leaving the fixture's entries to
+  // the other tests, then opens its page from the journal's pencil.
+  async function openEntry(page, desc, amount) {
+    await page.goto('/journal');
+    await openAddForm(page);
+    await page.locator('#addform input[name=description]').fill(desc);
+    await page.locator('#addform .category-select').selectOption('expenses:food');
+    await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
+    await page.locator('#addform input[name=amount]').nth(0).fill(amount);
+    await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
+    await page.locator('#addform button[type=submit]').click();
+    await expect(page.locator('#message')).toContainText('Transaction added.');
+    await page.locator('#main-content tr.title', { hasText: desc }).locator('a.entry-edit:visible').click();
+    await expect(page).toHaveURL(/\/transaction\/\d+$/);
+  }
+
+  test('the pencil opens the entry filled in, and saving writes it in place', async ({ page }) => {
+    await openEntry(page, 'E2eEditMe', '7.00');
+    await expect(page.locator('#addform input[name=description]')).toHaveValue('E2eEditMe');
+    await expect(page.locator('#addform .category-select')).toHaveValue('expenses:food');
+    await expect(page.locator('#addform select[name=account]').nth(0)).toHaveValue('expenses:food:dining');
+    await expect(page.locator('#addform input[name=amount]').nth(0)).toHaveValue(/^7(\.00)?$/);
+    await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('assets:bank:checking');
+    await page.locator('#addform input[name=amount]').nth(0).fill('8.50');
+    await page.locator('#addform input[name=description]').fill('E2eEdited');
+    await page.locator('#addform button[type=submit]').click();
+    await expect(page.locator('#message')).toContainText('Transaction saved.');
+    const journal = fs.readFileSync(process.env.BROWSER_JOURNAL, 'utf8');
+    expect(journal).toContain('E2eEdited');
+    expect(journal).toContain('8.50');
+    expect(journal).not.toContain('E2eEditMe');
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('the delete button asks first, then removes the entry', async ({ page }) => {
+    await openEntry(page, 'E2eDeleteMe', '3.00');
+    page.once('dialog', d => d.dismiss());
+    await page.locator('#deleteform button[type=submit]').click();
+    await expect(page).toHaveURL(/\/transaction\/\d+$/);
+    expect(fs.readFileSync(process.env.BROWSER_JOURNAL, 'utf8')).toContain('E2eDeleteMe');
+    page.once('dialog', d => d.accept());
+    await page.locator('#deleteform button[type=submit]').click();
+    await expect(page.locator('#message')).toContainText('Transaction deleted.');
+    expect(fs.readFileSync(process.env.BROWSER_JOURNAL, 'utf8')).not.toContain('E2eDeleteMe');
+    expect(pageErrors).toEqual([]);
+  });
+
+});
+
 test.describe('edit form', () => {
 
   test('edits a journal file', async ({ page }) => {

@@ -60,6 +60,9 @@ $if isAccountPage
                  title=_{HMsg "Show this entry and the other journal entries on its date"}>
                 #{show (tdate tacct)}
             <td .description>
+              $if elem AddPermission perms
+                <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
+                  <span .glyphicon .glyphicon-pencil aria-hidden="true">
               #{textElideRight 30 (tdescription tacct)}
             <td .account>
               $forall (acc, comma) <- otherTransAccounts torig
@@ -87,6 +90,9 @@ $if isAccountPage
                 <span .sr-only>_{HMsg "Balance after this entry:"}
                 <span aria-hidden="true">» #
                 #{oneLine (runningBalance bal)}
+              $if elem AddPermission perms
+                <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
+                  <span .glyphicon .glyphicon-pencil aria-hidden="true">
       $if historical && lastpage
         $maybe start <- mstart
           <tr .broughtforward>

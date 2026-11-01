@@ -8,6 +8,7 @@
 module Hledger.Web.Widget.AddForm
   ( addForm
   , addModal
+  , transactionCollapseNewlines
   ) where
 
 import Control.Applicative ((<|>))
@@ -34,9 +35,30 @@ import Hledger.Web.Settings (widgetFile)
 import Data.Function ((&))
 import Control.Arrow (right)
 
+-- | Replace newlines with spaces in the transaction fields which are written
+-- to the journal file verbatim: the description, the code, and the posting
+-- account names. A newline in one of these would split the rendered entry
+-- across lines, letting arbitrary journal directives (eg an include) be
+-- written into the file. The journal format can't represent a newline in
+-- these fields anyway - their parsers stop at end of line - and the CSV
+-- reader collapses them likewise, so nothing that could round trip is lost.
+-- Comments are left alone: they are rendered as one ";" line per line, so
+-- newlines in them are safe.
+transactionCollapseNewlines :: Transaction -> Transaction
+transactionCollapseNewlines t = t
+  { tdescription = collapse $ tdescription t
+  , tcode        = collapse $ tcode t
+  , tpostings    = map collapseacct $ tpostings t
+  }
+  where
+    collapse = T.map (\c -> if c == '\n' || c == '\r' then ' ' else c)
+    -- Account names are also normalised to single spaces, since two spaces
+    -- would end the account name when the entry is read back.
+    collapseacct p = p{paccount = T.unwords . T.words $ paccount p}
+
 addModal :: Route App -> Journal -> Day -> Widget
 addModal addR j today = do
-  (addView, addEnctype) <- handlerToWidget $ generateFormPost (addForm j today)
+  (addView, addEnctype) <- handlerToWidget $ generateFormPost (addForm j today Nothing)
   [whamlet|
 <dialog #addmodal aria-labelledby="addLabel">
   <div .modal-header>
@@ -47,10 +69,26 @@ addModal addR j today = do
       ^{addView}
 |]
 
-addForm :: Journal -> Day -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
-addForm j today = identifyForm "add" $ \extra -> do
+-- | The form for a transaction: empty for a new one, or filled with an
+-- existing one for editing it (the transaction page). Edited, the
+-- transaction keeps its code, comment and tags, which the form does not
+-- show; its status comes from the form.
+addForm :: Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
+addForm j today mtxn = identifyForm "add" $ \extra -> do
   trs <- lift requestTranslations
   let  -- bindings used in add-form.hamlet
+    editing = isJust mtxn
+    -- the existing transaction's fields, as the form shows them
+    (defPayee, defNote) = case T.breakOn " | " . tdescription <$> mtxn of
+      Just (p, n) | not (T.null n) -> (Just (T.strip p), Just (T.strip (T.drop 3 n)))
+      Just (p, _) -> (Just (T.strip p), Nothing)
+      Nothing -> (Nothing, Nothing)
+    -- each posting's account; the last amount is left to hledger, as in
+    -- a new entry, so that changing the first amount keeps the entry balanced
+    defRows = case tpostings <$> mtxn of
+      Just ps@(_ : _) -> [(paccount p, if i == length ps then "" else wbToText (showMixedAmountB oneLineNoCostFmt (pamount p))) | (i, p) <- zip [1 :: Int ..] ps]
+      _ -> []
+    statusOptions = [(tr trs "Unmarked", Unmarked), (tr trs "Pending", Pending), (tr trs "Cleared", Cleared)]
     descriptions = foldMap S.fromList [journalPayeesDeclaredOrUsed j, journalDescriptions j]
     files = fst <$> jfiles j
     deffile = journalFilePath j
@@ -135,20 +173,25 @@ addForm j today = identifyForm "add" $ \extra -> do
     dateSettings = FieldSettings "date" Nothing Nothing (Just "date") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Date")]
     descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Payee"), ("size", "40"), ("list", "descriptionnames")]
     noteSettings = FieldSettings "note" Nothing Nothing (Just "note") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Note"), ("size", "40")]
-  (dateRes, dateView) <- mreq dateField dateSettings Nothing
-  (descRes, descView) <- mopt textField descSettings Nothing
-  (noteRes, noteView) <- mopt textField noteSettings Nothing
+    statusSettings = FieldSettings "status" Nothing Nothing (Just "status") [("class", "form-control input-lg")]
+  (dateRes, dateView) <- mreq dateField dateSettings (tdate <$> mtxn)
+  (descRes, descView) <- mopt textField descSettings (Just defPayee)
+  (noteRes, noteView) <- mopt textField noteSettings (Just defNote)
+  -- optional: a client that does not send it (the JSON API, an old form)
+  -- leaves the status as it was, unmarked for a new entry
+  (statusRes, statusView) <- mopt (selectFieldList statusOptions) statusSettings (Just . tstatus <$> mtxn)
   (acctsRes, _)       <- mreq listField acctSettings Nothing
   (amtsRes, _)        <- mreq listField amtSettings  Nothing
   (fileRes, fileView) <- mopt fileField' fileSettings Nothing
   let
-    (postingsRes, displayRows) = validatePostings trs acctsRes amtsRes
+    (postingsRes, displayRows) = validatePostings trs defRows acctsRes amtsRes
     -- hledger keeps a note after the payee in the description: "Payee | note".
     descWithNote = joinNote <$> descRes <*> noteRes
     joinNote mpayee mnote = case (T.strip <$> mpayee, T.strip <$> mnote) of
       (payee, Just note) | not (T.null note) -> Just (fromMaybe "" payee <> " | " <> note)
       (payee, _) -> payee
-    formRes = validateTransaction deffile dateRes descWithNote postingsRes fileRes
+    formRes = withStatus <$> statusRes <*> validateTransaction deffile dateRes descWithNote postingsRes fileRes
+    withStatus mst (t, f) = (t{tstatus = fromMaybe (maybe Unmarked tstatus mtxn) mst}, f)
   return (formRes, $(widgetFile "add-form"))
   where
     listField = Field
@@ -191,9 +234,9 @@ validateTransaction deffile dateRes descRes postingsRes fileRes =
 -- | Parse a list of postings out of a list of accounts and a corresponding list
 -- of amounts
 validatePostings ::
-     Translations -> FormResult [Text] -> FormResult [Text]
+     Translations -> [(Text, Text)] -> FormResult [Text] -> FormResult [Text]
   -> (FormResult [Posting], [(Int, (Text, Text, Maybe Text, Maybe Text))])
-validatePostings trs acctsRes amtsRes = let
+validatePostings trs defaults acctsRes amtsRes = let
   missingamount = tr trs "Missing amount"
   missingaccount = tr trs "Missing account"
 
@@ -234,7 +277,8 @@ validatePostings trs acctsRes amtsRes = let
   -- Add errors to forms with zero rows if the form is not a FormMissing
   result :: [(Text, Text, Either (Maybe Text, Maybe Text) Posting)]
   result = case (acctsRes, amtsRes) of
-    (FormMissing, FormMissing) -> postings
+    -- nothing submitted: show the defaults, an existing transaction's rows
+    (FormMissing, FormMissing) -> [(acc, amt, Right nullposting) | (acc, amt) <- defaults]
     _ -> case postings of
       [] -> [ ("", "", Left (Just missingaccount, Just missingamount))
            , ("", "", Left (Just missingaccount, Nothing))

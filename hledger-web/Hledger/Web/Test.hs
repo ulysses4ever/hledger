@@ -1446,6 +1446,112 @@ hledgerWebTest = do
       get (EditR jfile)
       statusIs 200
 
+    -- The transaction page (TransactionR): the add form filled from an
+    -- entry, which saves over it in the file, and a delete button. Each test
+    -- adds the entry it works on, so the order the tests run in does not
+    -- matter: the entry added last is the last in the file, so its index is
+    -- the number of entries there, and its text runs to the next blank line.
+    let entries = fromIntegral . length . filter (T.isPrefixOf "20") . T.lines :: T.Text -> Integer
+        addEntry desc = do
+          get JournalR
+          statusIs 200
+          request $ do
+            postTransaction desc
+            addToken
+          statusIs 303
+          txt <- liftIO $ TIO.readFile jfile
+          let original = T.unlines $ takeWhile (not . T.null) $ dropWhile (not . T.isInfixOf desc) $ T.lines txt
+          pure (entries txt, original)
+        -- the form's fields for a saved entry, as the page would post them
+        saveEntry n original desc = do
+          setMethod "POST"
+          setUrl (TransactionR n)
+          addPostParam "_formid" "identify-add"
+          addPostParam "original" original
+          addPostParam "date" "2025-02-05"
+          addPostParam "description" desc
+          addPostParam "status" "1"  -- unmarked
+          addPostParam "account" "assets:bank:checking"
+          addPostParam "amount" "2"
+          addPostParam "account" "income:gifts"
+          addPostParam "amount" "-2"
+
+    yit "links each journal entry to its page" $ do
+      (n, _) <- addEntry "TxnPageLink"
+      get JournalR
+      statusIs 200
+      bodyContains ("/transaction/" ++ show n ++ "\"")
+
+    yit "shows an entry's page, with the add form filled from it" $ do
+      (n, _) <- addEntry "TxnPageShow"
+      get (TransactionR n)
+      statusIs 200
+      bodyContains "value=\"TxnPageShow\""
+      bodyContains "value=\"2025-02-02\""
+      bodyContains "name=\"original\""
+      bodyContains "name=\"action\" value=\"delete\""
+
+    yit "has no page for an entry that is not there" $ do
+      get (TransactionR 999999)
+      statusIs 404
+
+    yit "saves a changed entry in place of the old one" $ do
+      (n, original) <- addEntry "TxnSaveBefore"
+      get (TransactionR n)
+      statusIs 200
+      request $ do
+        saveEntry n original "TxnSaveAfter"
+        addToken_ "#addform"  -- the page has a second form, to delete
+      statusIs 303
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the file should have the changed entry" (T.isInfixOf "2025-02-05 TxnSaveAfter" txt) True
+      assertEq "the file should no longer have the old entry" (T.isInfixOf "TxnSaveBefore" txt) False
+      assertEq "the other entries should still be there" (entries txt) n
+
+    yit "refuses to save over an entry that changed after the page was made" $ do
+      (n, _) <- addEntry "TxnStale"
+      get (TransactionR n)
+      statusIs 200
+      request $ do
+        saveEntry n "2025-02-02 TxnStale (as it was)\n" "TxnStaleChanged"
+        addToken_ "#addform"
+      statusIs 303
+      journalFileLacks jfile "TxnStaleChanged"
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the entry should be as it was" (T.isInfixOf "TxnStale" txt) True
+
+    yit "does not save an entry when the CSRF token is missing" $ do
+      (n, original) <- addEntry "TxnSaveNoToken"
+      request $ saveEntry n original "TxnSaveNoTokenChanged"
+      journalFileLacks jfile "TxnSaveNoTokenChanged"
+
+    yit "deletes an entry" $ do
+      (n, original) <- addEntry "TxnDeleteMe"
+      get (TransactionR n)
+      statusIs 200
+      request $ do
+        setMethod "POST"
+        setUrl (TransactionR n)
+        addToken_ "#deleteform"
+        addPostParam "action" "delete"
+        addPostParam "original" original
+      statusIs 303
+      journalFileLacks jfile "TxnDeleteMe"
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the other entries should still be there" (entries txt) (n - 1)
+      assertEq "the file should end with the last entry, not a blank line" (T.isSuffixOf "\n\n" txt) False
+
+    yit "does not delete an entry when the CSRF token is missing" $ do
+      (n, original) <- addEntry "TxnKeepMe"
+      request $ do
+        setMethod "POST"
+        setUrl (TransactionR n)
+        addPostParam "action" "delete"
+        addPostParam "original" original
+      statusIs 403
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the entry should still be there" (T.isInfixOf "TxnKeepMe" txt) True
+
     forM_ otherfiles $ \otherfile -> do
       yit ("refuses to edit " ++ otherfile) $ do
         get (EditR otherfile)

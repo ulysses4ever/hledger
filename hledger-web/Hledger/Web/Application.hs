@@ -27,6 +27,7 @@ import Hledger.Utils.I18n (loadAllTranslations)
 import Hledger.Web.Handler.AddR
 import Hledger.Web.Handler.MiscR
 import Hledger.Web.Handler.EditR
+import Hledger.Web.Handler.TransactionR
 import Hledger.Web.Handler.UploadR
 import Hledger.Web.Handler.JournalR
 import Hledger.Web.Handler.RegisterR

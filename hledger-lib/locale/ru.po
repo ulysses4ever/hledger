@@ -962,3 +962,63 @@ msgstr "Добавить строку"
 msgctxt "placeholder"
 msgid "Note"
 msgstr "Заметка"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Edit this entry"
+msgstr "Изменить эту запись"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Edit transaction"
+msgstr "Изменить транзакцию"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "edit transaction - hledger-web"
+msgstr "изменить транзакцию - hledger-web"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Delete"
+msgstr "Удалить"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Delete this entry?"
+msgstr "Удалить эту запись?"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Back"
+msgstr "Назад"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Unmarked"
+msgstr "Без отметки"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Pending"
+msgstr "Ожидает"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Cleared"
+msgstr "Подтверждено"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Transaction saved."
+msgstr "Транзакция сохранена."
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Transaction deleted."
+msgstr "Транзакция удалена."
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "This entry changed since the page was opened. It is shown as it is now; make the change again."
+msgstr "Эта запись изменилась с момента открытия страницы. Показано её текущее состояние; внесите изменение снова."

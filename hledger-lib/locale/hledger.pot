@@ -1338,3 +1338,63 @@ msgstr ""
 msgctxt "placeholder"
 msgid "Note"
 msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Edit this entry"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Edit transaction"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "edit transaction - hledger-web"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Delete"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Delete this entry?"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Back"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Unmarked"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Pending"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Cleared"
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Transaction saved."
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Transaction deleted."
+msgstr ""
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "This entry changed since the page was opened. It is shown as it is now; make the change again."
+msgstr ""

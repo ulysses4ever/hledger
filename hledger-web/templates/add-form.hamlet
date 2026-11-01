@@ -25,6 +25,12 @@ $# A free note, kept after the payee in the description ("Payee | note").
   <div .col-xs-12>
     <div .form-group>
       ^{fvInput noteView}
+$# The status: unmarked, pending (!) or cleared (*). A new entry is unmarked;
+$# the field shows only when editing, where confirming an entry means something.
+<div .row .status-row :not editing:.hidden>
+  <div .col-sm-3.col-xs-6>
+    <div .form-group>
+      ^{fvInput statusView}
 
 $# The placeholder templates are also read by hledger.js when it adds rows.
 <div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder}>

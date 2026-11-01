@@ -1422,3 +1422,63 @@ msgstr "添加一行"
 msgctxt "placeholder"
 msgid "Note"
 msgstr "备注"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Edit this entry"
+msgstr "编辑此条目"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Edit transaction"
+msgstr "编辑交易"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "edit transaction - hledger-web"
+msgstr "编辑交易 - hledger-web"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Delete"
+msgstr "删除"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Delete this entry?"
+msgstr "删除此条目？"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Back"
+msgstr "返回"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Unmarked"
+msgstr "未标记"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Pending"
+msgstr "待定"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Cleared"
+msgstr "已清算"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Transaction saved."
+msgstr "交易已保存。"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "Transaction deleted."
+msgstr "交易已删除。"
+
+#. hledger-web: a transaction's page.
+#: hledger-web/Hledger/Web/Handler/TransactionR.hs
+msgid "This entry changed since the page was opened. It is shown as it is now; make the change again."
+msgstr "自打开页面以来此条目已更改。现显示其当前状态；请重新进行更改。"

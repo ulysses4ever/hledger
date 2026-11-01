@@ -1,0 +1,18 @@
+$# A transaction's page: the add form filled with it, and a delete button.
+$# The entry's text as the file had it when the page was made travels with
+$# the form, so a change to the file meanwhile is noticed (TransactionR).
+<div .transaction-page .add-page>
+  <h2>
+    _{HMsg "Edit transaction"}
+  <p .transaction-heading>
+    #{heading}
+  <form#addform.form action=@{TransactionR (tindex t)} method=POST enctype=#{enctype} data-editing>
+    <input type=hidden name=original value="#{original}">
+    ^{view}
+  <form#deleteform action=@{TransactionR (tindex t)} method=POST data-confirm=_{HMsg "Delete this entry?"}>
+    $maybe token <- mtoken
+      <input type=hidden name=_token value=#{token}>
+    <input type=hidden name=original value="#{original}">
+    <input type=hidden name=action value=delete>
+    <button type=submit .btn .btn-danger .btn-lg>_{HMsg "Delete"}
+    <a .btn .btn-link .btn-lg href=@?{back}>_{HMsg "Back"}

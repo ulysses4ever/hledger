@@ -21,28 +21,7 @@ import Hledger
 import Hledger.Cli.Commands.Add (appendToJournalFileOrStdout, journalAddTransaction)
 import Hledger.Web.Import
 import Hledger.Web.WebOptions (WebOpts(..))
-import Hledger.Web.Widget.AddForm (addForm)
-
--- | Replace newlines with spaces in the transaction fields which are written
--- to the journal file verbatim: the description, the code, and the posting
--- account names. A newline in one of these would split the rendered entry
--- across lines, letting arbitrary journal directives (eg an include) be
--- written into the file. The journal format can't represent a newline in
--- these fields anyway - their parsers stop at end of line - and the CSV
--- reader collapses them likewise, so nothing that could round trip is lost.
--- Comments are left alone: they are rendered as one ";" line per line, so
--- newlines in them are safe.
-transactionCollapseNewlines :: Transaction -> Transaction
-transactionCollapseNewlines t = t
-  { tdescription = collapse $ tdescription t
-  , tcode        = collapse $ tcode t
-  , tpostings    = map collapseacct $ tpostings t
-  }
-  where
-    collapse = T.map (\c -> if c == '\n' || c == '\r' then ' ' else c)
-    -- Account names are also normalised to single spaces, since two spaces
-    -- would end the account name when the entry is read back.
-    collapseacct p = p{paccount = T.unwords . T.words $ paccount p}
+import Hledger.Web.Widget.AddForm (addForm, transactionCollapseNewlines)
 
 getAddR :: Handler ()
 getAddR = do
@@ -55,7 +34,7 @@ postAddR = do
   VD{j, today} <- getViewData
   require AddPermission
 
-  ((res, view), enctype) <- runFormPost $ addForm j today
+  ((res, view), enctype) <- runFormPost $ addForm j today Nothing
   case res of
     FormSuccess (t,f) -> do
       let t' = txnTieKnot $ transactionCollapseNewlines t
