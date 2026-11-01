@@ -1482,3 +1482,33 @@ msgstr "交易已删除。"
 #: hledger-web/Hledger/Web/Handler/TransactionR.hs
 msgid "This entry changed since the page was opened. It is shown as it is now; make the change again."
 msgstr "自打开页面以来此条目已更改。现显示其当前状态；请重新进行更改。"
+
+#. hledger-web: the add form's choice between an expense, income and a transfer.
+#: hledger-web/templates/add-form.hamlet
+msgid "Kind of entry"
+msgstr "条目类型"
+
+#. hledger-web: the add form's kind of entry.
+#: hledger-web/templates/add-form.hamlet
+msgid "Expense"
+msgstr "支出"
+
+#. hledger-web: the add form's kind of entry, and the category group.
+#: hledger-web/templates/add-form.hamlet
+msgid "Income"
+msgstr "收入"
+
+#. hledger-web: on a transfer, the first row's account placeholder.
+#: hledger-web/templates/add-form.hamlet
+msgid "To account"
+msgstr "转入账户"
+
+#. hledger-web: on a transfer, the second row's account placeholder.
+#: hledger-web/templates/add-form.hamlet
+msgid "From account"
+msgstr "转出账户"
+
+#. hledger-web: the list of currencies beside an amount.
+#: hledger-web/templates/add-form.hamlet
+msgid "Currency"
+msgstr "货币"

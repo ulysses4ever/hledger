@@ -32,9 +32,21 @@ $# the field shows only when editing, where confirming an entry means something.
     <div .form-group>
       ^{fvInput statusView}
 
+$# What the entry is - an expense, income, or a transfer between accounts -
+$# narrows the category list to that kind (hledger.js); the choice is kept
+$# in a cookie. On a transfer the rows are the accounts paid to and from.
+<div .row .kind-row>
+  <div .col-xs-12>
+    <div .btn-group .kind-select role=group aria-label=_{HMsg "Kind of entry"}
+         data-to=_{HMsg "To account"} data-from=_{HMsg "From account"}
+         data-subcategory=_{HMsg "Subcategory"} data-account=#{accountLabel 2}>
+      <button type=button .btn .btn-default .kind-option data-kind=expenses>_{HMsg "Expense"}
+      <button type=button .btn .btn-default .kind-option data-kind=income>_{HMsg "Income"}
+      <button type=button .btn .btn-default .kind-option data-kind=transfer>_{HMsg "Transfer"}
+
 $# The placeholder templates are also read by hledger.js when it adds rows.
 <div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder}>
-  $forall (n, (acc, amt, accE, amtE)) <- displayRows
+  $forall (n, (acc, amt, cmdty, accE, amtE)) <- displayRows
     <div .form-group .row .account-group>
       $# Lists to pick from, rather than fields to type in: on a phone typing
       $# an account name is the hard part of an entry, and the books accept
@@ -47,15 +59,15 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
         <div .col-xs-12>
           <select .category-select.form-control.input-lg data-row=#{n} aria-label=_{HMsg "Category"}>
             <option value="" selected>_{HMsg "Category"}
-            $forall (grp, cats) <- categoryGroups
-              <optgroup label=#{grp}>
+            $forall (kind, grp, cats) <- categoryGroups
+              <optgroup label=#{grp} data-kind=#{kind}>
                 $forall (key, label, _) <- cats
                   <option value=#{key}>#{label}
       <div .col-sm-9.col-xs-7 :isJust accE:.has-error>
         <select .account-input.form-control.input-lg name=account data-row=#{n}>
           $if n == 1
             <option value="" :T.null (chosen n acc):selected>_{HMsg "Subcategory"}
-            $forall (_, cats) <- categoryGroups
+            $forall (_, _, cats) <- categoryGroups
               $forall (key, _, items) <- cats
                 $forall (v, l) <- items
                   <option value=#{v} data-category=#{key} :v == chosen n acc:selected>#{l}
@@ -67,12 +79,20 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
                   <option value=#{v} :v == chosen n acc:selected>#{l}
         $maybe err <- accE
           <span .help-block .error-block>_{err}
-      $# The last row's amount is left to hledger (see hledger.css), so a
-      $# two-row entry is one account, one amount, and the account it comes
-      $# from. Another row shows it again.
+      $# The amount, with the currency it is in picked beside it when the
+      $# books hold more than one. The last row's amount is left to hledger
+      $# (see hledger.css), so a two-row entry is one account, one amount,
+      $# and the account it comes from. Another row shows it again.
       <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
-        <input .amount-input.form-control.input-lg type=text
-          name=amount placeholder=#{amountLabel n} value="#{amt}">
+        <div .amount-with-currency>
+          $if length commodities <= 1
+            <input type=hidden name=commodity value=#{defaultCommodity}>
+          <input .amount-input.form-control.input-lg type=text
+            name=amount placeholder=#{amountLabel n} value="#{amt}">
+          $if length commodities > 1
+            <select .currency-select.form-control.input-lg name=commodity aria-label=_{HMsg "Currency"}>
+              $forall c <- commodities
+                <option value=#{c} :c == pickedCommodity cmdty:selected>#{commodityLabel c}
         $maybe err <- amtE
           <span .help-block .error-block>_{err}
 <div .add-row>
@@ -80,10 +100,11 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
 
 <div .row>
   <div .col-sm-9.col-xs-7>
+    $# New entries go to the journal's main file. A chooser for another of
+    $# its files only confused, so it is kept out of sight; the form still
+    $# says which file.
     $if length files > 1
-      _{HMsg "Add to:"}
-      &nbsp;
-      <div .form-group .file-select :isJust (fvErrors fileView):.has-error>
+      <div .form-group .file-select .hidden :isJust (fvErrors fileView):.has-error>
         ^{fvInput fileView}
         $maybe err <- fvErrors fileView
           <span .help-block .error-block>#{err}

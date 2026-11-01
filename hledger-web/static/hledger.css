@@ -278,10 +278,42 @@ td.date,
   font-weight: bold;
 }
 
+/* The kind of entry: three buttons across the form, the chosen one pressed. */
+#addform .kind-select {
+  display: flex;
+  margin-bottom: 15px;
+}
+#addform .kind-select .kind-option {
+  flex: 1;
+}
+
+/* The amount and the currency it is in, as one control: the currency list
+   sits against the amount's right edge, as wide as its label. */
+#addform .amount-with-currency {
+  display: flex;
+}
+#addform .amount-with-currency .amount-input {
+  flex: 1;
+  min-width: 0;
+}
+#addform .amount-with-currency .amount-input:not(:last-child) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+#addform .currency-select {
+  flex: none;
+  width: auto;
+  margin-left: -1px;
+  padding-right: 6px;
+  padding-left: 6px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 /* The last posting row's amount is hledger's to work out, so it is not
    asked for; adding a row shows the previous last row's. The button that
    adds a row sits under the rows, set a little apart. */
-#addform .account-group:last-child .amount-input {
+#addform .account-group:last-child .amount-with-currency {
   display: none;
 }
 #addform .add-row {

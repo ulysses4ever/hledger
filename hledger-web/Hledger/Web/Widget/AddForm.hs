@@ -14,11 +14,12 @@ module Hledger.Web.Widget.AddForm
 import Control.Applicative ((<|>))
 import Control.Monad.State.Strict (evalStateT)
 import Data.Bifunctor (first)
+import Data.Char (isAlpha)
 import Data.Foldable (toList)
 import Data.Function (on)
 import Data.List (dropWhileEnd, elemIndex, groupBy, maximumBy, nub, sortOn, unfoldr)
 import Data.Map.Strict qualified as M
-import Data.Maybe (isJust, fromMaybe)
+import Data.Maybe (isJust, fromMaybe, listToMaybe)
 import Data.Ord (comparing)
 import Data.Set qualified as S
 import Data.Text (Text)
@@ -83,11 +84,26 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
       Just (p, n) | not (T.null n) -> (Just (T.strip p), Just (T.strip (T.drop 3 n)))
       Just (p, _) -> (Just (T.strip p), Nothing)
       Nothing -> (Nothing, Nothing)
-    -- each posting's account; the last amount is left to hledger, as in
-    -- a new entry, so that changing the first amount keeps the entry balanced
+    -- each posting's account, amount and currency; the last amount is left
+    -- to hledger, as in a new entry, so that changing the first amount keeps
+    -- the entry balanced
     defRows = case tpostings <$> mtxn of
-      Just ps@(_ : _) -> [(paccount p, if i == length ps then "" else wbToText (showMixedAmountB oneLineNoCostFmt (pamount p))) | (i, p) <- zip [1 :: Int ..] ps]
+      Just ps@(_ : _) -> [(paccount p, if i == length ps then "" else shownNumber p, shownCommodity p) | (i, p) <- zip [1 :: Int ..] ps]
       _ -> []
+    -- an amount as it is typed: the number alone, its currency picked beside
+    -- it, and an income's positive (see validatePostings)
+    shownNumber p = case amountsRaw (pamount p) of
+      [a] -> wbToText $ showAmountB machineFmt{displayCommodity = False} (if isRevenue (paccount p) then negate a else a)
+      _ -> wbToText $ showMixedAmountB oneLineNoCostFmt (pamount p)
+    shownCommodity p = case amountsRaw (pamount p) of
+      [a] -> acommodity a
+      _ -> ""
+    isRevenue a = accountType a == Just Revenue
+    -- the currencies to pick from beside an amount: the journal's, dollars first
+    commodities = filter (not . T.null) $ S.toList $ journalCommodities j
+    defaultCommodity = if "$" `elem` commodities then "$" else fromMaybe "" (listToMaybe commodities)
+    pickedCommodity c = if T.null c then defaultCommodity else c
+    commodityLabel c = fromMaybe c $ lookup c [("$", "USD"), ("\8364", "EUR"), ("\163", "GBP"), ("\8381", "RUB"), ("\165", "JPY")]
     statusOptions = [(tr trs "Unmarked", Unmarked), (tr trs "Pending", Pending), (tr trs "Cleared", Cleared)]
     descriptions = foldMap S.fromList [journalPayeesDeclaredOrUsed j, journalDescriptions j]
     files = fst <$> jfiles j
@@ -126,10 +142,11 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
       [] -> [(k, categoryLabel k)]
       subs -> subs
     categoryKeys = nub $ map categoryKey [a | a <- names, not (isCategoryTop a)]
-    categoryGroups :: [(Text, [(Text, Text, [(Text, Text)])])]
+    -- Each group: its key (the kind of entry it is), its label, its categories.
+    categoryGroups :: [(Text, Text, [(Text, Text, [(Text, Text)])])]
     categoryGroups =
-      [ (grp, cats)
-      | (grp, isIn) <- [(tr trs "Expenses", (== "expenses") . T.toLower . topOf), (tr trs "Income", (`elem` ["income", "revenues"]) . T.toLower . topOf), (tr trs "Transfer", not . isCategoryTop . topOf)]
+      [ (key, grp, cats)
+      | (key, grp, isIn) <- [("expenses", tr trs "Expenses", (== "expenses") . T.toLower . topOf), ("income", tr trs "Income", (`elem` ["income", "revenues"]) . T.toLower . topOf), ("transfer", tr trs "Transfer", not . isCategoryTop . topOf)]
       , let cats = [ (k, categoryLabel k, within k) | k <- categoryKeys, isIn k ]
       , not (null cats) ]
     -- The accounts to pick from, grouped by top-level account, each shown
@@ -182,9 +199,10 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
   (statusRes, statusView) <- mopt (selectFieldList statusOptions) statusSettings (Just . tstatus <$> mtxn)
   (acctsRes, _)       <- mreq listField acctSettings Nothing
   (amtsRes, _)        <- mreq listField amtSettings  Nothing
+  (cmdtysRes, _)      <- mreq listField cmdtySettings Nothing
   (fileRes, fileView) <- mopt fileField' fileSettings Nothing
   let
-    (postingsRes, displayRows) = validatePostings trs defRows acctsRes amtsRes
+    (postingsRes, displayRows) = validatePostings trs isRevenue defRows acctsRes amtsRes cmdtysRes
     -- hledger keeps a note after the payee in the description: "Payee | note".
     descWithNote = joinNote <$> descRes <*> noteRes
     joinNote mpayee mnote = case (T.strip <$> mpayee, T.strip <$> mnote) of
@@ -210,6 +228,7 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
     -- field settings
     acctSettings = FieldSettings "account" Nothing Nothing (Just "account") []
     amtSettings  = FieldSettings "amount" Nothing Nothing (Just "amount") []
+    cmdtySettings = FieldSettings "commodity" Nothing Nothing (Just "commodity") []
     fileSettings = FieldSettings "file" Nothing Nothing (Just "file") [("class", "form-control input-lg")]
 
 validateTransaction ::
@@ -232,38 +251,42 @@ validateTransaction deffile dateRes descRes postingsRes fileRes =
       where f = fromMaybe deffile mfile
 
 -- | Parse a list of postings out of a list of accounts and a corresponding list
--- of amounts
+-- of amounts, each with the currency picked beside it. An amount typed on a
+-- revenue account is money received, so it is stored negated, as the books
+-- have it.
 validatePostings ::
-     Translations -> [(Text, Text)] -> FormResult [Text] -> FormResult [Text]
-  -> (FormResult [Posting], [(Int, (Text, Text, Maybe Text, Maybe Text))])
-validatePostings trs defaults acctsRes amtsRes = let
+     Translations -> (Text -> Bool) -> [(Text, Text, Text)] -> FormResult [Text] -> FormResult [Text] -> FormResult [Text]
+  -> (FormResult [Posting], [(Int, (Text, Text, Text, Maybe Text, Maybe Text))])
+validatePostings trs isRevenue defaults acctsRes amtsRes cmdtysRes = let
   missingamount = tr trs "Missing amount"
   missingaccount = tr trs "Missing account"
 
-  -- Zip accounts and amounts, fill in missing values and drop empty rows.
-  rows :: [(Text, Text)]
-  rows = filter (/= ("", "")) $ zipDefault "" (formSuccess [] acctsRes) (formSuccess [] amtsRes)
+  -- Zip accounts, amounts and currencies, fill in missing values and drop empty rows.
+  rows :: [(Text, Text, Text)]
+  rows = [ (acc, amt, c) | ((acc, amt), c) <- zip pairs (formSuccess [] cmdtysRes ++ repeat ""), (acc, amt) /= ("", "") ]
+    where pairs = zipDefault "" (formSuccess [] acctsRes) (formSuccess [] amtsRes)
 
   -- Parse values and check for incomplete rows with only an account or an amount.
   -- The boolean in unfoldr state is for special handling of 'missingamt', where
   -- one row may have only an account and not an amount.
-  postings :: [(Text, Text, Either (Maybe Text, Maybe Text) Posting)]
+  postings :: [(Text, Text, Text, Either (Maybe Text, Maybe Text) Posting)]
   postings = unfoldr go (True, rows)
     where
-      go (True, (x, ""):y:xs) = Just ((x, "", zipRow (checkAccount x) (Left missingamount)), (True, y:xs))
-      go (True, (x, ""):xs) = Just ((x, "", zipRow (checkAccount x) (Right missingamt)), (False, xs))
-      go (False, (x, ""):xs) = Just ((x, "", zipRow (checkAccount x) (Left missingamount)), (False, xs))
-      go (_, ("", y):xs) = Just (("", y, zipRow (Left missingaccount) (checkAmount y)), (False, xs))
-      go (_, (x, y):xs) = Just ((x, y, zipRow (checkAccount x) (checkAmount y)), (True, xs))
+      go (True, (x, "", c):y:xs) = Just ((x, "", c, zipRow (checkAccount x) (Left missingamount)), (True, y:xs))
+      go (True, (x, "", c):xs) = Just ((x, "", c, zipRow (checkAccount x) (Right missingamt)), (False, xs))
+      go (False, (x, "", c):xs) = Just ((x, "", c, zipRow (checkAccount x) (Left missingamount)), (False, xs))
+      go (_, ("", y, c):xs) = Just (("", y, c, zipRow (Left missingaccount) (checkAmount c y)), (False, xs))
+      go (_, (x, y, c):xs) = Just ((x, y, c, zipRow (checkAccount x) (checkAmount c y)), (True, xs))
       go (_, []) = Nothing
 
   zipRow (Left e) (Left e') = Left (Just e, Just e')
   zipRow (Left e) (Right _) = Left (Just e, Nothing)
   zipRow (Right _) (Left e) = Left (Nothing, Just e)
-  zipRow (Right acct') (Right amt) = Right (nullposting {paccount = acct, preal = atype, pamount = mixedAmount amt})
+  zipRow (Right acct') (Right amt) = Right (nullposting {paccount = acct, preal = atype, pamount = mixedAmount amt'})
     where
       acct = accountNameWithoutPostingType acct'
       atype = accountNamePostingType acct'
+      amt' = if isRevenue acct && amt /= missingamt then negate amt else amt
 
   -- The parser's own message stays in English, inside a translated frame.
   -- (The signature keeps this polymorphic under MonoLocalBinds, since it mentions trs.)
@@ -272,28 +295,34 @@ validatePostings trs defaults acctsRes amtsRes = let
                           foldl (\s a -> s <> parseErrorTextPretty a) "" .
                           bundleErrors)
   checkAccount = errorToFormMsg . runParser (accountnamep <* eof) "" . T.strip
-  checkAmount = errorToFormMsg . runParser (evalStateT (amountp <* eof) nulljournal) "" . T.strip
+  -- the currency picked beside an amount applies unless the amount names one itself
+  checkAmount c = errorToFormMsg . runParser (evalStateT (amountp <* eof) nulljournal) "" . withCommodity c . T.strip
+  withCommodity c amt
+    | T.null c || T.null amt || T.any (\ch -> isAlpha ch || ch `elem` ("$\8364\163\8381\165" :: String)) amt = amt
+    | T.all isAlpha c = amt <> " " <> c
+    | T.isPrefixOf "-" amt = "-" <> c <> T.drop 1 amt
+    | otherwise = c <> amt
 
   -- Add errors to forms with zero rows if the form is not a FormMissing
-  result :: [(Text, Text, Either (Maybe Text, Maybe Text) Posting)]
+  result :: [(Text, Text, Text, Either (Maybe Text, Maybe Text) Posting)]
   result = case (acctsRes, amtsRes) of
     -- nothing submitted: show the defaults, an existing transaction's rows
-    (FormMissing, FormMissing) -> [(acc, amt, Right nullposting) | (acc, amt) <- defaults]
+    (FormMissing, FormMissing) -> [(acc, amt, c, Right nullposting) | (acc, amt, c) <- defaults]
     _ -> case postings of
-      [] -> [ ("", "", Left (Just missingaccount, Just missingamount))
-           , ("", "", Left (Just missingaccount, Nothing))
+      [] -> [ ("", "", "", Left (Just missingaccount, Just missingamount))
+           , ("", "", "", Left (Just missingaccount, Nothing))
            ]
       xs -> xs
 
   -- Prepare rows for rendering - resolve Eithers into error messages and pad to
   -- at least two rows (the form has a button for more)
-  display' = flip fmap result $ \(acc, amt, res) -> case res of
-    Left (mAccountErr, mAmountErr) -> (acc, amt, mAccountErr, mAmountErr)
-    Right _ -> (acc, amt, Nothing, Nothing)
-  display = display' ++ replicate (2 - length display') ("", "", Nothing, Nothing)
+  display' = flip fmap result $ \(acc, amt, c, res) -> case res of
+    Left (mAccountErr, mAmountErr) -> (acc, amt, c, mAccountErr, mAmountErr)
+    Right _ -> (acc, amt, c, Nothing, Nothing)
+  display = display' ++ replicate (2 - length display') ("", "", "", Nothing, Nothing)
 
   -- And finally prepare the final FormResult [Posting]
-  formResult = case traverse (\(_, _, x) -> x) result of
+  formResult = case traverse (\(_, _, _, x) -> x) result of
     Left _ -> FormFailure [tr trs "Postings validation failed"]
     Right xs -> FormSuccess xs
 

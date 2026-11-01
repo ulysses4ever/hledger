@@ -230,11 +230,12 @@ function addformFocus() {
   if (!addform) { return; }
   // An existing entry's page shows that entry: no today's date, no remembered
   // accounts; only the category list is set from the entry's own account.
-  if ('editing' in addform.dataset) { addformCategoryInit(); return; }
+  if ('editing' in addform.dataset) { addformCategoryInit(); addformKindInit(); return; }
   addform.querySelector('input[name=date]').value = isoDate();
   var datepicked = document.getElementById('datepicked');
   if (datepicked) { datepicked.value = isoDate(); }
   addformCategoryInit();
+  addformKindInit();
   addform.querySelectorAll('select[name=account]').forEach(function(sel) {
     var saved = getCookie('addaccount' + sel.dataset.row);
     if (!saved) { return; }
@@ -294,6 +295,10 @@ function addformSetCategory(key, keep) {
   var category = document.querySelector('#addform .category-select');
   var account = document.querySelector('#addform select[name=account][data-row="1"]');
   if (!category || !account) { return; }
+  // a category of another kind of entry (a remembered one, say) brings its kind along
+  if (key && addformCategoryGroups && ![].some.call(category.options, function(o) { return o.value === key; })) {
+    addformSetKind(addformKindOf(key), key);
+  }
   if (category.value !== key) { category.value = key; }
   var placeholder = account.options[0];
   // nothing to pick from until a category is picked
@@ -303,6 +308,66 @@ function addformSetCategory(key, keep) {
   if (keep && options.some(function(o) { return o.value === keep; })) { account.value = keep; }
   else if (key && options.length === 1) { account.value = options[0].value; }
   else { placeholder.selected = true; account.value = ''; }
+}
+
+// The kind of entry - expense, income or transfer - picked above the
+// category narrows the category list to its group (the groups are kept
+// aside once read). The choice is remembered in a cookie; an existing
+// entry's page starts on its own account's kind. On a transfer the rows
+// are named by what they are: the account paid to, and the one paid from.
+var addformCategoryGroups = null;
+function addformKindInit() {
+  var kinds = document.querySelector('#addform .kind-select');
+  var category = document.querySelector('#addform .category-select');
+  if (!kinds || !category) { return; }
+  if (!addformCategoryGroups) {
+    addformCategoryGroups = [].map.call(category.querySelectorAll('optgroup'), function(g) {
+      return { kind: g.dataset.kind, options: [].slice.call(g.children) };
+    });
+    kinds.querySelectorAll('.kind-option').forEach(function(b) {
+      b.addEventListener('click', function() {
+        addformSetKind(b.dataset.kind, '');
+        addformSetCategory('');
+        setCookie('addkind', b.dataset.kind);
+      });
+    });
+  }
+  var account = document.querySelector('#addform select[name=account][data-row="1"]');
+  var chosen = account && account.options[account.selectedIndex];
+  var key = chosen && chosen.value ? chosen.dataset.category : '';
+  addformSetKind(key ? addformKindOf(key) : (getCookie('addkind') || 'expenses'), key);
+}
+function addformKindOf(categoryKey) {
+  var g = addformCategoryGroups.find(function(g) {
+    return g.options.some(function(o) { return o.value === categoryKey; });
+  });
+  return g ? g.kind : 'expenses';
+}
+function addformSetKind(kind, categoryKey) {
+  var kinds = document.querySelector('#addform .kind-select');
+  var category = document.querySelector('#addform .category-select');
+  if (!kinds || !category || !addformCategoryGroups) { return; }
+  if (!addformCategoryGroups.some(function(g) { return g.kind === kind; }) && addformCategoryGroups.length) {
+    kind = addformCategoryGroups[0].kind;
+  }
+  kinds.dataset.kind = kind;
+  kinds.querySelectorAll('.kind-option').forEach(function(b) {
+    var on = b.dataset.kind === kind;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  // the category list: its placeholder, then the kind's categories
+  while (category.children.length > 1) { category.removeChild(category.lastChild); }
+  addformCategoryGroups.forEach(function(g) {
+    if (g.kind === kind) { g.options.forEach(function(o) { category.appendChild(o); }); }
+  });
+  category.value = categoryKey || '';
+  if (category.value !== (categoryKey || '')) { category.value = ''; }
+  var transfer = kind === 'transfer';
+  var first = document.querySelector('#addform select[name=account][data-row="1"] option[value=""]');
+  var second = document.querySelector('#addform select[name=account][data-row="2"] option[value=""]');
+  if (first) { first.textContent = transfer ? kinds.dataset.to : kinds.dataset.subcategory; }
+  if (second) { second.textContent = transfer ? kinds.dataset.from : kinds.dataset.account; }
 }
 
 // Insert another posting row in the add form.

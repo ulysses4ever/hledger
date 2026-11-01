@@ -1398,3 +1398,33 @@ msgstr ""
 #: hledger-web/Hledger/Web/Handler/TransactionR.hs
 msgid "This entry changed since the page was opened. It is shown as it is now; make the change again."
 msgstr ""
+
+#. hledger-web: the add form's choice between an expense, income and a transfer.
+#: hledger-web/templates/add-form.hamlet
+msgid "Kind of entry"
+msgstr ""
+
+#. hledger-web: the add form's kind of entry.
+#: hledger-web/templates/add-form.hamlet
+msgid "Expense"
+msgstr ""
+
+#. hledger-web: the add form's kind of entry, and the category group.
+#: hledger-web/templates/add-form.hamlet
+msgid "Income"
+msgstr ""
+
+#. hledger-web: on a transfer, the first row's account placeholder.
+#: hledger-web/templates/add-form.hamlet
+msgid "To account"
+msgstr ""
+
+#. hledger-web: on a transfer, the second row's account placeholder.
+#: hledger-web/templates/add-form.hamlet
+msgid "From account"
+msgstr ""
+
+#. hledger-web: the list of currencies beside an amount.
+#: hledger-web/templates/add-form.hamlet
+msgid "Currency"
+msgstr ""

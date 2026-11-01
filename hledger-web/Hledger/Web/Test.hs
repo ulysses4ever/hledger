@@ -1348,7 +1348,7 @@ hledgerWebTest = do
           addPostParam "account" "assets:bank:checking"
           addPostParam "amount" "1"
           addPostParam "account" "income:gifts"
-          addPostParam "amount" "-1"
+          addPostParam "amount" "1"  -- typed positive: money received (stored negated)
 
     yit "does not add a transaction when the CSRF token is missing" $ do
       request $ postTransaction "CsrfNoToken"
@@ -1474,7 +1474,7 @@ hledgerWebTest = do
           addPostParam "account" "assets:bank:checking"
           addPostParam "amount" "2"
           addPostParam "account" "income:gifts"
-          addPostParam "amount" "-2"
+          addPostParam "amount" "2"  -- typed positive: money received (stored negated)
 
     yit "links each journal entry to its page" $ do
       (n, _) <- addEntry "TxnPageLink"
@@ -1540,6 +1540,37 @@ hledgerWebTest = do
       txt <- liftIO $ TIO.readFile jfile
       assertEq "the other entries should still be there" (entries txt) (n - 1)
       assertEq "the file should end with the last entry, not a blank line" (T.isSuffixOf "\n\n" txt) False
+
+    -- An amount typed on an income account is money received, which the
+    -- books have as a negative posting; and a bare amount takes the currency
+    -- picked beside it. (Both rows send an amount: yesod-test may send
+    -- repeated params in reverse order, see above.)
+    let addTyped desc rows = do
+          get JournalR
+          statusIs 200
+          request $ do
+            setMethod "POST"
+            setUrl AddR
+            addToken
+            addPostParam "_formid" "identify-add"
+            addPostParam "date" "2025-02-02"
+            addPostParam "description" desc
+            forM_ rows $ \(acct, amt, cmdty) -> do
+              addPostParam "account" acct
+              addPostParam "amount" amt
+              addPostParam "commodity" cmdty
+          statusIs 303
+          txt <- liftIO $ TIO.readFile jfile
+          pure $ takeWhile (not . T.null) $ dropWhile (not . T.isInfixOf desc) $ T.lines txt
+
+    yit "stores an amount typed on an income account as money received" $ do
+      ls <- addTyped "IncomeTyped" [("income:gifts", "25", ""), ("assets:bank:checking", "25", "")]
+      assertEq "the income posting should be negative" (any (\l -> T.isInfixOf "income:gifts" l && T.isInfixOf "-25" l) ls) True
+      assertEq "the asset posting should be positive" (any (\l -> T.isInfixOf "assets:bank:checking" l && T.isInfixOf " 25" l && not (T.isInfixOf "-25" l)) ls) True
+
+    yit "adds the currency picked beside a bare amount" $ do
+      ls <- addTyped "CurrencyPicked" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
+      assertEq "the amount should be in euros" (any (T.isInfixOf "5 EUR") ls) True
 
     yit "does not delete an entry when the CSRF token is missing" $ do
       (n, original) <- addEntry "TxnKeepMe"

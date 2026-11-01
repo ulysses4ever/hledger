@@ -87,16 +87,37 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     const category = page.locator('#addform .category-select');
-    expect(await category.locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Expenses', 'Income', 'Transfer']);
-    expect(await category.locator('optgroup[label="Expenses"] option').allTextContents()).toEqual(['food', 'transport']);
+    // the kind of entry, Expense to begin with, narrows the categories to its own
+    await expect(page.locator('#addform .kind-option[data-kind=expenses]')).toHaveClass(/active/);
+    expect(await category.locator('option').allTextContents()).toEqual(['Category', 'food', 'transport']);
     await category.selectOption('expenses:food');
     const account = page.locator('#addform select[name=account]').nth(0);
     expect(await account.locator('option').allTextContents()).toEqual(['Subcategory', 'dining', 'dining › xss<script>alert(1)</script>', 'groceries']);
     await account.selectOption('expenses:food:groceries');
     // a category with one account picks it at once
+    await page.locator('#addform .kind-option[data-kind=income]').click();
+    expect(await category.locator('option').allTextContents()).toEqual(['Category', 'salary']);
     await category.selectOption('income:salary');
     await expect(account).toHaveValue('income:salary');
     expect(await page.locator('#addform select[name=account]').nth(1).locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Assets', 'Equity', 'Expenses', 'Income']);
+  });
+
+  test('the kind of entry is remembered, and a transfer names the accounts to and from', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    await page.locator('#addform .kind-option[data-kind=transfer]').click();
+    const category = page.locator('#addform .category-select');
+    expect(await category.locator('option').allTextContents()).toEqual(['Category', 'Assets', 'Equity']);
+    await expect(page.locator('#addform select[name=account]').nth(0).locator('option').first()).toHaveText('To account');
+    await expect(page.locator('#addform select[name=account]').nth(1).locator('option').first()).toHaveText('From account');
+    await page.goto('/journal');
+    await openAddForm(page);
+    await expect(page.locator('#addform .kind-option[data-kind=transfer]')).toHaveClass(/active/);
+    await page.locator('#addform .kind-option[data-kind=expenses]').click();
+    await expect(page.locator('#addform select[name=account]').nth(0).locator('option').first()).toHaveText('Subcategory');
+    // the file chooser is out of sight: new entries go to the main file
+    await expect(page.locator('#addform select[name=file]')).toBeHidden();
+    expect(pageErrors).toEqual([]);
   });
 
   // Completion is a native <datalist>. The browser draws its dropdown outside
@@ -110,6 +131,7 @@ test.describe('add form', () => {
     await expect(first.locator('option')).toHaveCount(1);
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await expect(first.locator('option[value="expenses:food:dining"][data-category="expenses:food"]')).toHaveText('dining');
+    await page.locator('#addform .kind-option[data-kind=transfer]').click();  // asset accounts are under Transfer
     await page.locator('#addform .category-select').selectOption('assets');
     await expect(first.locator('option[value="assets:bank:checking"][data-category="assets"]')).toHaveText('bank › checking');
     await expect(first).toHaveValue('');
