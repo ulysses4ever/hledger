@@ -278,6 +278,11 @@ td.date,
   font-weight: bold;
 }
 
+/* The payee list, with the field for a new payee under it when shown. */
+#addform .payee-group .payee-select + input {
+  margin-top: 5px;
+}
+
 /* The kind of entry: three buttons across the form, the chosen one pressed. */
 #addform .kind-select {
   display: flex;

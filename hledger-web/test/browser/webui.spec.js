@@ -8,6 +8,12 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 
+// Pick "New payee…" in the payee list and type the payee into the field it shows.
+async function setPayee(page, name) {
+  await page.locator('#addform .payee-select').selectOption({ index: 1 });
+  await page.locator('#addform input[name=description]').fill(name);
+}
+
 // Collect uncaught page errors in every test; individual tests assert on them.
 let pageErrors;
 test.beforeEach(({ page }) => {
@@ -83,6 +89,23 @@ test.describe('add form', () => {
     expect(pageErrors).toEqual([]);
   });
 
+  test('the payee is picked from a list, the frequent ones first, or typed as a new one', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    const pick = page.locator('#addform .payee-select');
+    const input = page.locator('#addform input[name=description]');
+    await expect(input).toBeHidden();
+    expect(await pick.locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Frequent', 'All payees']);
+    expect(await pick.locator('optgroup[label="Frequent"] option').first().textContent()).toBe('Grocer Green');
+    await pick.selectOption('Cafe Luna');
+    await expect(input).toHaveValue('Cafe Luna');
+    await expect(input).toBeHidden();
+    await pick.selectOption({ index: 1 });  // New payee…
+    await expect(input).toBeVisible();
+    await expect(input).toHaveValue('');
+    expect(pageErrors).toEqual([]);
+  });
+
   test('the first row picks a category, then an account within it; the second row lists assets first', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
@@ -149,7 +172,7 @@ test.describe('add form', () => {
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:groceries');
     await page.locator('#addform select[name=account]').nth(1).selectOption('equity:opening');
-    await page.locator('#addform input[name=description]').fill('remembered');
+    await setPayee(page, 'remembered');
     await page.locator('#addform input[name=amount]').nth(0).fill('1');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#main-content')).toContainText('remembered');
@@ -173,7 +196,7 @@ test.describe('add form', () => {
   test('adds a transaction', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    await page.locator('#addform input[name=description]').fill('E2eCreatePlain');
+    await setPayee(page, 'E2eCreatePlain');
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('12.34');
@@ -186,7 +209,7 @@ test.describe('add form', () => {
   test('reports an unbalanced transaction without adding it', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    await page.locator('#addform input[name=description]').fill('E2eUnbalanced');
+    await setPayee(page, 'E2eUnbalanced');
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');
@@ -207,7 +230,7 @@ test.describe('transaction page', () => {
   async function openEntry(page, desc, amount) {
     await page.goto('/journal');
     await openAddForm(page);
-    await page.locator('#addform input[name=description]').fill(desc);
+    await setPayee(page, desc);
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill(amount);
@@ -226,7 +249,7 @@ test.describe('transaction page', () => {
     await expect(page.locator('#addform input[name=amount]').nth(0)).toHaveValue(/^7(\.00)?$/);
     await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('assets:bank:checking');
     await page.locator('#addform input[name=amount]').nth(0).fill('8.50');
-    await page.locator('#addform input[name=description]').fill('E2eEdited');
+    await setPayee(page, 'E2eEdited');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toContainText('Transaction saved.');
     const journal = fs.readFileSync(process.env.BROWSER_JOURNAL, 'utf8');
@@ -290,16 +313,17 @@ test.describe('search', () => {
     await expect(page).toHaveURL(/date%3A2025/);
     expect(dialogMessage).toBeNull();
     // the filter was applied: only the matching transaction remains
-    await expect(page.locator('#main-content')).toContainText('weekly shop');
-    await expect(page.locator('#main-content')).not.toContainText('Cafe Luna');
+    // (the table: the add form's payee list names every payee)
+    await expect(page.locator('#main-content table')).toContainText('weekly shop');
+    await expect(page.locator('#main-content table')).not.toContainText('Cafe Luna');
   });
 
   test('an account query filters the register', async ({ page }) => {
     await page.goto('/journal');
     await page.locator('#searchform input[name=q]').fill('acct:dining');
     await page.locator('#searchform input[name=q]').press('Enter');
-    await expect(page.locator('#main-content')).toContainText('Cafe Luna');
-    await expect(page.locator('#main-content')).not.toContainText('Metro Transit');
+    await expect(page.locator('#main-content table')).toContainText('Cafe Luna');
+    await expect(page.locator('#main-content table')).not.toContainText('Metro Transit');
   });
 
 });
@@ -483,7 +507,7 @@ test('a note goes after the payee in the description', async ({ page }) => {
   await page.goto('/journal');
   await page.locator('body').press('a');
   await expect(page.locator('#addmodal')).toBeVisible();
-  await page.locator('#addform input[name=description]').fill('Cafe Noted');
+  await setPayee(page, 'Cafe Noted');
   await page.locator('#addform input[name=note]').fill('with a note');
   await page.locator('#addform .category-select').selectOption('expenses:food');
   await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');

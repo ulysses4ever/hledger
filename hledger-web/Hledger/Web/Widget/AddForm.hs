@@ -106,6 +106,11 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
     commodityLabel c = fromMaybe c $ lookup c [("$", "USD"), ("\8364", "EUR"), ("\163", "GBP"), ("\8381", "RUB"), ("\165", "JPY")]
     statusOptions = [(tr trs "Unmarked", Unmarked), (tr trs "Pending", Pending), (tr trs "Cleared", Cleared)]
     descriptions = foldMap S.fromList [journalPayeesDeclaredOrUsed j, journalDescriptions j]
+    -- the payees to pick from: the ten used most, then all of them
+    payeeCounts = M.fromListWith (+) [(transactionPayee t, 1 :: Int) | t <- jtxns j, not (T.null (transactionPayee t))]
+    frequentPayees = map fst $ take 10 $ sortOn (negate . snd) $ M.toList payeeCounts
+    allPayees = sortOn T.toLower $ filter (not . T.null) $ journalPayeesDeclaredOrUsed j
+    payeePlaceholder = trc trs "placeholder" "Payee"
     files = fst <$> jfiles j
     deffile = journalFilePath j
     accountPlaceholder = tr trs "Account {n}"

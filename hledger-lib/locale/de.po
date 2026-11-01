@@ -1052,3 +1052,18 @@ msgstr "Von Konto"
 #: hledger-web/templates/add-form.hamlet
 msgid "Currency"
 msgstr "Währung"
+
+#. hledger-web: the payee list's choice that shows the field to type a new payee.
+#: hledger-web/templates/add-form.hamlet
+msgid "New payee…"
+msgstr "Neuer Empfänger…"
+
+#. hledger-web: the payee list's group of the payees used most.
+#: hledger-web/templates/add-form.hamlet
+msgid "Frequent"
+msgstr "Häufige"
+
+#. hledger-web: the payee list's group of every payee.
+#: hledger-web/templates/add-form.hamlet
+msgid "All payees"
+msgstr "Alle Empfänger"

@@ -9,6 +9,12 @@
 const { test, expect } = require('@playwright/test');
 const { watchViolations, expectNoViolations } = require('./helpers');
 
+// Pick "New payee…" in the payee list and type the payee into the field it shows.
+async function setPayee(page, name) {
+  await page.locator('#addform .payee-select').selectOption({ index: 1 });
+  await page.locator('#addform input[name=description]').fill(name);
+}
+
 // A payload that executes if it is ever inserted as markup rather than text.
 // Tests assert window.__xss stays undefined and the text is shown literally.
 const PAYLOAD = '<img src=x onerror="window.__xss=1">';
@@ -157,7 +163,7 @@ test.describe('the content security policy', () => {
     await expect(page.locator('#addmodal')).toBeVisible();
     await expectNoViolations(page, violations);
     // a rejected submission re-renders the form on a page of its own
-    await page.locator('#addform input[name=description]').fill('CspUnbalanced');
+    await setPayee(page, 'CspUnbalanced');
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
     await page.locator('#addform input[name=amount]').nth(0).fill('10.00');

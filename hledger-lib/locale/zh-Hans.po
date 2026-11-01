@@ -1512,3 +1512,18 @@ msgstr "转出账户"
 #: hledger-web/templates/add-form.hamlet
 msgid "Currency"
 msgstr "货币"
+
+#. hledger-web: the payee list's choice that shows the field to type a new payee.
+#: hledger-web/templates/add-form.hamlet
+msgid "New payee…"
+msgstr "新收款人…"
+
+#. hledger-web: the payee list's group of the payees used most.
+#: hledger-web/templates/add-form.hamlet
+msgid "Frequent"
+msgstr "常用"
+
+#. hledger-web: the payee list's group of every payee.
+#: hledger-web/templates/add-form.hamlet
+msgid "All payees"
+msgstr "全部收款人"

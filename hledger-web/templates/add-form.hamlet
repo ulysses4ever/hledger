@@ -16,7 +16,20 @@
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
   <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
-    <div .form-group>
+    $# The payee is picked from a list of the books' payees, the frequent
+    $# ones first; "New payee" shows the field to type one in. hledger.js
+    $# copies the choice into that field, the one the form reads.
+    <div .form-group .payee-group>
+      <select .payee-select.form-control.input-lg aria-label=#{payeePlaceholder}>
+        <option value="">#{payeePlaceholder}
+        <option value="" data-other>_{HMsg "New payee…"}
+        $if not (null frequentPayees)
+          <optgroup label=_{HMsg "Frequent"}>
+            $forall p <- frequentPayees
+              <option value=#{p}>#{p}
+        <optgroup label=_{HMsg "All payees"}>
+          $forall p <- allPayees
+            <option value=#{p}>#{p}
       ^{fvInput descView}
     $maybe err <- fvErrors descView
       <span .help-block .error-block>#{err}

@@ -230,12 +230,13 @@ function addformFocus() {
   if (!addform) { return; }
   // An existing entry's page shows that entry: no today's date, no remembered
   // accounts; only the category list is set from the entry's own account.
-  if ('editing' in addform.dataset) { addformCategoryInit(); addformKindInit(); return; }
+  if ('editing' in addform.dataset) { addformCategoryInit(); addformKindInit(); addformPayeeInit(); return; }
   addform.querySelector('input[name=date]').value = isoDate();
   var datepicked = document.getElementById('datepicked');
   if (datepicked) { datepicked.value = isoDate(); }
   addformCategoryInit();
   addformKindInit();
+  addformPayeeInit();
   addform.querySelectorAll('select[name=account]').forEach(function(sel) {
     var saved = getCookie('addaccount' + sel.dataset.row);
     if (!saved) { return; }
@@ -250,8 +251,33 @@ function addformFocus() {
   });
   // Deferred, so the field is focusable: http://stackoverflow.com/a/7046837
   setTimeout(function() {
-    addform.querySelector('input[name=description]').focus();
+    var payee = addform.querySelector('input[name=description]');
+    if (payee.classList.contains('hidden')) { payee = addform.querySelector('.payee-select') || payee; }
+    payee.focus();
   }, 0);
+}
+
+// The payee list fills the payee field, which stays out of sight unless
+// "New payee" is picked; a payee the list lacks (an existing entry's, or
+// one typed after a failed save) shows the field with it.
+function addformPayeeInit() {
+  var pick = document.querySelector('#addform .payee-select');
+  var input = document.querySelector('#addform input[name=description]');
+  if (!pick || !input) { return; }
+  function other() { var o = pick.options[pick.selectedIndex]; return !!(o && 'other' in o.dataset); }
+  function show(typed) { input.classList.toggle('hidden', !typed); }
+  if (!pick.dataset.wired) {
+    pick.dataset.wired = '1';
+    pick.addEventListener('change', function() {
+      if (other()) { input.value = ''; show(true); input.focus(); }
+      else { input.value = pick.value; show(false); }
+    });
+  }
+  var v = input.value;
+  var listed = v && [].some.call(pick.options, function(o) { return o.value === v && !('other' in o.dataset); });
+  if (listed) { pick.value = v; show(false); }
+  else if (v) { pick.selectedIndex = 1; show(true); }
+  else { pick.selectedIndex = 0; show(false); }
 }
 
 function isoDate() {
