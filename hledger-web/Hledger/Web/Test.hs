@@ -1781,6 +1781,33 @@ hledgerWebTest = do
       statusIs 200
       bodyNotContains "Showing "
 
+  -- The balance sheet is as of today: entries dated later, such as the
+  -- recurring ones written ahead, are left out unless a period asks for them.
+  fj <- fmap (either error' id) . runExceptT . journalFinalise biopts "future.journal" "" =<<
+          readJournal'' (T.pack $ unlines  -- PARTIAL: readJournal'' should not fail
+            ["2025-01-01 opening"
+            ,"    assets:bank:checking   1000"
+            ,"    equity:opening"
+            ,"2025-03-01 ! rent written ahead"
+            ,"    expenses:rent            50"
+            ,"    assets:bank:checking"])
+  runTests "hledger-web balance sheet as of today" [("today", "2025-02-14")] fj $ do
+
+    yit "leaves out entries dated after today, unless a period asks for them" $ do
+      get BalancesheetR
+      statusIs 200
+      htmlAnyContain "#main-content td.amount" "1000"
+      htmlNoneContain "#main-content td.amount" "950"
+      -- the sidebar's balances agree
+      htmlAnyContain ".sidebar-offcanvas td.amount" "1000"
+      htmlNoneContain ".sidebar-offcanvas td.amount" "950"
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "period" "2025"
+      statusIs 200
+      htmlAnyContain "#main-content td.amount" "950"
+
   -- The journal and registers open on today's month, with a band naming
   -- it between links to the months before and after, and on the journal,
   -- how much its entries spent and earned. Date terms in the search, or a

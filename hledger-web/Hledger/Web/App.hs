@@ -59,6 +59,7 @@ import Hledger.Cli.CompoundBalanceCommand (CompoundBalanceCommandSpec(..))
 import Hledger.Web.Settings (Extra(..), widgetFile)
 import Hledger.Web.Settings.StaticFiles
 import Hledger.Web.WebOptions
+import Data.Time (addDays)
 import Hledger.Web.Widget.Common (balanceReportAsHtml, removeInacct)
 import Data.List (isPrefixOf)
 
@@ -168,12 +169,19 @@ instance Yesod App where
     let browsemode = server_mode_ opts == ServeBrowse
 
     let rspec = reportspec_ (cliopts_ opts)
+        -- Balances are as of today, as on the Accounts page: entries dated
+        -- later (recurring ones written ahead) are left out, unless the
+        -- search has a date term; only when there are any such entries.
+        today = _rsDay rspec
+        asOfToday = filterQuery queryIsDateOrDate2 q == Any && any ((> today) . tdate) (jtxns j)
+        cutoff = DateSpan Nothing (Just (Exact (addDays 1 today)))
         ropts' = (_rsReportOpts rspec)
           {accountlistmode_ = ALTree  -- force tree mode for sidebar
           ,empty_           = True    -- show zero items by default
           ,interval_        = NoInterval  -- one balance per account, over the search's own span
+          ,period_          = if asOfToday then PeriodTo (addDays 1 today) else period_ (_rsReportOpts rspec)
           }
-        rspec' = rspec{_rsQuery=q,_rsReportOpts=ropts'}
+        rspec' = rspec{_rsQuery = if asOfToday then And [q, Date cutoff] else q, _rsReportOpts=ropts'}
 
     -- The parameters the search form and its clear button keep, so that
     -- a search does not reset the page: a report page's period and

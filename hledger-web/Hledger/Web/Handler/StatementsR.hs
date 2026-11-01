@@ -30,6 +30,7 @@ import Hledger.Cli.CompoundBalanceCommand
 import Hledger.Utils.I18n (Translations, i18n, tr, trf)
 import Hledger.Write.Spreadsheet qualified as Spr
 
+import Data.Time (addDays)
 import Hledger.Web.Import
 import Hledger.Web.ReportPage
 import Hledger.Web.WebOptions
@@ -95,8 +96,16 @@ statementPage here tabtitle spec defaultSection = do
       Right ReportParams{rpRopts, rpRspec, rpSpan, rpPeriod, rpAccum} -> do
         let accum = fromMaybe (cbcaccum spec) rpAccum
             override = mfilter (/= cbcaccum spec) rpAccum
-            ropts = rpRopts{balanceaccum_ = accum}
-            rspec = rpRspec{_rsReportOpts = ropts}
+            -- A balance sheet is as of today: entries dated later (recurring
+            -- ones written ahead) are left out, unless a period or a date
+            -- term in the search asks for them. (Only when there are any,
+            -- so that otherwise the report's dates stay the journal's.)
+            asOfToday = accum == Historical && isNothing rpPeriod && filterQuery queryIsDateOrDate2 q == Any
+                        && any ((> today) . tdate) (jtxns j)
+            cutoff = DateSpan Nothing (Just (Exact (addDays 1 today)))
+            ropts = rpRopts{balanceaccum_ = accum, period_ = if asOfToday then PeriodTo (addDays 1 today) else period_ rpRopts}
+            rspec = rpRspec{ _rsReportOpts = ropts
+                           , _rsQuery = if asOfToday then And [_rsQuery rpRspec, Date cutoff] else _rsQuery rpRspec }
             cbr0 =
               styleAmounts (journalCommodityStylesWith HardRounding j) $
                 compoundBalanceReport rspec j (cbcqueries spec)
