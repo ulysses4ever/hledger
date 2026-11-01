@@ -1527,3 +1527,28 @@ msgstr "常用"
 #: hledger-web/templates/add-form.hamlet
 msgid "All payees"
 msgstr "全部收款人"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Week"
+msgstr "周"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Month"
+msgstr "月"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Quarter"
+msgstr "季度"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Year"
+msgstr "年"
+
+#. hledger-web: the period band's list of lengths, its accessible name.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Length of the period"
+msgstr "时间段长度"

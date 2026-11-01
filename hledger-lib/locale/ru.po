@@ -1067,3 +1067,28 @@ msgstr "Частые"
 #: hledger-web/templates/add-form.hamlet
 msgid "All payees"
 msgstr "Все получатели"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Week"
+msgstr "Неделя"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Month"
+msgstr "Месяц"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Quarter"
+msgstr "Квартал"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Year"
+msgstr "Год"
+
+#. hledger-web: the period band's list of lengths, its accessible name.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Length of the period"
+msgstr "Длина периода"

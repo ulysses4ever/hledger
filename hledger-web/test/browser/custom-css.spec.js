@@ -43,10 +43,8 @@ test('an instance stylesheet applies, within the policy, and can rearrange the j
   const errors = watchPageErrors(page);
   await page.goto(URL + '/journal');
   await expect(page.locator('#main-content h2')).toHaveCSS('letter-spacing', '3px');
-  // the years row (the fixture spans one year, so it is empty) and the
-  // paging come after the entries now; the add button stays above them
+  // the paging comes after the entries now; the add button stays above them
   const top = sel => page.locator(sel).evaluate(e => e.getBoundingClientRect().top);
-  expect(await top('.journal-years')).toBeGreaterThan(await top('.journal-entries'));
   expect(await top('.journal-paging-top')).toBeGreaterThan(await top('.journal-entries'));
   expect(await top('#addformlink')).toBeLessThan(await top('.journal-entries'));
   await expect(page.locator('.journal-paging-bottom')).toBeHidden();

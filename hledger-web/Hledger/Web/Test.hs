@@ -919,14 +919,16 @@ hledgerWebTest = do
       bodyContains "<tfoot>"
       bodyContains "Net:"
       -- figures link to registers in historical mode, restricted to the
-      -- section's account types; a liability's says its sign differs
+      -- section's account types; a liability is shown as the books have
+      -- it, negative, the sign its register shows (rawSigns)
       bodyContains "href=\"register?q=inacct:assets:bank:checking+type:A&amp;accum=historical\""
-      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07+type:L&amp;accum=historical\" title=\"Show the transactions behind this balance, which the register shows with the opposite sign\">"
+      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07+type:L&amp;accum=historical\" title=\"Show the transactions behind this balance\">"
+      bodyContains ">-11<"
+      bodyNotContains "opposite sign"
       -- a section total links to the section's account types, the net total to all of them
       bodyContains "href=\"register?q=type:L+date:2025-01-01..2025-02-07&amp;accum=historical\""
       bodyContains "href=\"register?q=type:AL+date:2025-01-01..2025-02-07&amp;accum=historical\""
-      -- shown as positive amounts, and without inline styles
-      bodyNotContains "class=\"amount negative\""
+      -- without inline styles
       bodyNotContains "style=\""
 
     yit "opens the balance sheet on its assets, untitled, with their total as the table's" $ do
@@ -962,8 +964,6 @@ hledgerWebTest = do
       bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Assets</a>")
       bodyContains ("class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=liabilities&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Liabilities</a>")
       bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=all&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show every section, and the net total\">All</a>")
-      -- the interval links keep the section
-      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=yearly&amp;q=card&amp;accum=change&amp;section=liabilities\"")
 
     yit "shows the page's own section for a section it does not have" $ do
       request $ do
@@ -996,7 +996,6 @@ hledgerWebTest = do
       bodyNotContains "accum=historical"
       -- the search form and the interval links keep the override
       bodyContains "<input type=\"hidden\" name=\"accum\" value=\"change\">"
-      bodyContains "/balancesheet?period=monthly&amp;accum=change\""
 
     yit "does not keep the balance sheet's own mode as a parameter" $ do
       request $ do
@@ -1141,14 +1140,12 @@ hledgerWebTest = do
       bodyContains "<select class=\"form-control\" data-navigate autocomplete=\"off\">"
       bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" selected title=\"Show assets, liabilities, and net worth\">Balance sheet</option>")
       bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/incomestatement\" title=\"Show revenues and expenses\">Income statement</option>")
-      bodyContains "<span class=\"report-choice-name\">Period</span>"
-      bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly\" title=\"Show a column per month\">Monthly</option>")
       bodyNotContains "<option value=\"\" selected disabled>"
 
     yit "selects no choice in a list when the page shows none of them, rather than a wrong one" $ do
       request $ do
         setMethod "GET"
-        setUrl BalancesheetR
+        setUrl BalanceR  -- (the balance report keeps the list of intervals)
         addGetParam "period" "every 2 months"
       statusIs 200
       bodyContains "<option value=\"\" selected disabled></option>"
@@ -1750,62 +1747,6 @@ hledgerWebTest = do
       let rtxn2 = T.unpack $ T.takeWhileEnd (/= '-') rid2
       bodyContains ("&amp;txn=" ++ rtxn2 ++ "#" ++ T.unpack rid2 ++ "\"")
 
-    yit "lists the years the search matches, each linking to that year" $ do
-      get JournalR
-      statusIs 200
-      bodyContains "<span>Years:</span>"
-      bodyContains ("<a class=\"current\" href=\"" ++ base ++ "/journal\" aria-current=\"page\" title=\"Show all years\">All</a>")
-      bodyContains "/journal?q=date%3A2023\" title=\"Show only 2023\">2023</a>"
-      bodyContains "/journal?q=date%3A2024\" title=\"Show only 2024\">2024</a>"
-      bodyContains "/journal?q=date%3A2029\" title=\"Show only 2029\">2029</a>"
-
-    yit "keeps every year in the row when the search is narrowed to one" $ do
-      request $ do
-        setMethod "GET"
-        setUrl JournalR
-        addGetParam "q" "date:2024"
-      statusIs 200
-      bodyNotContains "Showing "  -- 366 transactions fit on one page
-      bodyContains ("<a class=\"current\" href=\"" ++ base ++ "/journal?q=date%3A2024\" aria-current=\"page\" title=\"Show only 2024\">2024</a>")
-      bodyContains "/journal?q=date%3A2025\" title=\"Show only 2025\""
-      bodyContains ("<a href=\"" ++ base ++ "/journal\" title=\"Show all years\">All</a>")
-
-    yit "carries the rest of the search in the year links" $ do
-      request $ do
-        setMethod "GET"
-        setUrl JournalR
-        addGetParam "q" "income date:2024"
-      statusIs 200
-      bodyContains "/journal?q=date%3A2025%20income\" title=\"Show only 2025\""
-      bodyContains ("<a class=\"current\" href=\"" ++ base ++ "/journal?q=date%3A2024%20income\" aria-current=\"page\" title=\"Show only 2024\"")
-      bodyContains ("<a href=\"" ++ base ++ "/journal?q=income\" title=\"Show all years\"")
-
-    yit "counts the years by the same matching as the rows" $ do
-      -- A search term that a posting can fail while its transaction matches:
-      -- the register admits the transaction on the matching posting, and so
-      -- must the years row, whether or not the search has a date term.
-      request $ do
-        setMethod "GET"
-        setUrl RegisterR
-        addGetParam "q" "inacct:assets:cash not:acct:expenses date:2024"
-      statusIs 200
-      rows <- htmlQuery "#main-content tbody tr[data-entry]"
-      assertEq "the rows the years row counts" (length rows) 366
-      bodyNotContains "Showing "
-      bodyContains "title=\"Show only 2024\">2024</a>"
-      bodyContains "title=\"Show all years\">All</a>"
-
-    yit "counts the years by the search the year links make" $ do
-      -- A date term inside an expr: term is not one the year links replace,
-      -- so the years row counts what this search shows: one year, hence no row.
-      request $ do
-        setMethod "GET"
-        setUrl JournalR
-        addGetParam "q" "expr:\"date:2024 and desc:txn\""
-      statusIs 200
-      bodyContains "txn 731</td>"  -- 2024-01-01
-      bodyNotContains "Years:"
-
     yit "pages the register, with the running balance carried across pages" $ do
       request $ do
         setMethod "GET"
@@ -1833,50 +1774,12 @@ hledgerWebTest = do
       bodyContains "txn 301\\n"
       bodyNotContains "txn 1301\\n"
       bodyNotContains "txn 300\\n"
-      -- the years row keeps the account
-      bodyContains "/register?q=date%3A2024%20inacct%3Aassets%3Acash\" title=\"Show only 2024\">2024</a>"
       request $ do
         setMethod "GET"
         setUrl RegisterR
         addGetParam "q" "inacct:assets:cash date:2024"
       statusIs 200
       bodyNotContains "Showing "
-      bodyContains ("<a class=\"current\" href=\"" ++ base ++ "/register?q=date%3A2024%20inacct%3Aassets%3Acash\"")
-
-  -- A startup depth limit does not apply to the register, nor to its years.
-  runTests "hledger-web paging with --depth" [("depth","1")] pagingj $ do
-
-    yit "counts the register's years without the depth limit" $ do
-      request $ do
-        setMethod "GET"
-        setUrl RegisterR
-        addGetParam "q" "inacct:assets:cash date:2024"
-      statusIs 200
-      bodyContains "title=\"Show only 2024\">2024</a>"
-      bodyContains "title=\"Show all years\">All</a>"
-
-  -- More than twenty years are grouped by decade, a row each: 21 years here.
-  let decadesentry y = unlines
-        [ show y ++ "-06-15 txn " ++ show y
-        , "    assets:cash    1"
-        , "    income"
-        ]
-  decadesj <- fmap (either error' id) . runExceptT . journalFinalise biopts "decades.journal" "" =<<
-          readJournal'' (T.pack $ concatMap decadesentry [2005..2025 :: Int])  -- PARTIAL: readJournal'' should not fail
-  runTests "hledger-web years row" [] decadesj $ do
-
-    yit "groups more than twenty years by decade" $ do
-      get JournalR
-      statusIs 200
-      bodyContains ">All</a>"
-      rows <- map (TL.toStrict . TLE.decodeUtf8) <$> htmlQuery "p.years"
-      assertEq "the All row, then one row per decade" (length rows) 4
-      let row2010s = rows !! 2
-      assertEq "the 2010s row is labelled" (T.isInfixOf "<span>2010s:</span>" row2010s) True
-      assertEq "2010 opens the 2010s row" (T.isInfixOf "date%3A2010\"" row2010s) True
-      assertEq "2019 ends the 2010s row" (T.isInfixOf "date%3A2019\"" row2010s) True
-      assertEq "2009 is not in the 2010s row" (T.isInfixOf "date%3A2009\"" row2010s) False
-      assertEq "2020 is not in the 2010s row" (T.isInfixOf "date%3A2020\"" row2010s) False
 
   -- The journal and registers open on today's month, with a band naming
   -- it between links to the months before and after, and on the journal,
@@ -1937,10 +1840,33 @@ hledgerWebTest = do
       bodyContains "pay</td>"
       bodyContains ("<a class=\"period-next\" href=\"" ++ base ++ "/journal?q=desc%3Apay&amp;period=2025-01-06\"")
 
-    yit "links All in the years row to all dates" $ do
+    yit "lists the lengths of period to switch between, holding the period shown" $ do
       get JournalR
       statusIs 200
-      bodyContains ("<a href=\"" ++ base ++ "/journal?period=all\" title=\"Show all years\">All</a>")
+      -- the week, month (shown, so marked), quarter and year holding today, and all dates
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2025-02-10..2025-02-17\">Week</option>")
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2025-02\" selected>Month</option>")
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2025Q1\">Quarter</option>")
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2025\">Year</option>")
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=all\">All</option>")
+      -- a year not holding today: the month and week at its start
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "period" "2024"
+      statusIs 200
+      htmlAnyContain ".period-name" "2024"
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2024\" selected>Year</option>")
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2024-01\">Month</option>")
+      bodyContains ("<option value=\"" ++ base ++ "/journal?period=2024-01-01..2024-01-08\">Week</option>")
+      -- a week is named by its days, and steps a week at a time
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "period" "2025-02-10..2025-02-17"
+      statusIs 200
+      htmlAnyContain ".period-name" "10 Feb \8211 16 Feb 2025"
+      bodyContains ("<a class=\"period-next\" href=\"" ++ base ++ "/journal?period=2025-02-17..2025-02-24\"")
 
     yit "opens an account's register on today's month too, keeping its account in the links" $ do
       request $ do

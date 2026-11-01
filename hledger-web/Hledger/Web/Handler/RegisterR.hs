@@ -95,12 +95,6 @@ getRegisterR = do
       -- The brought-forward row is older than every transaction, so it
       -- ends the last page.
       lastpage = pgNumber page >= pgCount page
-      -- The years the search matches in, ignoring any date term in it. A
-      -- year's count is by register date, while its page matches date:YYYY
-      -- against each posting's date, so a transaction with postings dated in
-      -- two years is counted once and shown in both.
-      years = map triDate $
-        accountTransactionsReport rspec{_rsQuery = fromMaybe q $ datelessQuery today qparam} j acctQuery
       balancelabel
         | historical               = trc trs "column heading" "Historical Total"
         | isJust (inAccount qopts) = trc trs "column heading" "Period Total"
@@ -152,9 +146,6 @@ getRegisterR = do
       days = [ (rowDay r, maSum [amt | (_, _, _, _, amt, _) <- r : rs], r : rs)
              | r :| rs <- NE.groupBy ((==) `on` rowDay) items ]
       rowDay (_, tacct, _, _, _, _) = tdate tacct
-      -- The year links keep this register's mode, and while the default
-      -- is a month, the all-years link asks for all dates.
-      yearParams = [("period", "all") | not (alltime_ opts)] ++ accumParams
       noBelow = const mempty
   defaultLayout $ do
     -- TRANSLATORS: the browser tab title of this page.

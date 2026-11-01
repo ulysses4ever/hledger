@@ -1067,3 +1067,28 @@ msgstr "Häufige"
 #: hledger-web/templates/add-form.hamlet
 msgid "All payees"
 msgstr "Alle Empfänger"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Week"
+msgstr "Woche"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Month"
+msgstr "Monat"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Quarter"
+msgstr "Quartal"
+
+#. hledger-web: the period band's list of lengths of period.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Year"
+msgstr "Jahr"
+
+#. hledger-web: the period band's list of lengths, its accessible name.
+#: hledger-web/Hledger/Web/Widget/Period.hs
+msgid "Length of the period"
+msgstr "Länge des Zeitraums"

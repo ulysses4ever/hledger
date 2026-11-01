@@ -10,7 +10,7 @@ $# what was paid in and out during it (hledger.css section 17).
 $if isAccountPage
   <div .account-balance .amount :isNegative endbal:.negative>#{oneLine endbal}
 
-^{periodBand trs RegisterR qparam accumParams shown noBelow}
+^{periodBand trs RegisterR qparam accumParams today shown noBelow}
 
 $if isAccountPage
   <dl .account-summary>
@@ -23,7 +23,6 @@ $if isAccountPage
     <dt>_{HMsg "Spent"}
     <dd .amount .spending>#{oneLine paidout}
 
-^{yearsRow trs RegisterR qparam yearParams (isAllTime shown) years}
 ^{pagingLinks trs RegisterR qparam page}
 
 <div>

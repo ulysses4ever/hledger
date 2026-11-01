@@ -33,15 +33,25 @@ import Hledger.Write.Spreadsheet qualified as Spr
 import Hledger.Web.Import
 import Hledger.Web.ReportPage
 import Hledger.Web.WebOptions
-import Hledger.Web.Widget.Common (accountNameHtml, helplink, intervalLinks, linksRow, removeInacct, reportChoices, reportLinks)
+import Hledger.Web.Widget.Common (accountNameHtml, helplink, linksRow, removeInacct, reportChoices, reportLinks)
 
 getBalancesheetR, getBalancesheetequityR, getIncomestatementR, getCashflowR :: Handler Html
 -- TRANSLATORS: the browser tab titles of the statement pages.
 -- Each opens on one of its sections (see statementPage): the balance
 -- sheets on assets, the income statement on expenses, which is what a
 -- money app's statistics open on.
-getBalancesheetR       = statementPage BalancesheetR       (i18n "balance sheet - hledger-web")             balancesheetSpec       0
-getBalancesheetequityR = statementPage BalancesheetequityR (i18n "balance sheet with equity - hledger-web") balancesheetequitySpec 0
+getBalancesheetR       = statementPage BalancesheetR       (i18n "balance sheet - hledger-web")             (rawSigns balancesheetSpec)       0
+getBalancesheetequityR = statementPage BalancesheetequityR (i18n "balance sheet with equity - hledger-web") (rawSigns balancesheetequitySpec) 0
+
+-- | A balance sheet with every figure as the books have it: a liability
+-- owed is negative, as it is on the account's own page and in the sidebar,
+-- rather than turned positive as the command shows it, which read as the
+-- signs being random. The net is then the sections' plain sum.
+rawSigns :: CompoundBalanceCommandSpec -> CompoundBalanceCommandSpec
+rawSigns spec = spec{cbcqueries = [ s{ cbcsubreporttransform = id, cbcsubreportincreasestotal = True
+                                         -- (the normal sign also decides the note on a figure's link)
+                                         , cbcsubreportoptions = \ropts -> (cbcsubreportoptions s ropts){normalbalance_ = Just NormallyPositive} }
+                                     | s <- cbcqueries spec ]}
 getIncomestatementR    = statementPage IncomestatementR    (i18n "income statement - hledger-web")          incomestatementSpec    1
 getCashflowR           = statementPage CashflowR           (i18n "cashflow statement - hledger-web")        cashflowSpec           0
 
@@ -82,7 +92,7 @@ statementPage here tabtitle spec defaultSection = do
       Left err -> Yesod.toWidget $ do
         H.h2 $ H.toHtml $ withFilter $ effectiveTitle roptsOrig $ tr trs $ cbctitle spec NoInterval
         paramError trs err
-      Right ReportParams{rpRopts, rpRspec, rpSpan, rpInterval, rpPeriod, rpAccum} -> do
+      Right ReportParams{rpRopts, rpRspec, rpSpan, rpPeriod, rpAccum} -> do
         let accum = fromMaybe (cbcaccum spec) rpAccum
             override = mfilter (/= cbcaccum spec) rpAccum
             ropts = rpRopts{balanceaccum_ = accum}
@@ -147,10 +157,11 @@ statementPage here tabtitle spec defaultSection = do
             -- An empty report with zero balances hidden may have them all: look again showing them.
             zerosHidden = hideEmpty && not (noRows $ compoundBalanceReport rspec{_rsReportOpts = ropts{empty_ = True}} j (cbcqueries spec))
         Yesod.toWidget $ H.h2 $ H.toHtml $ withFilter $ cbrTitle cbr
+        -- (no choice of a column per month or year here: on a phone the
+        -- table it makes is unwieldy; an account's own page has the periods)
         Yesod.toWidget $ reportChoices $
           [reportLinks trs here menuParams menu] ++
-          [sectionLinks | several] ++
-          [intervalLinks trs here (accumParams ++ sectionParam shown) qparam rpSpan rpInterval]
+          [sectionLinks | several]
         if empty
           then Yesod.toWidget $ emptyNotice trs zerosHidden (q == Any && rpSpan == nulldatespan)
           -- The sections name the accounts' top levels (Assets, Liabilities,

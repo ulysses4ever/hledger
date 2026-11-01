@@ -5,7 +5,7 @@ $# given with --css can rearrange them with the order property.
     #{title'}
 
   <div .journal-period>
-    ^{periodBand trs JournalR qparam noParams shown totals}
+    ^{periodBand trs JournalR qparam noParams today shown totals}
 
   <div .journal-actions>
     $if elem AddPermission perms
@@ -19,8 +19,6 @@ $# given with --css can rearrange them with the order property.
       $# TRANSLATORS: a check box above the journal; ticked, each entry shows all its postings with their amounts.
       _{HMsg "Show both sides"}
 
-  <div .journal-years>
-    ^{yearsRow trs JournalR qparam yearParams (isAllTime shown) years}
   <div .journal-paging-top>
     ^{pagingLinks trs JournalR qparam page}
 

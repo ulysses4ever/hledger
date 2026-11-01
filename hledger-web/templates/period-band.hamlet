@@ -5,6 +5,12 @@
     <span .period-prev>
   <div .period-mid>
     <div .period-name>#{label}
+    $# the length of the period, as a list; picking one goes to it (hledger.js)
+    <select .period-length .form-control data-navigate autocomplete=off aria-label=#{tr trs "Length of the period"}>
+      $if nonecurrent
+        <option value="" selected disabled>
+      $forall (name, link, current) <- lengths
+        <option value=@?{link} :current:selected>#{name}
     ^{below}
   $maybe next <- mnext
     <a .period-next href=@?{next} title=#{tr trs "Show the period after"} aria-label=#{tr trs "Show the period after"}>›

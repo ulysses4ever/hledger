@@ -15,7 +15,8 @@ module Hledger.Web.Widget.Period
 
 import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Time (Day, defaultTimeLocale, formatTime, fromGregorian, toGregorian)
+import Data.Time (Day, addDays, defaultTimeLocale, formatTime, fromGregorian, toGregorian)
+import Data.Time.Calendar.WeekDate (toWeekDate)
 import Text.Hamlet (hamletFile)
 import Text.Megaparsec.Error (errorBundlePretty)
 import Yesod (HtmlUrl)
@@ -57,25 +58,58 @@ isAllTime :: Period -> Bool
 isAllTime = (== PeriodAll)
 
 -- | The band at the top of a journal or register page: the period shown,
--- with links to the one before and the one after when it is a day, month,
--- quarter or year, and whatever the page puts under it (the journal, how
--- much was spent and earned). The links keep the search, without its date
--- terms, and the given parameters.
-periodBand :: Translations -> r -> Text -> [(Text, Text)] -> Period -> HtmlUrl r -> HtmlUrl r
-periodBand trs here qparam kept shown below = $(hamletFile "templates/period-band.hamlet")
+-- with links to the one before and the one after when it is a day, week,
+-- month, quarter or year; a list of the lengths of period to switch
+-- between; and whatever the page puts under it (the journal, how much was
+-- spent and earned). The links keep the search, without its date terms,
+-- and the given parameters.
+periodBand :: Translations -> r -> Text -> [(Text, Text)] -> Day -> Period -> HtmlUrl r -> HtmlUrl r
+periodBand trs here qparam kept today shown below = $(hamletFile "templates/period-band.hamlet")
   where
     label = case shown of
-      MonthPeriod y m -> T.pack $ formatTime (trTimeLocale trs) "%B %Y" (fromGregorian y m 1)
-      DayPeriod d     -> T.pack $ formatTime defaultTimeLocale "%F (%a)" d
-      PeriodAll       -> tr trs "All dates"
-      p               -> showPeriod p
+      MonthPeriod y m   -> T.pack $ formatTime (trTimeLocale trs) "%B %Y" (fromGregorian y m 1)
+      WeekPeriod b      -> T.pack $ formatTime (trTimeLocale trs) "%-d %b" b <> " \8211 " <> formatTime (trTimeLocale trs) "%-d %b %Y" (addDays 6 b)
+      QuarterPeriod y q -> T.pack $ show y <> " Q" <> show q
+      YearPeriod y      -> T.pack $ show y
+      DayPeriod d       -> T.pack $ formatTime defaultTimeLocale "%F (%a)" d
+      PeriodAll         -> tr trs "All dates"
+      p                 -> showPeriod p
     stepping = case shown of
-      DayPeriod _     -> True
-      MonthPeriod _ _ -> True
+      DayPeriod _       -> True
+      WeekPeriod _      -> True
+      MonthPeriod _ _   -> True
       QuarterPeriod _ _ -> True
-      YearPeriod _    -> True
-      _               -> False
+      YearPeriod _      -> True
+      _                 -> False
     rest = removeDates qparam
-    link p = (here, [("q", T.unwords rest) | not (null rest)] ++ [("period", showPeriod p)] ++ kept)
+    -- a week is written as its dates, since the period parser has no week form
+    periodParam p = case p of
+      WeekPeriod b -> T.pack (formatTime defaultTimeLocale "%F" b) <> ".." <> T.pack (formatTime defaultTimeLocale "%F" (addDays 7 b))
+      PeriodAll    -> "all"
+      _            -> showPeriod p
+    link p = (here, [("q", T.unwords rest) | not (null rest)] ++ [("period", periodParam p)] ++ kept)
     mprev = if stepping then Just (link $ periodPrevious shown) else Nothing
     mnext = if stepping then Just (link $ periodNext shown) else Nothing
+    -- The lengths of period to switch between: the week, month, quarter or
+    -- year holding the period shown (holding today, when the period does),
+    -- or all dates. The length shown is marked.
+    anchor = case periodAsDateSpan shown of
+      DateSpan (Just b) _ | not (spanContainsDate (periodAsDateSpan shown) today) -> fromEFDay b
+      _ -> today
+    (ay, am, _) = toGregorian anchor
+    (_, _, adow) = toWeekDate anchor
+    lengths =
+      [ (tr trs "Week",    link (WeekPeriod (addDays (fromIntegral (1 - adow)) anchor)), isWeek shown)
+      , (tr trs "Month",   link (MonthPeriod ay am),                                  isMonth shown)
+      , (tr trs "Quarter", link (QuarterPeriod ay ((am - 1) `div` 3 + 1)),            isQuarter shown)
+      , (tr trs "Year",    link (YearPeriod ay),                                      isYear shown)
+      , (tr trs "All",     link PeriodAll,                                            shown == PeriodAll) ]
+    nonecurrent = not $ or [c | (_, _, c) <- lengths]
+    isWeek WeekPeriod{} = True
+    isWeek _ = False
+    isMonth MonthPeriod{} = True
+    isMonth _ = False
+    isQuarter QuarterPeriod{} = True
+    isQuarter _ = False
+    isYear YearPeriod{} = True
+    isYear _ = False

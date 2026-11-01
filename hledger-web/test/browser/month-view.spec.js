@@ -78,7 +78,7 @@ test('a date in the search replaces the month, and All shows every date', async 
   await expect(page.locator('.period-name')).toHaveText('January 2025');
   await expect(entries(page)).toHaveCount(3);
   await page.goto(URL + '/journal');
-  await page.locator('.journal-years a', { hasText: 'All' }).click();
+  await page.locator('.period-band .period-length').selectOption({ label: 'All' });
   await expect(page).toHaveURL(/period=all/);
   await expect(page.locator('.period-name')).toHaveText('All dates');
   await expect(page.locator('.period-band a')).toHaveCount(0);
@@ -96,6 +96,20 @@ test("an account's register opens on this month too, and keeps the account as it
   await page.locator('.period-band a.period-prev').click();
   await expect(page).toHaveURL(/q=inacct%3Aassets%3Abank%3Achecking&period=2025-01/);
   await expect(page.locator('.period-name')).toHaveText('January 2025');
+});
+
+test('the length of the period switches between week, month, quarter and year, keeping the account', async ({ page }) => {
+  await page.goto(URL + '/register?q=' + encodeURIComponent('inacct:assets:bank:checking'));
+  const length = page.locator('.period-band .period-length');
+  await expect(length).toHaveValue(/period=2025-02$/);
+  await length.selectOption({ label: 'Year' });
+  await expect(page).toHaveURL(/q=inacct%3Aassets%3Abank%3Achecking&period=2025$/);
+  await expect(page.locator('.period-name')).toHaveText('2025');
+  await page.locator('.period-band .period-length').selectOption({ label: 'Week' });
+  await expect(page).toHaveURL(/period=2025-02-10\.\.2025-02-17/);
+  await expect(page.locator('.period-name')).toHaveText('10 Feb – 16 Feb 2025');
+  await page.locator('.period-band a.period-next').click();
+  await expect(page.locator('.period-name')).toHaveText('17 Feb – 23 Feb 2025');
 });
 
 for (const width of [390, 320]) {

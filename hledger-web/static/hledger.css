@@ -1251,8 +1251,19 @@ a:focus > .account-name > * {
   text-align: center;
 }
 .period-band .period-name {
+  display: inline-block;
   font-size: 18px;
   font-weight: 600;
+}
+/* the length of the period, a small list beside its name */
+.period-band .period-length {
+  display: inline-block;
+  width: auto;
+  height: 28px;
+  margin-left: 8px;
+  padding: 2px 6px;
+  font-size: 14px;
+  vertical-align: middle;
 }
 .period-totals {
   font-size: 14px;

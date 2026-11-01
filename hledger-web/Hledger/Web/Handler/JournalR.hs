@@ -55,9 +55,6 @@ getJournalR = do
         styleAmounts (journalCommodityStylesWith HardRounding j) $
         entriesReport rspec j
       (page, items) = pageOf pagereq tindex alltxns
-      -- The years the search matches in, ignoring its dates and the period's.
-      years = map tdate $
-        entriesReport rspec{_rsQuery = maybe q' (filterQuery (not . queryIsDepth)) $ datelessQuery today qparam} j
       -- How much the period's entries spent and earned: their postings to
       -- expense accounts, and to revenue accounts, by account type.
       atype = journalAccountType j
@@ -78,8 +75,6 @@ getJournalR = do
           <span .amount .earned>#{oneLine earned}
         |]
       noParams = []
-      -- While the default is a month, the all-years link asks for all dates.
-      yearParams = [("period", "all") | not (alltime_ opts)]
       transactionFrag = transactionFragment j
       -- Each entry, with the summary a phone shows of it, and the
       -- accounts that summary names on its second line: where a payment
