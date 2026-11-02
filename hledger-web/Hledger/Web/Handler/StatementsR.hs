@@ -129,7 +129,20 @@ statementPage here tabtitle spec defaultSection = do
             header =
               map (withClass "account") cbrpLeadingHeaders ++
               relinkDateHeaders trs (columnHeading ropts colspans) headinglink colspans (map (withClass "amount") cbrpDataHeaders)
-            sections = [(mfilter (not . T.null) (Just title), body, subtotals) | (title, body, subtotals) <- cbrpSections]
+            -- Links to registers: without the date span the cutoff added,
+            -- so that an account's page opens on the month, as from the
+            -- sidebar; and without a type term beside an account, which
+            -- says nothing there and would mark the page as filtered.
+            relink url
+              | (pre, rest) <- T.breakOn "?q=" url, not (T.null rest) =
+                  let (qs, after) = T.breakOn "&" (T.drop 3 rest)
+                      terms = T.splitOn "+" qs
+                      hasAcct = any ("inacct" `T.isPrefixOf`) terms
+                      keep t = not (asOfToday && "date:" `T.isPrefixOf` t) && not (hasAcct && "type:" `T.isPrefixOf` t)
+                  in pre <> "?q=" <> T.intercalate "+" (filter keep terms) <> after
+              | otherwise = url
+            relinkRows = map (map (\c -> c{Spr.cellAnchor = relink (Spr.cellAnchor c)}))
+            sections = [(mfilter (not . T.null) (Just title), relinkRows body, relinkRows subtotals) | (title, body, subtotals) <- cbrpSections]
             -- The sections, each with the key the section parameter names it
             -- by, from the command's own title, and the name the page gives
             -- it (which --subreport-titles may have changed, or blanked).
@@ -164,10 +177,10 @@ statementPage here tabtitle spec defaultSection = do
                 [ (tr trs "All", tr trs "Show every section, and the net total", (here, sectionParam AllSections ++ kept), shown == AllSections) ]
               where kept = periodParams ++ accumParams ++ [("q", qparam) | not (T.null qparam)]
             (shownSections, footer) = case shown of
-              AllSections -> (sections, cbrpNetRows)
-              OneSection i -> case drop i cbrpSections of
+              AllSections -> (sections, relinkRows cbrpNetRows)
+              OneSection i -> case drop i sections of
                 (_, body, subtotals) : _ -> ([(Nothing, body, [])], subtotals)
-                [] -> (sections, cbrpNetRows)
+                [] -> (sections, relinkRows cbrpNetRows)
             noRows = all (\(_, r, _) -> null $ prRows r) . cbrSubreports
             empty = noRows cbr
             -- An empty report with zero balances hidden may have them all: look again showing them.

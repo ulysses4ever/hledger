@@ -16,21 +16,12 @@
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
   <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
-    $# The payee is picked from a list of the books' payees, the frequent
-    $# ones first; "New payee" shows the field to type one in. hledger.js
-    $# copies the choice into that field, the one the form reads.
+    $# The payee field offers the books' payees as it is typed into, the
+    $# frequent ones first (hledger.js, from the list at the page's end);
+    $# a name no payee has is simply typed.
     <div .form-group .payee-group>
-      <select .payee-select.form-control.input-lg aria-label=#{payeePlaceholder}>
-        <option value="">#{payeePlaceholder}
-        <option value="" data-other>_{HMsg "New payee…"}
-        $if not (null frequentPayees)
-          <optgroup label=_{HMsg "Frequent"}>
-            $forall p <- frequentPayees
-              <option value=#{p}>#{p}
-        <optgroup label=_{HMsg "All payees"}>
-          $forall p <- allPayees
-            <option value=#{p}>#{p}
       ^{fvInput descView}
+      <ul .payee-matches role=listbox hidden>
     $maybe err <- fvErrors descView
       <span .help-block .error-block>#{err}
 $# A free note, kept after the payee in the description ("Payee | note").
@@ -124,9 +115,9 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
   <div .col-sm-3.col-xs-5.text-right>
     <button type=submit .btn .btn-default .btn-lg name=submit>_{HMsg "Save"}
 
-$# Completion data for the description field. The browser filters it itself,
-$# so there is no javascript and no library involved, and hamlet's escaping
-$# keeps journal text inert.
-<datalist #descriptionnames>
-  $forall desc <- toList descriptions
-    <option value=#{desc}>
+$# The payees the payee field offers, the frequent ones first.
+<datalist #payeenames>
+  $forall p <- frequentPayees
+    <option value=#{p}>
+  $forall p <- allPayees
+    <option value=#{p}>

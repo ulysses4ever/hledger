@@ -278,9 +278,33 @@ td.date,
   font-weight: bold;
 }
 
-/* The payee list, with the field for a new payee under it when shown. */
-#addform .payee-group .payee-select + input {
-  margin-top: 5px;
+/* The payees offered under the payee field as it is typed into. */
+#addform .payee-group {
+  position: relative;
+}
+#addform .payee-matches {
+  position: absolute;
+  right: 0;
+  left: 0;
+  z-index: 20;
+  max-height: 40vh;
+  margin: 0;
+  padding: 4px 0;
+  overflow-y: auto;
+  list-style: none;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px var(--dialog-border);
+}
+#addform .payee-matches li {
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+#addform .payee-matches li.active,
+#addform .payee-matches li:hover {
+  background-color: var(--band);
 }
 
 /* The kind of entry: three buttons across the form, the chosen one pressed. */

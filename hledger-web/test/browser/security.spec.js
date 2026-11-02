@@ -9,10 +9,11 @@
 const { test, expect } = require('@playwright/test');
 const { watchViolations, expectNoViolations } = require('./helpers');
 
-// Pick "New payee…" in the payee list and type the payee into the field it shows.
+// Type the payee, and move on, which closes the list of payees it brings up.
+// (Not Escape: in the add dialog that closes the dialog.)
 async function setPayee(page, name) {
-  await page.locator('#addform .payee-select').selectOption({ index: 1 });
   await page.locator('#addform input[name=description]').fill(name);
+  await page.locator('#addform input[name=description]').press('Tab');
 }
 
 // A payload that executes if it is ever inserted as markup rather than text.
@@ -75,10 +76,10 @@ test.describe('journal data is rendered as text, not markup', () => {
     expect(pageErrors).toEqual([]);
     expect(await xssFired(page)).toBe(false);
     // the payload is offered as a completion, as a value rather than markup
-    expect(await page.locator('#descriptionnames option[value*="onerror"]').count())
+    expect(await page.locator('#payeenames option[value*="onerror"]').count())
       .toBeGreaterThan(0);
-    expect(await page.locator('#descriptionnames img, #addform select[name=account] img').count()).toBe(0);
-    expect(await page.locator('#descriptionnames script, #addform select[name=account] script').count()).toBe(0);
+    expect(await page.locator('#payeenames img, #addform select[name=account] img').count()).toBe(0);
+    expect(await page.locator('#payeenames script, #addform select[name=account] script').count()).toBe(0);
     expect(await xssFired(page)).toBe(false);
   });
 

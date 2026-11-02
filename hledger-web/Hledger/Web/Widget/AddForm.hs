@@ -105,8 +105,7 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
     pickedCommodity c = if T.null c then defaultCommodity else c
     commodityLabel c = fromMaybe c $ lookup c [("$", "USD"), ("\8364", "EUR"), ("\163", "GBP"), ("\8381", "RUB"), ("\165", "JPY")]
     statusOptions = [(tr trs "Unmarked", Unmarked), (tr trs "Pending", Pending), (tr trs "Cleared", Cleared)]
-    descriptions = foldMap S.fromList [journalPayeesDeclaredOrUsed j, journalDescriptions j]
-    -- the payees to pick from: the ten used most, then all of them
+    -- the payees the field offers as it is typed into: the ten used most, then all of them
     payeeCounts = M.fromListWith (+) [(transactionPayee t, 1 :: Int) | t <- jtxns j, not (T.null (transactionPayee t))]
     frequentPayees = map fst $ take 10 $ sortOn (negate . snd) $ M.toList payeeCounts
     allPayees = sortOn T.toLower $ filter (not . T.null) $ journalPayeesDeclaredOrUsed j
@@ -193,7 +192,7 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
           first (const (tr trs "Invalid date format")) $
           fixSmartDateStrEither' today (T.strip s)
     dateSettings = FieldSettings "date" Nothing Nothing (Just "date") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Date")]
-    descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Payee"), ("size", "40"), ("list", "descriptionnames")]
+    descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Payee"), ("size", "40"), ("autocomplete", "off")]
     noteSettings = FieldSettings "note" Nothing Nothing (Just "note") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Note"), ("size", "40")]
     statusSettings = FieldSettings "status" Nothing Nothing (Just "status") [("class", "form-control input-lg")]
   (dateRes, dateView) <- mreq dateField dateSettings (tdate <$> mtxn)

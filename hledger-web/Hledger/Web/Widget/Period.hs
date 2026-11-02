@@ -44,7 +44,8 @@ pagePeriod today alltime qparam q mparam
     terms = filter (not . T.null) $ Query.words'' queryprefixes qparam
     isPrimaryDateTerm = ("date:" `T.isPrefixOf`)
     isDateTerm t = isPrimaryDateTerm t || "date2:" `T.isPrefixOf` t
-    browsing = all (\t -> any (`T.isPrefixOf` t) ["inacct:", "inacctonly:"]) terms
+    -- (a type term comes with a statement's links to its registers)
+    browsing = all (\t -> any (`T.isPrefixOf` t) ["inacct:", "inacctonly:", "type:"]) terms
     (y, m, _) = toGregorian today
 
 -- | The query that selects a period's dates, to be added to the page's

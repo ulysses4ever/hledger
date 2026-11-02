@@ -251,33 +251,79 @@ function addformFocus() {
   });
   // Deferred, so the field is focusable: http://stackoverflow.com/a/7046837
   setTimeout(function() {
-    var payee = addform.querySelector('input[name=description]');
-    if (payee.classList.contains('hidden')) { payee = addform.querySelector('.payee-select') || payee; }
-    payee.focus();
+    addform.querySelector('input[name=description]').focus();
   }, 0);
 }
 
-// The payee list fills the payee field, which stays out of sight unless
-// "New payee" is picked; a payee the list lacks (an existing entry's, or
-// one typed after a failed save) shows the field with it.
+// The payee field offers the books' payees as it is typed into: those
+// whose letters it names in order ("wlm" finds Walmart), the closest
+// first, the ones used most before the others. Arrows and Enter pick one,
+// as does a tap; a name no payee has is simply typed. (Nothing shows
+// until something is typed: a list over the form on focus got in the way.)
 function addformPayeeInit() {
-  var pick = document.querySelector('#addform .payee-select');
   var input = document.querySelector('#addform input[name=description]');
-  if (!pick || !input) { return; }
-  function other() { var o = pick.options[pick.selectedIndex]; return !!(o && 'other' in o.dataset); }
-  function show(typed) { input.classList.toggle('hidden', !typed); }
-  if (!pick.dataset.wired) {
-    pick.dataset.wired = '1';
-    pick.addEventListener('change', function() {
-      if (other()) { input.value = ''; show(true); input.focus(); }
-      else { input.value = pick.value; show(false); }
-    });
+  var list = document.querySelector('#addform .payee-matches');
+  var names = document.getElementById('payeenames');
+  if (!input || !list || !names || input.dataset.wired) { return; }
+  input.dataset.wired = '1';
+  var payees = [];
+  [].forEach.call(names.options, function(o) { if (payees.indexOf(o.value) < 0) { payees.push(o.value); } });
+  var active = -1;
+  // how well a payee answers what is typed: 0 starts with it, 1 a word of
+  // it does, 2 it is somewhere inside, 3 its letters are inside in order
+  function rank(q, s) {
+    if (s.indexOf(q) === 0) { return 0; }
+    if (s.indexOf(' ' + q) >= 0) { return 1; }
+    if (s.indexOf(q) >= 0) { return 2; }
+    var i = 0;
+    for (var k = 0; k < s.length && i < q.length; k++) { if (s[k] === q[i]) { i++; } }
+    return i === q.length ? 3 : -1;
   }
-  var v = input.value;
-  var listed = v && [].some.call(pick.options, function(o) { return o.value === v && !('other' in o.dataset); });
-  if (listed) { pick.value = v; show(false); }
-  else if (v) { pick.selectedIndex = 1; show(true); }
-  else { pick.selectedIndex = 0; show(false); }
+  function refresh() {
+    var q = input.value.trim().toLowerCase();
+    var found = !q ? [] : payees.map(function(p) { return [rank(q, p.toLowerCase()), p]; })
+                      .filter(function(x) { return x[0] >= 0 && x[1].toLowerCase() !== q; })
+                      .sort(function(a, b) { return a[0] - b[0]; })
+                      .map(function(x) { return x[1]; });
+    list.textContent = '';
+    found.slice(0, 8).forEach(function(p) {
+      var li = document.createElement('li');
+      li.textContent = p;
+      li.setAttribute('role', 'option');
+      list.appendChild(li);
+    });
+    active = -1;
+    list.hidden = !list.children.length;
+  }
+  function close() { list.hidden = true; active = -1; }
+  function pick(li) { input.value = li.textContent; close(); input.focus(); }
+  function setActive(i) {
+    var items = list.children;
+    if (!items.length) { return; }
+    active = (i + items.length) % items.length;
+    [].forEach.call(items, function(li, k) { li.classList.toggle('active', k === active); });
+  }
+  input.addEventListener('input', refresh);
+  input.addEventListener('blur', function() { setTimeout(close, 150); });
+  input.addEventListener('keydown', function(e) {
+    if (list.hidden) { return; }
+    if (e.key === 'ArrowDown') { setActive(active + 1); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { setActive(active - 1); e.preventDefault(); }
+    else if (e.key === 'Escape') { close(); }
+    else if (e.key === 'Enter') {
+      // what is typed is a payee already: the form goes on
+      var typed = input.value.trim().toLowerCase();
+      if (active < 0 && payees.some(function(p) { return p.toLowerCase() === typed; })) { close(); return; }
+      var li = list.children[active >= 0 ? active : 0];
+      if (li) { pick(li); }
+      e.preventDefault();
+    }
+  });
+  // picked on the way down, before the field loses focus
+  list.addEventListener('pointerdown', function(e) {
+    var li = e.target.closest('li');
+    if (li) { e.preventDefault(); pick(li); }
+  });
 }
 
 function isoDate() {

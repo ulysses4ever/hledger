@@ -8,10 +8,11 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('fs');
 
-// Pick "New payee…" in the payee list and type the payee into the field it shows.
+// Type the payee, and move on, which closes the list of payees it brings up.
+// (Not Escape: in the add dialog that closes the dialog.)
 async function setPayee(page, name) {
-  await page.locator('#addform .payee-select').selectOption({ index: 1 });
   await page.locator('#addform input[name=description]').fill(name);
+  await page.locator('#addform input[name=description]').press('Tab');
 }
 
 // Collect uncaught page errors in every test; individual tests assert on them.
@@ -89,20 +90,29 @@ test.describe('add form', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('the payee is picked from a list, the frequent ones first, or typed as a new one', async ({ page }) => {
+  test('the payee field offers payees as it is typed into, by their letters in order', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
-    const pick = page.locator('#addform .payee-select');
     const input = page.locator('#addform input[name=description]');
-    await expect(input).toBeHidden();
-    expect(await pick.locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Frequent', 'All payees']);
-    expect(await pick.locator('optgroup[label="Frequent"] option').first().textContent()).toBe('Grocer Green');
-    await pick.selectOption('Cafe Luna');
+    const list = page.locator('#addform .payee-matches');
+    await input.click();
+    await expect(list).toBeHidden();   // nothing until something is typed
+    await input.fill('gr');
+    expect(await list.locator('li').first().textContent()).toBe('Grocer Green');
+    await input.fill('cfl');   // c, f, l in order: Cafe Luna
+    await expect(list.locator('li')).toHaveText(['Cafe Luna']);
+    await input.press('ArrowDown');
+    await input.press('Enter');
     await expect(input).toHaveValue('Cafe Luna');
-    await expect(input).toBeHidden();
-    await pick.selectOption({ index: 1 });  // New payee…
-    await expect(input).toBeVisible();
-    await expect(input).toHaveValue('');
+    await expect(list).toBeHidden();
+    // a name no payee has is simply typed, and Enter is the form's
+    await input.fill('Brand New Shop');
+    await expect(list).toBeHidden();
+    // the first match is picked by Enter without an arrow, or by a tap
+    await input.fill('metro');
+    await expect(list.locator('li').first()).toHaveText('Metro Transit');
+    await list.locator('li').first().click();
+    await expect(input).toHaveValue('Metro Transit');
     expect(pageErrors).toEqual([]);
   });
 
@@ -161,9 +171,9 @@ test.describe('add form', () => {
     await expect(page.locator('#addform select[name=account]').nth(1).locator('optgroup[label="Assets"] option[value="assets:bank:checking"]')).toHaveCount(1);
     // the second row starts on the account the books use most
     await expect(page.locator('#addform select[name=account]').nth(1)).toHaveValue('assets:bank:checking');
-    await expect(page.locator('#addform input[name=description]'))
-      .toHaveAttribute('list', 'descriptionnames');
-    await expect(page.locator('#descriptionnames option[value="Cafe Luna"]')).toHaveCount(1);
+    // the payees the field offers come with the page, frequent first
+    expect(await page.locator('#payeenames option').first().getAttribute('value')).toBe('Grocer Green');
+    expect(await page.locator('#payeenames option').count()).toBeGreaterThan(5);
   });
 
   test('the add form remembers this browser\'s last accounts', async ({ page }) => {

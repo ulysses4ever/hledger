@@ -921,8 +921,8 @@ hledgerWebTest = do
       -- figures link to registers in historical mode, restricted to the
       -- section's account types; a liability is shown as the books have
       -- it, negative, the sign its register shows (rawSigns)
-      bodyContains "href=\"register?q=inacct:assets:bank:checking+type:A&amp;accum=historical\""
-      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07+type:L&amp;accum=historical\" title=\"Show the transactions behind this balance\">"
+      bodyContains "href=\"register?q=inacct:assets:bank:checking&amp;accum=historical\""
+      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07&amp;accum=historical\" title=\"Show the transactions behind this balance\">"
       bodyContains ">-11<"
       bodyNotContains "opposite sign"
       -- a section total links to the section's account types, the net total to all of them
@@ -934,7 +934,8 @@ hledgerWebTest = do
     yit "opens the balance sheet on its liabilities, untitled, with their total as the table's" $ do
       get BalancesheetR
       statusIs 200
-      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07+type:L&amp;accum=historical\""
+      -- an account's link carries no type term (its page would say "filtered")
+      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07&amp;accum=historical\""
       bodyNotContains "inacct:assets:bank:checking"
       bodyNotContains "<tr class=\"section\">"
       bodyNotContains "<tr class=\"subtotal\">"
@@ -1025,7 +1026,7 @@ hledgerWebTest = do
       bodyContains "<h2>Income Statement 2025-01-01..2025-02-06</h2>"
       bodyContains ">Revenues</th>"
       bodyContains ">Expenses</th>"
-      bodyContains "href=\"register?q=inacct:income:salary+date:2025-01-01..2025-02-07+type:R\" title=\"Show the transactions that make up this amount, which the register shows with the opposite sign\">"
+      bodyContains "href=\"register?q=inacct:income:salary+date:2025-01-01..2025-02-07\" title=\"Show the transactions that make up this amount, which the register shows with the opposite sign\">"
       bodyContains "href=\"register?q=type:RX+date:2025-01-01..2025-02-07\" title=\"Show the transactions that make up this total, which the register shows with the opposite sign\">"
       bodyNotContains "accum="
 
@@ -1038,7 +1039,7 @@ hledgerWebTest = do
       statusIs 200
       bodyContains "<h2>Income Statement 2025-02-06 (Historical Ending Balances)</h2>"
       bodyContains "<input type=\"hidden\" name=\"accum\" value=\"historical\">"
-      bodyContains "href=\"register?q=inacct:income:salary+type:R&amp;accum=historical\""
+      bodyContains "href=\"register?q=inacct:income:salary&amp;accum=historical\""
 
     yit "serves the cashflow statement, its one section untitled, with its total as the table's, and no net total" $ do
       get CashflowR
@@ -1798,6 +1799,8 @@ hledgerWebTest = do
       statusIs 200
       htmlAnyContain "#main-content td.amount" "1000"
       htmlNoneContain "#main-content td.amount" "950"
+      -- its links to registers carry no dates, so an account's page opens on the month
+      bodyContains "href=\"register?q=inacct:assets:bank:checking&amp;accum=historical\""
       -- the sidebar's balances agree
       htmlAnyContain ".sidebar-offcanvas td.amount" "1000"
       htmlNoneContain ".sidebar-offcanvas td.amount" "950"
