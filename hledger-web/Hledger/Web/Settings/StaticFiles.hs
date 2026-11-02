@@ -7,6 +7,9 @@ Serving of the web app's static files, and type-safe routes for them.
 module Hledger.Web.Settings.StaticFiles where
 
 import Data.ByteString.Char8 qualified as B8
+import Data.Text (Text)
+import Data.Time.Clock.POSIX (POSIXTime, getPOSIXTime)
+import Language.Haskell.TH (runIO, stringE)
 import Data.FileEmbed (embedDir)
 import Data.Maybe (fromMaybe)
 import Network.Wai (Middleware, mapResponseHeaders, requestHeaders)
@@ -16,6 +19,13 @@ import WaiAppStatic.Types (MaxAge(..), StaticSettings(..))
 import Yesod.Core (WaiSubsite(..))
 
 import Hledger.Web.Settings (staticDir, development, staticFileRoute)
+
+-- | A stamp of this build, put in the page's links to its own script and
+-- stylesheet, so that a browser never keeps using a copy cached before a
+-- build (the files are also served with no-cache, which not every browser
+-- honours).
+staticVersion :: Text
+staticVersion = $(stringE . show . (floor :: POSIXTime -> Integer) =<< runIO getPOSIXTime)
 
 -- | Create the static file serving site (a WAI app used as a Yesod subsite).
 -- In development builds it serves the files in the static directory,

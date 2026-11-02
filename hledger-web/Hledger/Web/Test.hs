@@ -516,7 +516,7 @@ hledgerWebTest = do
         body <- withResponse $ \SResponse{simpleBody} -> return $ TL.toStrict $ TLE.decodeUtf8 simpleBody
         let pos t = T.length . fst $ T.breakOn t body
         assertEq "the stylesheet is linked after hledger.css" True
-          (pos "/static/hledger.css\"" < pos "/custom.css\"" && pos "/custom.css\"" < T.length body)
+          (pos "/static/hledger.css" < pos "/custom.css\"" && pos "/custom.css\"" < T.length body)
         get CustomCssR
         statusIs 200
         assertHeader "Cache-Control" "no-cache"
@@ -931,15 +931,15 @@ hledgerWebTest = do
       -- without inline styles
       bodyNotContains "style=\""
 
-    yit "opens the balance sheet on its assets, untitled, with their total as the table's" $ do
+    yit "opens the balance sheet on its liabilities, untitled, with their total as the table's" $ do
       get BalancesheetR
       statusIs 200
-      bodyContains "href=\"register?q=inacct:assets:bank:checking+type:A&amp;accum=historical\""
-      bodyNotContains "inacct:liabilities:card"
+      bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07+type:L&amp;accum=historical\""
+      bodyNotContains "inacct:assets:bank:checking"
       bodyNotContains "<tr class=\"section\">"
       bodyNotContains "<tr class=\"subtotal\">"
       bodyContains "<tfoot>"
-      bodyContains "href=\"register?q=type:A+date:2025-01-01..2025-02-07&amp;accum=historical\""
+      bodyContains "href=\"register?q=type:L+date:2025-01-01..2025-02-07&amp;accum=historical\""
       bodyNotContains "Net:"
 
     yit "opens the income statement on its expenses" $ do
@@ -960,9 +960,9 @@ hledgerWebTest = do
       bodyContains "inacct:liabilities:card"
       bodyNotContains "inacct:assets:bank:checking"
       bodyContains "Section:"
-      -- the page's own section needs no parameter
-      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Assets</a>")
-      bodyContains ("class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=liabilities&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Liabilities</a>")
+      -- the page's own section (liabilities, since there are some) needs no parameter
+      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=assets&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Assets</a>")
+      bodyContains ("class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Liabilities</a>")
       bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=all&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show every section, and the net total\">All</a>")
 
     yit "shows the page's own section for a section it does not have" $ do
@@ -971,8 +971,8 @@ hledgerWebTest = do
         setUrl BalancesheetR
         addGetParam "section" "revenues"
       statusIs 200
-      bodyContains "inacct:assets:bank:checking"
-      bodyNotContains "inacct:liabilities:card"
+      bodyContains "inacct:liabilities:card"
+      bodyNotContains "inacct:assets:bank:checking"
 
     yit "serves the multi-period balance sheet, headed by end dates linking to this report" $ do
       request $ do

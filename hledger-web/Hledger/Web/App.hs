@@ -227,6 +227,7 @@ instance Yesod App where
     -- default-layout-wrapper is the entire page. Since the final
     -- value passed to hamletToRepHtml cannot be a widget, this allows
     -- you to use normal widget features in default-layout.
+    render <- getUrlRenderParams
     pc <- widgetToPageContent $ do
       addStylesheet $ StaticR css_bootstrap_min_css
       -- load these things early, in HEAD:
@@ -238,11 +239,12 @@ instance Yesod App where
       addScript $ StaticR js_jquery_flot_selection_min_js
       addScript $ StaticR js_jquery_flot_time_min_js
       addScript $ StaticR js_jquery_flot_tooltip_min_js
-      addStylesheet $ StaticR hledger_css
+      -- (its own stylesheet and script with the build's stamp, see staticVersion)
+      addStylesheetRemote $ render (StaticR hledger_css) [("v", staticVersion)]
       -- An instance's own stylesheet, if one was given with --css and is
       -- there, after hledger-web's own so that its rules win.
       forM_ mcss $ \_ -> addStylesheet CustomCssR
-      addScript $ StaticR hledger_js
+      addScriptRemote $ render (StaticR hledger_js) [("v", staticVersion)]
       $(widgetFile "default-layout")
 
     withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")

@@ -41,7 +41,7 @@ getBalancesheetR, getBalancesheetequityR, getIncomestatementR, getCashflowR :: H
 -- Each opens on one of its sections (see statementPage): the balance
 -- sheets on assets, the income statement on expenses, which is what a
 -- money app's statistics open on.
-getBalancesheetR       = statementPage BalancesheetR       (i18n "balance sheet - hledger-web")             (rawSigns balancesheetSpec)       0
+getBalancesheetR       = statementPage BalancesheetR       (i18n "balance sheet - hledger-web")             (rawSigns balancesheetSpec)       1  -- liabilities, the cards, first
 getBalancesheetequityR = statementPage BalancesheetequityR (i18n "balance sheet with equity - hledger-web") (rawSigns balancesheetequitySpec) 0
 
 -- | A balance sheet with every figure as the books have it: a liability
@@ -136,16 +136,23 @@ statementPage here tabtitle spec defaultSection = do
             sectionKeys = map (T.intercalate "-" . T.words . T.toLower . cbcsubreporttitle) (cbcqueries spec)
             sectionNames = zipWith (\sub (title, _, _) -> if T.null title then tr trs (cbcsubreporttitle sub) else title) (cbcqueries spec) cbrpSections
             several = length cbrpSections > 1
+            -- The section the page opens on: the one given, when it has any
+            -- rows (a balance sheet opens on the liabilities, the cards,
+            -- when there are any), else the first.
+            hasRows i = case drop i (cbrSubreports cbr) of
+              (_, r, _) : _ -> not (null (prRows r))
+              _ -> False
+            opening = if hasRows defaultSection then defaultSection else 0
             shown
               | not several = OneSection 0
               | otherwise = case lookup "section" params of
                   Just "all" -> AllSections
                   Just k | Just i <- elemIndex k sectionKeys -> OneSection i
-                  _ -> OneSection defaultSection
+                  _ -> OneSection opening
             -- The parameter for showing the given sections: none for the
             -- page's own section.
             sectionParam = \case
-              OneSection i | i == defaultSection -> []
+              OneSection i | i == opening -> []
                            | otherwise -> [("section", k) | k <- take 1 (drop i sectionKeys)]
               AllSections -> [("section", "all")]
             -- Links to the sections keep the search, the period and the mode.
