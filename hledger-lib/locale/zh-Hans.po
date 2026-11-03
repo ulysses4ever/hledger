@@ -1552,3 +1552,8 @@ msgstr "年"
 #: hledger-web/Hledger/Web/Widget/Period.hs
 msgid "Length of the period"
 msgstr "时间段长度"
+
+#. hledger-web: the message of a showroom instance (--showroom) when a form is submitted.
+#: hledger-web/Hledger/Web/Handler/AddR.hs
+msgid "This is a showroom: nothing is saved."
+msgstr "这是展示厅：不会保存任何内容。"

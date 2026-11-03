@@ -126,6 +126,10 @@ webflags =
   --     "FILEURL"
   --     "set a different base url for static files (default: `BASEURL/static/`)"
   , flagNone
+      ["showroom"]
+      (setboolopt "showroom")
+      "a public showroom: show everything, the forms included, but save nothing"
+  , flagNone
       ["test"]
       (setboolopt "test")
       "run hledger-web's tests and exit. hspec test runner args may follow a --, eg: hledger-web --test -- --help"
@@ -168,6 +172,7 @@ data WebOpts = WebOpts
   , socket_             :: !(Maybe String)
   , css_                :: !(Maybe FilePath)
   , alltime_            :: !Bool
+  , showroom_           :: !Bool    -- ^ show everything, save nothing
   } deriving (Show)
 
 defwebopts :: WebOpts
@@ -183,6 +188,7 @@ defwebopts = WebOpts
   , socket_             = Nothing
   , css_                = Nothing
   , alltime_            = False
+  , showroom_           = False
   }
 
 instance Default WebOpts where def = defwebopts
@@ -229,6 +235,7 @@ rawOptsToWebOpts rawopts =
       , socket_ = sock
       , css_ = css
       , alltime_ = boolopt "all-time" rawopts
+      , showroom_ = boolopt "showroom" rawopts
       }
   where
     stripTrailingSlash = reverse . dropWhile (== '/') . reverse -- yesod don't like it

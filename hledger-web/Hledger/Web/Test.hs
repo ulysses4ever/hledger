@@ -1589,6 +1589,30 @@ hledgerWebTest = do
         get (DownloadR otherfile)
         statusIs 404
 
+  -- A showroom shows the forms and the pencils, and saves nothing.
+  runTests "hledger-web showroom" [("file", jfile), ("allow", "add"), ("showroom", "")] wj $ do
+
+    yit "shows the add form and the pencils, but saves nothing" $ do
+      get JournalR
+      statusIs 200
+      bodyContains "name=\"_token\""
+      bodyContains "/transaction/1\""
+      request $ do
+        setMethod "POST"
+        setUrl AddR
+        addToken
+        addPostParam "_formid" "identify-add"
+        addPostParam "date" "2025-02-02"
+        addPostParam "description" "ShowroomTyped"
+        addPostParam "account" "assets:bank:checking"
+        addPostParam "amount" "1"
+        addPostParam "account" "income:gifts"
+        addPostParam "amount" "1"
+      statusIs 303
+      _ <- followRedirect
+      bodyContains "This is a showroom: nothing is saved."
+      journalFileLacks jfile "ShowroomTyped"
+
   -- Paging (#586): the journal and register pages show the newest pageSize
   -- transactions and link to the older pages, so that a page stays small
   -- however large the journal is; and a row of years links to each year the

@@ -1092,3 +1092,8 @@ msgstr "Год"
 #: hledger-web/Hledger/Web/Widget/Period.hs
 msgid "Length of the period"
 msgstr "Длина периода"
+
+#. hledger-web: the message of a showroom instance (--showroom) when a form is submitted.
+#: hledger-web/Hledger/Web/Handler/AddR.hs
+msgid "This is a showroom: nothing is saved."
+msgstr "Это витрина: ничего не сохраняется."

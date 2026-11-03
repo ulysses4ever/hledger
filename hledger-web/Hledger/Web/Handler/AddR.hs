@@ -13,7 +13,7 @@ module Hledger.Web.Handler.AddR
 import Data.Aeson.Types (Result(..))
 import Data.List (intersperse)
 import Data.Text qualified as T
-import Network.HTTP.Types.Status (status400)
+import Network.HTTP.Types.Status (status400, status403)
 import Text.Blaze.Html (preEscapedToHtml)
 import Yesod
 
@@ -31,12 +31,16 @@ getAddR = do
 postAddR :: Handler ()
 postAddR = do
   checkServerSideUiEnabled
-  VD{j, today} <- getViewData
+  VD{j, today, opts} <- getViewData
   require AddPermission
 
   ((res, view), enctype) <- runFormPost $ addForm j today Nothing
   case res of
     FormSuccess (t,f) -> do
+      -- a showroom shows the form, and saves nothing
+      when (showroom_ opts) $ do
+        setMessageI (HMsg "This is a showroom: nothing is saved.")
+        redirect JournalR
       let t' = txnTieKnot $ transactionCollapseNewlines t
       liftIO $ do
         ensureJournalFileExists f
@@ -71,5 +75,6 @@ putAddR = do
   case r of
     Error err -> sendStatusJSON status400 ("could not parse json: " ++ err ::String)
     Success t -> do
+      when (showroom_ opts) $ sendStatusJSON status403 ("this is a showroom: nothing is saved" :: String)
       void $ liftIO $ journalAddTransaction j (cliopts_ opts) $ transactionCollapseNewlines t
       sendResponseCreated TransactionsR

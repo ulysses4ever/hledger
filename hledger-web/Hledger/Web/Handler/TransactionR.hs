@@ -20,6 +20,7 @@ import Data.Text.IO qualified as T
 import Hledger
 import Hledger.Utils.I18n (tr, trf)
 import Hledger.Web.Import
+import Hledger.Web.WebOptions (WebOpts(..))
 import Hledger.Web.Widget.AddForm (addForm, transactionCollapseNewlines)
 import Hledger.Web.Widget.Common (writeJournalTextIfValidAndChanged)
 
@@ -61,9 +62,13 @@ showPage t original view enctype = do
 postTransactionR :: Integer -> Handler Html
 postTransactionR i = do
   checkServerSideUiEnabled
-  VD{j, today, trs} <- getViewData
+  VD{j, today, trs, opts} <- getViewData
   require AddPermission
   (t, f, l1, l2, current) <- lookupTransaction j i
+  -- a showroom shows the page, and saves nothing
+  when (showroom_ opts) $ do
+    setMessageI (HMsg "This is a showroom: nothing is saved.")
+    redirect (TransactionR i)
   -- (a browser sends the hidden field's newlines as CRLF)
   original <- maybe "" (T.replace "\r\n" "\n") <$> lookupPostParam "original"
   action <- fromMaybe "save" <$> lookupPostParam "action"
