@@ -1,5 +1,26 @@
 # hledger
 
+> **This is a fork: hledger-web for phones.** The branch `web-mobile` is
+> upstream's main line plus a web UI reworked for a phone, made for one
+> family's move off a phone expense app and kept here in the open. Try it on
+> fictional books, where nothing you enter is saved:
+> **<https://showroom.pelenitsyn.site>**
+>
+> What it adds to hledger-web: a phone layout (no sideways scrolling, one
+> block per entry, a tab bar, a round add button); the journal and an
+> account's page open on this month, with arrows and a choice of week, month,
+> quarter or year; an add form with Expense / Income / Transfer, a payee
+> field that completes as you type, category and subcategory lists, an
+> amount with its currency, a note and a date picker; a page for every entry,
+> to change or delete it; the balance sheet opening on liabilities, with
+> balances as of today; report pages with drop-down filters; an instance
+> stylesheet (`--css FILE`); translations (de, es, ru, zh-Hans); and
+> `--showroom`, which shows everything and saves nothing. The server tests
+> (`hledger-web --test`) and a Playwright suite (`hledger-web/test/browser`)
+> cover it. It is built and run like upstream (stack, cabal or a Nix build of
+> hledger-lib, hledger and hledger-web from this tree). It is not meant for
+> upstreaming. Upstream's README follows.
+
 ## Robust, intuitive plain text accounting
 [![license](https://img.shields.io/badge/license-GPLv3+-brightgreen.svg)](https://www.gnu.org/licenses/gpl.html)
 [![on hackage](https://img.shields.io/hackage/v/hledger.svg?label=hackage&colorB=green)](https://hackage.haskell.org/package/hledger)
