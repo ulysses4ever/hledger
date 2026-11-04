@@ -1484,3 +1484,13 @@ msgstr "Mostrar los {n} asientos posteriores a hoy"
 #: hledger-web/templates/journal.hamlet
 msgid "Hide the entries dated after today"
 msgstr "Ocultar los asientos posteriores a hoy"
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "To"
+msgstr "A"
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "From"
+msgstr "De"

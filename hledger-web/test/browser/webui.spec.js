@@ -143,11 +143,13 @@ test.describe('add form', () => {
     await expect(page.locator('#addform .payee-group')).toBeHidden();
     await expect(page.locator('#addform .category-select')).toBeHidden();
     const to = page.locator('#addform select[name=account]').nth(0);
-    await expect(to.locator('option').first()).toHaveText('To account');
+    await expect(to.locator('option').first()).toHaveText('Account');
+    await expect(page.locator('#addform .account-side').nth(0)).toHaveText('To');
+    await expect(page.locator('#addform .account-side').nth(1)).toHaveText('From');
     expect(await to.locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Assets', 'Equity']);
     await to.selectOption('assets:bank:checking');
     expect(await to.locator('optgroup').count()).toBe(2);   // the list stays whole once one is picked
-    await expect(page.locator('#addform select[name=account]').nth(1).locator('option').first()).toHaveText('From account');
+    await expect(page.locator('#addform select[name=account]').nth(1).locator('option').first()).toHaveText('Account');
     await page.goto('/journal');
     await openAddForm(page);
     await expect(page.locator('#addform .kind-option[data-kind=transfer]')).toHaveClass(/active/);
@@ -155,6 +157,7 @@ test.describe('add form', () => {
     await expect(page.locator('#addform select[name=account]').nth(0).locator('option').first()).toHaveText('Subcategory');
     await expect(page.locator('#addform .payee-group')).toBeVisible();
     await expect(page.locator('#addform .category-select')).toBeVisible();
+    await expect(page.locator('#addform .account-side').first()).toBeHidden();
     // the file chooser is out of sight: new entries go to the main file
     await expect(page.locator('#addform select[name=file]')).toBeHidden();
     expect(pageErrors).toEqual([]);

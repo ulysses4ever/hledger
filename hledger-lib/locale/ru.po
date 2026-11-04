@@ -1107,3 +1107,13 @@ msgstr "Показать записи после сегодняшнего дня
 #: hledger-web/templates/journal.hamlet
 msgid "Hide the entries dated after today"
 msgstr "Скрыть записи после сегодняшнего дня"
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "To"
+msgstr "Куда"
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "From"
+msgstr "Откуда"

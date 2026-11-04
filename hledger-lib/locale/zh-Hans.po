@@ -1567,3 +1567,13 @@ msgstr "显示今天之后的 {n} 条记录"
 #: hledger-web/templates/journal.hamlet
 msgid "Hide the entries dated after today"
 msgstr "隐藏今天之后的记录"
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "To"
+msgstr "转入"
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "From"
+msgstr "转出"

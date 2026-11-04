@@ -444,8 +444,16 @@ function addformSetKind(kind, categoryKey) {
   var transfer = kind === 'transfer';
   var first = document.querySelector('#addform select[name=account][data-row="1"] option[value=""]');
   var second = document.querySelector('#addform select[name=account][data-row="2"] option[value=""]');
-  if (first) { first.textContent = transfer ? kinds.dataset.to : kinds.dataset.subcategory; }
-  if (second) { second.textContent = transfer ? kinds.dataset.from : kinds.dataset.account; }
+  if (first) { first.textContent = transfer ? kinds.dataset.account : kinds.dataset.subcategory; }
+  if (second) { second.textContent = kinds.dataset.account; }
+  // on a transfer, "To" and "From" stand beside the two lists
+  document.querySelectorAll('#addform .account-group').forEach(function(g) {
+    var side = g.querySelector('.account-side');
+    var sel = g.querySelector('select[name=account]');
+    if (!side || !sel) { return; }
+    side.textContent = sel.dataset.row === '1' ? kinds.dataset.toSide : (sel.dataset.row === '2' ? kinds.dataset.fromSide : '');
+    side.hidden = !transfer || !side.textContent;
+  });
   // A transfer is two accounts and an amount: no payee (unless the entry
   // has one), no category; the first row lists every account of the kind,
   // grouped as the categories would have been.
@@ -486,6 +494,8 @@ function addformAddPosting() {
 
   var account = newrow.querySelector('select[name=account]');
   var amount = newrow.querySelector('input[name=amount]');
+  var side = newrow.querySelector('.account-side');
+  if (side) { side.textContent = ''; side.hidden = true; }
   account.value = '';
   account.dataset.row = num;
   amount.value = '';

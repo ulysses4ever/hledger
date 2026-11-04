@@ -1483,3 +1483,13 @@ msgstr ""
 #: hledger-web/templates/journal.hamlet
 msgid "Hide the entries dated after today"
 msgstr ""
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "To"
+msgstr ""
+
+#. hledger-web: beside the add form's account lists on a transfer: the account paid to, and from.
+#: hledger-web/templates/add-form.hamlet
+msgid "From"
+msgstr ""
