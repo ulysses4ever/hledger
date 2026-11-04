@@ -210,7 +210,9 @@ addForm j today mtxn = identifyForm "add" $ \extra -> do
     -- hledger keeps a note after the payee in the description: "Payee | note".
     descWithNote = joinNote <$> descRes <*> noteRes
     joinNote mpayee mnote = case (T.strip <$> mpayee, T.strip <$> mnote) of
-      (payee, Just note) | not (T.null note) -> Just (fromMaybe "" payee <> " | " <> note)
+      (payee, Just note) | not (T.null note) -> Just $ case payee of
+        Just p | not (T.null p) -> p <> " | " <> note
+        _ -> note   -- a transfer has no payee: the note is the description
       (payee, _) -> payee
     formRes = withStatus <$> statusRes <*> validateTransaction deffile dateRes descWithNote postingsRes fileRes
     withStatus mst (t, f) = (t{tstatus = fromMaybe (maybe Unmarked tstatus mtxn) mst}, f)

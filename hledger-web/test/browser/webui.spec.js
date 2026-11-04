@@ -139,15 +139,22 @@ test.describe('add form', () => {
     await page.goto('/journal');
     await openAddForm(page);
     await page.locator('#addform .kind-option[data-kind=transfer]').click();
-    const category = page.locator('#addform .category-select');
-    expect(await category.locator('option').allTextContents()).toEqual(['Category', 'Assets', 'Equity']);
-    await expect(page.locator('#addform select[name=account]').nth(0).locator('option').first()).toHaveText('To account');
+    // a transfer: no payee, no category; every account of the kind, grouped
+    await expect(page.locator('#addform .payee-group')).toBeHidden();
+    await expect(page.locator('#addform .category-select')).toBeHidden();
+    const to = page.locator('#addform select[name=account]').nth(0);
+    await expect(to.locator('option').first()).toHaveText('To account');
+    expect(await to.locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Assets', 'Equity']);
+    await to.selectOption('assets:bank:checking');
+    expect(await to.locator('optgroup').count()).toBe(2);   // the list stays whole once one is picked
     await expect(page.locator('#addform select[name=account]').nth(1).locator('option').first()).toHaveText('From account');
     await page.goto('/journal');
     await openAddForm(page);
     await expect(page.locator('#addform .kind-option[data-kind=transfer]')).toHaveClass(/active/);
     await page.locator('#addform .kind-option[data-kind=expenses]').click();
     await expect(page.locator('#addform select[name=account]').nth(0).locator('option').first()).toHaveText('Subcategory');
+    await expect(page.locator('#addform .payee-group')).toBeVisible();
+    await expect(page.locator('#addform .category-select')).toBeVisible();
     // the file chooser is out of sight: new entries go to the main file
     await expect(page.locator('#addform select[name=file]')).toBeHidden();
     expect(pageErrors).toEqual([]);
@@ -164,8 +171,7 @@ test.describe('add form', () => {
     await expect(first.locator('option')).toHaveCount(1);
     await page.locator('#addform .category-select').selectOption('expenses:food');
     await expect(first.locator('option[value="expenses:food:dining"][data-category="expenses:food"]')).toHaveText('dining');
-    await page.locator('#addform .kind-option[data-kind=transfer]').click();  // asset accounts are under Transfer
-    await page.locator('#addform .category-select').selectOption('assets');
+    await page.locator('#addform .kind-option[data-kind=transfer]').click();  // asset accounts are under Transfer, listed at once
     await expect(first.locator('option[value="assets:bank:checking"][data-category="assets"]')).toHaveText('bank › checking');
     await expect(first).toHaveValue('');
     await expect(page.locator('#addform select[name=account]').nth(1).locator('optgroup[label="Assets"] option[value="assets:bank:checking"]')).toHaveCount(1);

@@ -352,7 +352,10 @@ function addformCategoryInit() {
     addformAccountOptions = [[].slice.call(account.options, 1)];
     category.addEventListener('change', function() { addformSetCategory(category.value); });
     // an account picked from the full list sets the category beside it
+    // (not on a transfer, whose list is every account of the kind)
     account.addEventListener('change', function() {
+      var kinds = document.querySelector('#addform .kind-select');
+      if (kinds && kinds.dataset.kind === 'transfer') { return; }
       var o = account.options[account.selectedIndex];
       if (o && o.dataset.category && category.value !== o.dataset.category) {
         category.value = o.dataset.category;
@@ -373,6 +376,8 @@ function addformSetCategory(key, keep) {
     addformSetKind(addformKindOf(key), key);
   }
   if (category.value !== key) { category.value = key; }
+  var kindsEl = document.querySelector('#addform .kind-select');
+  if (kindsEl && kindsEl.dataset.kind === 'transfer') { return; }   // (every account is listed already)
   var placeholder = account.options[0];
   // nothing to pick from until a category is picked
   var options = addformAccountOptions[0].filter(function(o) { return key && o.dataset.category === key; });
@@ -441,6 +446,29 @@ function addformSetKind(kind, categoryKey) {
   var second = document.querySelector('#addform select[name=account][data-row="2"] option[value=""]');
   if (first) { first.textContent = transfer ? kinds.dataset.to : kinds.dataset.subcategory; }
   if (second) { second.textContent = transfer ? kinds.dataset.from : kinds.dataset.account; }
+  // A transfer is two accounts and an amount: no payee (unless the entry
+  // has one), no category; the first row lists every account of the kind,
+  // grouped as the categories would have been.
+  var payeeGroup = document.querySelector('#addform .payee-group');
+  var payeeInput = document.querySelector('#addform input[name=description]');
+  if (payeeGroup) { payeeGroup.hidden = transfer && !(payeeInput && payeeInput.value); }
+  var categoryCol = category.parentElement;
+  if (categoryCol) { categoryCol.hidden = transfer; }
+  if (transfer) {
+    var account = document.querySelector('#addform select[name=account][data-row="1"]');
+    var keep = account.value;
+    var group = addformCategoryGroups.find(function(g) { return g.kind === 'transfer'; });
+    while (account.options.length > 1) { account.remove(1); }
+    (group ? group.options : []).forEach(function(c) {
+      var og = document.createElement('optgroup');
+      og.label = c.textContent;
+      addformAccountOptions[0].filter(function(o) { return o.dataset.category === c.value; })
+        .forEach(function(o) { og.appendChild(o); });
+      if (og.children.length) { account.appendChild(og); }
+    });
+    if (keep && [].some.call(account.options, function(o) { return o.value === keep; })) { account.value = keep; }
+    else { account.options[0].selected = true; account.value = ''; }
+  }
 }
 
 // Insert another posting row in the add form.

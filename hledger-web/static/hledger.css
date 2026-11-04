@@ -322,6 +322,10 @@ tr.future-toggle[hidden] {
   color: var(--account-parents);
 }
 
+#addform [hidden] {
+  display: none !important;
+}
+
 /* The kind of entry: three buttons across the form, the chosen one pressed. */
 #addform .kind-select {
   display: flex;
