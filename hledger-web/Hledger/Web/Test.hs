@@ -1813,10 +1813,30 @@ hledgerWebTest = do
             ["2025-01-01 opening"
             ,"    assets:bank:checking   1000"
             ,"    equity:opening"
+            ,"2025-02-20 ! power written ahead"
+            ,"    expenses:power           30"
+            ,"    assets:bank:checking"
             ,"2025-03-01 ! rent written ahead"
             ,"    expenses:rent            50"
             ,"    assets:bank:checking"])
-  runTests "hledger-web balance sheet as of today" [("today", "2025-02-14")] fj $ do
+  runTestsByMonth "hledger-web balance sheet as of today" [("today", "2025-02-14")] fj $ do
+
+    -- The journal and an account's page: figures as of today, the entries
+    -- dated later marked, and the row that unfolds them.
+    yit "shows an account's balance as of today, with the later entries folded away" $ do
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:checking"
+      statusIs 200
+      htmlAnyContain ".account-balance" "1000"
+      bodyContains "class=\"future\""
+      bodyContains ">Show 1 entries dated after today</button>"
+      get JournalR
+      statusIs 200
+      bodyContains "class=\"title future\""
+      bodyContains ">Show 1 entries dated after today</button>"
+      htmlAnyContain ".period-totals .spent" "0"
 
     yit "leaves out entries dated after today, unless a period asks for them" $ do
       get BalancesheetR
@@ -1833,7 +1853,7 @@ hledgerWebTest = do
         setUrl BalancesheetR
         addGetParam "period" "2025"
       statusIs 200
-      htmlAnyContain "#main-content td.amount" "950"
+      htmlAnyContain "#main-content td.amount" "920"  -- the two later entries counted
 
   -- The journal and registers open on today's month, with a band naming
   -- it between links to the months before and after, and on the journal,

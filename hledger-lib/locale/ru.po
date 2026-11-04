@@ -1097,3 +1097,13 @@ msgstr "Длина периода"
 #: hledger-web/Hledger/Web/Handler/AddR.hs
 msgid "This is a showroom: nothing is saved."
 msgstr "Это витрина: ничего не сохраняется."
+
+#. hledger-web: the button that unfolds or folds the entries dated after today.
+#: hledger-web/templates/journal.hamlet
+msgid "Show {n} entries dated after today"
+msgstr "Показать записи после сегодняшнего дня: {n}"
+
+#. hledger-web: the button that unfolds or folds the entries dated after today.
+#: hledger-web/templates/journal.hamlet
+msgid "Hide the entries dated after today"
+msgstr "Скрыть записи после сегодняшнего дня"

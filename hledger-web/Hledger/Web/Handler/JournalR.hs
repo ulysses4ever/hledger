@@ -58,7 +58,10 @@ getJournalR = do
       -- How much the period's entries spent and earned: their postings to
       -- expense accounts, and to revenue accounts, by account type.
       atype = journalAccountType j
-      typeTotal ty = sumPostings [p | t <- alltxns, p <- tpostings t, maybe False (`isAccountSubtypeOf` ty) $ atype (paccount p)]
+      -- (as of today: entries dated later are shown, folded away, but not counted)
+      isFuture t = tdate t > today
+      typeTotal ty = sumPostings [p | t <- alltxns, not (isFuture t), p <- tpostings t, maybe False (`isAccountSubtypeOf` ty) $ atype (paccount p)]
+      futureCount = length (filter isFuture items)
       spent = typeTotal Expense
       earned = maNegate $ typeTotal Revenue
       oneLine = wbToText . showMixedAmountB oneLineNoCostFmt{displayZeroCommodity = True}

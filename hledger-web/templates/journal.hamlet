@@ -30,10 +30,16 @@ $# given with --css can rearrange them with the order property.
         <th .account>_{HMsgc "column heading" "Account"}
         <th .amount>_{HMsgc "column heading" "Amount"}
 
+      $# Entries dated after today are folded away under this row, which
+      $# hledger.js shows, and which shows them (they come first: newest first).
+      $if futureCount > 0
+        <tr .future-toggle hidden>
+          <td colspan=4>
+            <button type=button .btn .btn-link .future-button data-hide=_{HMsg "Hide the entries dated after today"}>#{trf trs "Show {n} entries dated after today" [("n", T.pack (show futureCount))]}
       $forall (torig, es) <- entries
         $# data-account and data-kind are for an instance stylesheet, to give
         $# the entry an icon (see the manual's "Customising the look").
-        <tr .title ##{transactionFrag torig} data-entry="#{showTransaction torig}"
+        <tr .title :isFuture torig:.future ##{transactionFrag torig} data-entry="#{showTransaction torig}"
             data-account="#{entryMainAccount es}" data-kind="#{entryKindClass (esKind es)}">
           <td .date nowrap>
             <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
@@ -85,7 +91,7 @@ $# given with --css can rearrange them with the order property.
                 <span .glyphicon .glyphicon-pencil aria-hidden="true">
 
         $forall Posting { paccount = acc, pamount = amt } <- tpostings torig
-          <tr .posting :isSource amt:.source>
+          <tr .posting :isSource amt:.source :isFuture torig:.future>
             <td>
             <td>
             <td .account>
@@ -98,7 +104,7 @@ $# given with --css can rearrange them with the order property.
         $# money came from, are shown on this line instead, without amounts.
         $with sources <- sourceAccounts torig
           $if not (null sources)
-            <tr .posting .from>
+            <tr .posting .from :isFuture torig:.future>
               <td>
               <td>
               <td .from-accounts>

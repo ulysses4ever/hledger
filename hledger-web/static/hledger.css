@@ -307,6 +307,21 @@ td.date,
   background-color: var(--band);
 }
 
+/* Entries dated after today are folded away (hledger.js sets hidden on
+   their rows and shows the row with the button that unfolds them). */
+tr.future[hidden],
+tr.future-toggle[hidden] {
+  display: none !important;
+}
+.future-toggle td {
+  padding: 2px;
+  text-align: center;
+}
+.future-button {
+  font-size: 14px;
+  color: var(--account-parents);
+}
+
 /* The kind of entry: three buttons across the form, the chosen one pressed. */
 #addform .kind-select {
   display: flex;
@@ -1606,7 +1621,7 @@ a:focus > .account-name > * {
     color: var(--account-parents);
     background-color: var(--band);
   }
-  .registerreport > tbody > tr:not(.day-heading, .broughtforward) > td:not(.entry-card) {
+  .registerreport > tbody > tr:not(.day-heading, .broughtforward, .future-toggle) > td:not(.entry-card) {
     display: none;
   }
   .table-responsive > .registerreport > tbody > tr > td.entry-card {

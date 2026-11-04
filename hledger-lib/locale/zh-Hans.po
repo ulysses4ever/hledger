@@ -1557,3 +1557,13 @@ msgstr "时间段长度"
 #: hledger-web/Hledger/Web/Handler/AddR.hs
 msgid "This is a showroom: nothing is saved."
 msgstr "这是展示厅：不会保存任何内容。"
+
+#. hledger-web: the button that unfolds or folds the entries dated after today.
+#: hledger-web/templates/journal.hamlet
+msgid "Show {n} entries dated after today"
+msgstr "显示今天之后的 {n} 条记录"
+
+#. hledger-web: the button that unfolds or folds the entries dated after today.
+#: hledger-web/templates/journal.hamlet
+msgid "Hide the entries dated after today"
+msgstr "隐藏今天之后的记录"

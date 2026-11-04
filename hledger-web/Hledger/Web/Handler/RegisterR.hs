@@ -133,11 +133,16 @@ getRegisterR = do
       -- A row's balance, including everything before the period, whatever
       -- the mode: on a phone, each row shows it.
       runningBalance bal = if historical then bal else prevbal `maPlus` bal
-      endbal = case allitems of
+      -- The figures are as of today: entries dated later (recurring ones
+      -- written ahead) are shown, folded away, but not counted.
+      isFuture t = tdate t > today
+      sofar = [i | i@(_, tacct, _, _, _, _) <- allitems, not (isFuture tacct)]
+      endbal = case sofar of
         (_, _, _, _, _, bal) : _ -> runningBalance bal
         []                       -> prevbal
-      paidin = maSum [filterMixedAmount ((> 0) . aquantity) amt | (_, _, _, _, amt, _) <- allitems]
-      paidout = maSum [filterMixedAmount ((< 0) . aquantity) amt | (_, _, _, _, amt, _) <- allitems]
+      paidin = maSum [filterMixedAmount ((> 0) . aquantity) amt | (_, _, _, _, amt, _) <- sofar]
+      paidout = maSum [filterMixedAmount ((< 0) . aquantity) amt | (_, _, _, _, amt, _) <- sofar]
+      futureCount = length [() | (_, tacct, _, _, _, _) <- items, isFuture tacct]
       oneLine = wbToText . showMixedAmountB oneLineNoCostFmt{displayZeroCommodity = True}
       isNegative amt = isNegativeMixedAmount amt == Just True
       isPositive amt = isNegativeMixedAmount amt == Just False && not (mixedAmountLooksZero amt)

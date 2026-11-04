@@ -42,17 +42,23 @@ $if isAccountPage
           <a href=@?{accumToggle} title="#{accumToggleTitle}">#{balancelabel}
 
     <tbody>
+      $# Entries dated after today are folded away under this row, which
+      $# hledger.js shows, and which shows them (they come first: newest first).
+      $if futureCount > 0
+        <tr .future-toggle hidden>
+          <td colspan=5>
+            <button type=button .btn .btn-link .future-button data-hide=_{HMsg "Hide the entries dated after today"}>#{trf trs "Show {n} entries dated after today" [("n", T.pack (show futureCount))]}
       $forall (day, daytotal, dayitems) <- days
         $# On a phone, the rows are grouped by day, under a heading with the
         $# day's total; elsewhere it is hidden.
-        <tr .day-heading>
+        <tr .day-heading :day > today:.future>
           <td colspan=5>
             <span .day-date>#{dayWithWeekday day}
             <span .day-total .amount>#{oneLine daytotal}
         $forall (torig, tacct, split, _acct, amt, bal) <- dayitems
           $# data-account and data-kind are for an instance stylesheet, to give
           $# the row an icon (see the manual's "Customising the look").
-          <tr ##{transactionFrag torig} data-entry="#{showTransaction torig}"
+          <tr ##{transactionFrag torig} :isFuture tacct:.future data-entry="#{showTransaction torig}"
               data-account="#{mainAccount torig}" data-kind="#{entryKindClass (esKind (summary torig))}">
             <td .date nowrap>
               <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"

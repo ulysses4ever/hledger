@@ -167,6 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   entryTooltipInit();
+  futureRowsInit();
   registerChartInit();
 });
 
@@ -516,6 +517,28 @@ function getCookie(name) {
 // draw it itself, in a proportional font and wrapped at its own narrow width.
 // As with titles, the innermost one applies: over an account link, the
 // link's title (the full account name) shows instead.
+
+// Entries dated after today (recurring ones written ahead) are folded
+// away: their rows get hidden, and the row with the button, which the
+// page sends hidden, shows and unfolds them. Without this script every
+// row shows, and the button's row stays hidden.
+function futureRowsInit() {
+  document.querySelectorAll('tr.future-toggle').forEach(function(row) {
+    var table = row.closest('table');
+    var button = row.querySelector('.future-button');
+    var rows = table.querySelectorAll('tr.future');
+    if (!rows.length || !button) { return; }
+    var showLabel = button.textContent;
+    function fold(hide) {
+      rows.forEach(function(r) { r.hidden = hide; });
+      button.textContent = hide ? showLabel : button.dataset.hide;
+      button.setAttribute('aria-expanded', hide ? 'false' : 'true');
+    }
+    fold(true);
+    row.hidden = false;
+    button.addEventListener('click', function() { fold(!rows[0].hidden); });
+  });
+}
 
 function entryTooltipInit() {
   if (!document.querySelector('[data-entry]')) { return; }
