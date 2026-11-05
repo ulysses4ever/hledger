@@ -110,6 +110,11 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
     $# New entries go to the journal's main file. A chooser for another of
     $# its files only confused, so it is kept out of sight; the form still
     $# says which file.
+    $# (the recurring rules are a page of their own, reached from here)
+    $if not forRule
+      <a .recurring-link href=@{RecurringR}>
+        <span .glyphicon .glyphicon-repeat aria-hidden="true">
+        _{HMsg "Recurring rules"}
     $if length files > 1
       <div .form-group .file-select .hidden :isJust (fvErrors fileView):.has-error>
         ^{fvInput fileView}

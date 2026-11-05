@@ -16,6 +16,9 @@
 /add             AddR            GET POST PUT
 /transaction/#Integer TransactionR GET POST
 /breakdown       BreakdownR      GET
+/recurring       RecurringR      GET
+/recurring-new   RecurringNewR   GET POST
+/recurring/#Int  RecurringRuleR  GET POST
 
 /manage             ManageR         GET
 /edit/#FilePath     EditR           GET POST

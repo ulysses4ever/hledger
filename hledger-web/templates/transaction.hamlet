@@ -6,6 +6,11 @@ $# the form, so a change to the file meanwhile is noticed (TransactionR).
     _{HMsg "Edit transaction"}
   <p .transaction-heading>
     #{heading}
+  $maybe (i, expr) <- mrule
+    <p .transaction-rule>
+      <span .recurring-mark aria-hidden="true">↻
+      _{HMsg "From a recurring rule"}:
+      <a href=@{RecurringRuleR i}>#{expr}
   <form#addform.form action=@{TransactionR (tindex t)} method=POST enctype=#{enctype} data-editing>
     <input type=hidden name=original value="#{original}">
     ^{view}

@@ -13,6 +13,9 @@ $# given with --css can rearrange them with the order property.
          data-toggle="modal" data-target="#addmodal" title=_{HMsg "Add a new transaction to the journal"}>
         <span .glyphicon .glyphicon-plus aria-hidden="true">
         _{HMsg "Add a transaction"}
+      <a .btn .btn-default .recurring-button href=@{RecurringR} role="button" title=_{HMsg "The recurring rules, from which entries are written ahead"}>
+        <span .glyphicon .glyphicon-repeat aria-hidden="true">
+        _{HMsg "Recurring"}
     $# An entry is shown single-sided unless this is ticked (see hledger.js).
     <label .both-sides-toggle title=_{HMsg "Show the accounts each entry's money came from on lines of their own, with their amounts"}>
       <input #bothsides type=checkbox :bothSides:checked>
@@ -50,6 +53,8 @@ $# given with --css can rearrange them with the order property.
               <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
                 <span .glyphicon .glyphicon-pencil aria-hidden="true">
             #{textElideRight 60 (tdescription torig)}
+            $if isRecurring torig
+              <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
           <td .amount>
           $# On a phone, single-sided, the entry is shown as this block instead
           $# (hledger.css section 15): what it was for and how much; its date and
@@ -85,7 +90,10 @@ $# given with --css can rearrange them with the order property.
                     <span .entry-label>_{HMsg "to"}
                   <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
                     ^{accountNameAsHtml acc}
-            <span .entry-memo>#{payeeAndNote torig}
+            <span .entry-memo>
+              #{payeeAndNote torig}
+              $if isRecurring torig
+                <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
             $if elem AddPermission perms
               <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
                 <span .glyphicon .glyphicon-pencil aria-hidden="true">

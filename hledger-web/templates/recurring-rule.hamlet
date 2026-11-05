@@ -1,0 +1,25 @@
+$# A rule's page (RecurringRuleR, RecurringNewR): the form, and for an
+$# existing rule a delete button. The rule's text as the file had it
+$# travels with the forms, so a change to the file meanwhile is noticed.
+<div .recurring-rule-page .add-page>
+  <h2>
+    $if editing
+      _{HMsg "Edit recurring rule"}
+    $else
+      _{HMsg "New recurring rule"}
+  <p .transaction-heading>
+    #{heading}
+  <form#addform.form action=@{action} method=POST enctype=#{enctype} :editing:data-editing>
+    <input type=hidden name=original value="#{original}">
+    ^{view}
+  $if editing
+    <form#deleteform action=@{action} method=POST data-confirm=_{HMsg "Delete this rule?"}>
+      $maybe token <- mtoken
+        <input type=hidden name=_token value=#{token}>
+      <input type=hidden name=original value="#{original}">
+      <input type=hidden name=action value=delete>
+      <button type=submit .btn .btn-danger .btn-lg>_{HMsg "Delete"}
+      <a .btn .btn-link .btn-lg href=@{RecurringR}>_{HMsg "Back"}
+  $else
+    <p>
+      <a .btn .btn-link .btn-lg href=@{RecurringR}>_{HMsg "Back"}

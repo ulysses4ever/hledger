@@ -1,0 +1,17 @@
+$# The schedule above the add form: how often, from the entry's date
+$# below, until a date if any; or a period expression of one's own.
+<div .row .schedule-row>
+  <div .col-sm-4.col-xs-6>
+    <div .form-group>
+      <label .schedule-label for=schedule>_{HMsg "Repeats"}
+      ^{fvInput schedView}
+  <div .col-sm-4.col-xs-6>
+    <div .form-group>
+      <label .schedule-label for=until>_{HMsg "Until (optional)"}
+      ^{fvInput untilView}
+  <div .col-sm-4.col-xs-12>
+    <div .form-group>
+      <label .schedule-label for=periodexpr>_{HMsg "Or written out"}
+      ^{fvInput exprView}
+<p .schedule-hint>_{HMsg "The first entry falls on the date below, and the rest at this rhythm from it."}
+^{txnView}

@@ -53,6 +53,11 @@ showPage t original view enctype = do
   -- the delete form is not a yesod form, so it carries the session's CSRF
   -- token itself, checked in postTransactionR
   mtoken <- reqToken <$> getRequest
+  VD{j} <- getViewData
+  -- an instance of a recurring rule says so, and links to the rule
+  let mrule = case lookup "recurring" (ttags t) of
+        Just n -> listToMaybe [ (i, ptperiodexpr pt) | (i, pt) <- zip [1 :: Int ..] (jperiodictxns j), lookup "recurring" (pttags pt) == Just n ]
+        Nothing -> Nothing
   defaultLayout $ do
     setTitleI (HMsg "edit transaction - hledger-web")
     let heading = T.pack (show (tdate t)) <> " " <> tdescription t

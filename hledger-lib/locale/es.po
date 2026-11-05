@@ -1524,3 +1524,108 @@ msgstr "Ver los asientos detrás de esto"
 #: hledger-web/Hledger/Web/Handler/BreakdownR.hs
 msgid "breakdown - hledger-web"
 msgstr "desglose - hledger-web"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Recurring rules"
+msgstr "Reglas recurrentes"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Recurring"
+msgstr "Recurrentes"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Add a rule"
+msgstr "Añadir una regla"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every week"
+msgstr "Cada semana"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every 2 weeks"
+msgstr "Cada 2 semanas"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every month"
+msgstr "Cada mes"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every 2 months"
+msgstr "Cada 2 meses"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every quarter"
+msgstr "Cada trimestre"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every year"
+msgstr "Cada año"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Repeats"
+msgstr "Se repite"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Until (optional)"
+msgstr "Hasta (opcional)"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Or written out"
+msgstr "O escrito"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Next"
+msgstr "Próximo"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Rule saved."
+msgstr "Regla guardada."
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Rule deleted."
+msgstr "Regla eliminada."
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Delete this rule?"
+msgstr "¿Eliminar esta regla?"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "No recurring rules yet."
+msgstr "Aún no hay reglas recurrentes."
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "New recurring rule"
+msgstr "Nueva regla recurrente"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Edit recurring rule"
+msgstr "Editar regla recurrente"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "From a recurring rule"
+msgstr "De una regla recurrente"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Nothing due in the coming year"
+msgstr "Nada previsto en el próximo año"

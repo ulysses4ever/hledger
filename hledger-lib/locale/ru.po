@@ -1147,3 +1147,108 @@ msgstr "Показать записи за этим"
 #: hledger-web/Hledger/Web/Handler/BreakdownR.hs
 msgid "breakdown - hledger-web"
 msgstr "разбивка - hledger-web"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Recurring rules"
+msgstr "Повторяющиеся правила"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Recurring"
+msgstr "Повторяющиеся"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Add a rule"
+msgstr "Добавить правило"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every week"
+msgstr "Каждую неделю"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every 2 weeks"
+msgstr "Каждые 2 недели"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every month"
+msgstr "Каждый месяц"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every 2 months"
+msgstr "Каждые 2 месяца"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every quarter"
+msgstr "Каждый квартал"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Every year"
+msgstr "Каждый год"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Repeats"
+msgstr "Повторяется"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Until (optional)"
+msgstr "До (необязательно)"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Or written out"
+msgstr "Или словами"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Next"
+msgstr "Следующая"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Rule saved."
+msgstr "Правило сохранено."
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Rule deleted."
+msgstr "Правило удалено."
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Delete this rule?"
+msgstr "Удалить это правило?"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "No recurring rules yet."
+msgstr "Повторяющихся правил пока нет."
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "New recurring rule"
+msgstr "Новое повторяющееся правило"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Edit recurring rule"
+msgstr "Изменить повторяющееся правило"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "From a recurring rule"
+msgstr "Из повторяющегося правила"
+
+#. hledger-web: the recurring rules pages.
+#: hledger-web/Hledger/Web/Handler/RecurringR.hs
+msgid "Nothing due in the coming year"
+msgstr "В ближайший год ничего не ожидается"

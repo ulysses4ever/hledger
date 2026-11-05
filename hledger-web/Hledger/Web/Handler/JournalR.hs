@@ -60,6 +60,8 @@ getJournalR = do
       atype = journalAccountType j
       -- (as of today: entries dated later are shown, folded away, but not counted)
       isFuture t = tdate t > today
+      -- an instance of a recurring rule carries the rule's tag
+      isRecurring t = any ((== "recurring") . fst) (ttags t)
       typeTotal ty = sumPostings [p | t <- alltxns, not (isFuture t), p <- tpostings t, maybe False (`isAccountSubtypeOf` ty) $ atype (paccount p)]
       futureCount = length (filter isFuture items)
       spent = typeTotal Expense

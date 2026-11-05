@@ -7,6 +7,7 @@
 
 module Hledger.Web.Widget.AddForm
   ( addForm
+  , addFormForRule
   , addModal
   , transactionCollapseNewlines
   ) where
@@ -31,7 +32,7 @@ import Yesod
 
 import Hledger.Utils.I18n (Translations, substitutePlaceholders, tr, trc, trf)
 import Hledger
-import Hledger.Web.App (App, Handler, Widget, HMsg(..), requestTranslations)
+import Hledger.Web.App (App, Handler, Widget, HMsg(..), Route(..), requestTranslations)
 import Hledger.Web.Settings (widgetFile)
 import Data.Function ((&))
 import Control.Arrow (right)
@@ -75,7 +76,15 @@ addModal addR j today = do
 -- transaction keeps its code, comment and tags, which the form does not
 -- show; its status comes from the form.
 addForm :: Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
-addForm j today mtxn = identifyForm "add" $ \extra -> do
+addForm j today mtxn = identifyForm "add" (addForm' False j today mtxn)
+
+-- | The add form as a recurring rule's page embeds it: without the link
+-- to the rules.
+addFormForRule :: Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
+addFormForRule j today mtxn = identifyForm "add" (addForm' True j today mtxn)
+
+addForm' :: Bool -> Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
+addForm' forRule j today mtxn extra = do
   trs <- lift requestTranslations
   let  -- bindings used in add-form.hamlet
     editing = isJust mtxn

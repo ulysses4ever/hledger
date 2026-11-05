@@ -1617,6 +1617,71 @@ hledgerWebTest = do
         get (DownloadR otherfile)
         statusIs 404
 
+  -- The recurring rules: listed, added, changed in place, deleted. The
+  -- rule's form is the add form with a schedule above it.
+  runTests "hledger-web recurring rules" [("file", jfile), ("allow", "add")] wj $ do
+
+    yit "lists, adds, changes and deletes a rule, written as a periodic transaction" $ do
+      get RecurringR
+      statusIs 200
+      bodyContains "Add a rule"
+      get RecurringNewR
+      statusIs 200
+      bodyContains "name=\"schedule\""
+      request $ do
+        setMethod "POST"
+        setUrl RecurringNewR
+        addToken
+        addPostParam "_formid" "identify-add"
+        addPostParam "date" "2025-02-02"
+        addPostParam "description" "RuleTyped"
+        addPostParam "schedule" "3"   -- the third: every month
+        addPostParam "account" "expenses:rent"
+        addPostParam "amount" "5"
+        addPostParam "account" "assets:bank:checking"
+        addPostParam "amount" "-5"
+      statusIs 303
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "the rule is in the file" (T.isInfixOf "~ monthly from 2025-02-02  RuleTyped  ; recurring:1" txt) True
+      get RecurringR
+      statusIs 200
+      bodyContains "RuleTyped"
+      bodyContains "Every month"
+      bodyContains "Next: "
+      get (RecurringRuleR 1)
+      statusIs 200
+      bodyContains "value=\"RuleTyped\""
+      let original = T.unlines $ takeWhile (not . T.null) $ dropWhile (not . T.isInfixOf "RuleTyped") $ T.lines txt
+      request $ do
+        setMethod "POST"
+        setUrl (RecurringRuleR 1)
+        addToken_ "#addform"
+        addPostParam "_formid" "identify-add"
+        addPostParam "original" original
+        addPostParam "date" "2025-02-02"
+        addPostParam "description" "RuleTyped"
+        addPostParam "schedule" "2"   -- every 2 weeks
+        addPostParam "account" "expenses:rent"
+        addPostParam "amount" "7"
+        addPostParam "account" "assets:bank:checking"
+        addPostParam "amount" "-7"
+      statusIs 303
+      txt2 <- liftIO $ TIO.readFile jfile
+      assertEq "the rule changed in place" (T.isInfixOf "~ every 2 weeks from 2025-02-02  RuleTyped  ; recurring:1" txt2) True
+      assertEq "with its new amount" (T.isInfixOf "expenses:rent" txt2 && T.isInfixOf "  7\n" txt2) True
+      let original2 = T.unlines $ takeWhile (not . T.null) $ dropWhile (not . T.isInfixOf "RuleTyped") $ T.lines txt2
+      get (RecurringRuleR 1)
+      statusIs 200
+      bodyContains "Every 2 weeks"
+      request $ do
+        setMethod "POST"
+        setUrl (RecurringRuleR 1)
+        addToken_ "#deleteform"
+        addPostParam "action" "delete"
+        addPostParam "original" original2
+      statusIs 303
+      journalFileLacks jfile "RuleTyped"
+
   -- A showroom shows the forms and the pencils, and saves nothing.
   runTests "hledger-web showroom" [("file", jfile), ("allow", "add"), ("showroom", "")] wj $ do
 

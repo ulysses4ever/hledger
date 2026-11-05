@@ -136,6 +136,7 @@ getRegisterR = do
       -- The figures are as of today: entries dated later (recurring ones
       -- written ahead) are shown, folded away, but not counted.
       isFuture t = tdate t > today
+      isRecurring t = any ((== "recurring") . fst) (ttags t)
       sofar = [i | i@(_, tacct, _, _, _, _) <- allitems, not (isFuture tacct)]
       endbal = case sofar of
         (_, _, _, _, _, bal) : _ -> runningBalance bal

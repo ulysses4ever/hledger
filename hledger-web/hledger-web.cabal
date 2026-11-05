@@ -74,6 +74,9 @@ extra-source-files:
     templates/period-band.hamlet
     templates/register.hamlet
     templates/breakdown.hamlet
+    templates/recurring.hamlet
+    templates/recurring-rule.hamlet
+    templates/recurring-form.hamlet
     templates/upload-form.hamlet
     templates/years.hamlet
     hledger-web.1
@@ -107,6 +110,7 @@ library
       Hledger.Web.Handler.AddR
       Hledger.Web.Handler.BalanceR
       Hledger.Web.Handler.BreakdownR
+      Hledger.Web.Handler.RecurringR
       Hledger.Web.Handler.EditR
       Hledger.Web.Handler.TransactionR
       Hledger.Web.Handler.JournalR
