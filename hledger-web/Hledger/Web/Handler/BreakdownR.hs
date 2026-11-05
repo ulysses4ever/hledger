@@ -33,6 +33,7 @@ data Slice = Slice
   , sAmount :: MixedAmount
   , sQty    :: Quantity
   , sLink   :: (AppRoute, [(Text, Text)])
+  , sColour :: Maybe Int   -- ^ a colour of its own (the kinds); else by rank
   }
 
 -- | The kinds of money movement the first page splits a period into.
@@ -95,7 +96,11 @@ getBreakdownR = do
     total ps = styleAmounts styles $ maSum (map pamount ps)
     kindSlice k ps negated =
       let amt = (if negated then maNegate else id) (total ps)
-      in Slice (textLabel (kindLabel k)) amt (qty amt) (link [("kind", kindKey k)])
+      in Slice (textLabel (kindLabel k)) amt (qty amt) (link [("kind", kindKey k)]) (Just (kindColour k))
+    -- the kinds' colours, always the same: income blue, transfers yellow, expenses red
+    kindColour Income = 1
+    kindColour Transfer = 2
+    kindColour Expenses = 0
     -- The accounts under an account (or a kind's top levels), each with the
     -- postings on it and below it, grouped by the next part of the name.
     grouped :: Int -> [Posting] -> [(AccountName, [Posting])]
@@ -107,7 +112,7 @@ getBreakdownR = do
       let amt = (if negated then maNegate else id) (total ps)
           deeper = any ((> length (accountNameComponents a)) . length . accountNameComponents . paccount) ps
           target = if deeper then link ([("kind", kindKey k) | Just k <- [mkind]] ++ [("acct", a)]) else registerLink a
-      in Slice (accountNameAsHtml a) amt (qty amt) target
+      in Slice (accountNameAsHtml a) amt (qty amt) target Nothing
     under a ps = [p | p <- ps, paccount p == a || (a <> ":") `T.isPrefixOf` paccount p]
     slices0 = case (mkind, macct) of
       (Nothing, _) ->
@@ -132,7 +137,7 @@ getBreakdownR = do
     -- (each slice: its colour, the slice, its share as text, the dash and
     -- the offset of its circle, its label's place, and whether it has room
     -- for a label)
-    ring = [ (i `mod` 8, s, pctText pct, dash pct, offset start, lx, ly, pct >= 7)
+    ring = [ (fromMaybe (i `mod` 8) (sColour s), s, pctText pct, dash pct, offset start, lx, ly, pct >= 7)
            | (i, s, start) <- zip3 [0 :: Int ..] slices starts, let pct = shareOf s, let (lx, ly) = labelAt start pct ]
     dash pct = T.pack (printf "%.3f %.3f" (realToFrac pct :: Double) (100 - realToFrac pct :: Double))
     offset start = T.pack (printf "%.3f" (25 - realToFrac start :: Double))
