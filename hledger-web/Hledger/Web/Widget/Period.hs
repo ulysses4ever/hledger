@@ -11,6 +11,7 @@ module Hledger.Web.Widget.Period
   , periodQuery
   , isAllTime
   , periodBand
+  , periodParam
   ) where
 
 import Data.Text (Text)
@@ -58,6 +59,14 @@ periodQuery p = Date $ periodAsDateSpan p
 isAllTime :: Period -> Bool
 isAllTime = (== PeriodAll)
 
+-- | A period as the period parameter writes it. A week is written as its
+-- dates, since the period parser has no week form; all dates is "all".
+periodParam :: Period -> Text
+periodParam p = case p of
+  WeekPeriod b -> T.pack (formatTime defaultTimeLocale "%F" b) <> ".." <> T.pack (formatTime defaultTimeLocale "%F" (addDays 7 b))
+  PeriodAll    -> "all"
+  _            -> showPeriod p
+
 -- | The band at the top of a journal or register page: the period shown,
 -- with links to the one before and the one after when it is a day, week,
 -- month, quarter or year; a list of the lengths of period to switch
@@ -83,11 +92,6 @@ periodBand trs here qparam kept today shown below = $(hamletFile "templates/peri
       YearPeriod _      -> True
       _                 -> False
     rest = removeDates qparam
-    -- a week is written as its dates, since the period parser has no week form
-    periodParam p = case p of
-      WeekPeriod b -> T.pack (formatTime defaultTimeLocale "%F" b) <> ".." <> T.pack (formatTime defaultTimeLocale "%F" (addDays 7 b))
-      PeriodAll    -> "all"
-      _            -> showPeriod p
     link p = (here, [("q", T.unwords rest) | not (null rest)] ++ [("period", periodParam p)] ++ kept)
     mprev = if stepping then Just (link $ periodPrevious shown) else Nothing
     mnext = if stepping then Just (link $ periodNext shown) else Nothing

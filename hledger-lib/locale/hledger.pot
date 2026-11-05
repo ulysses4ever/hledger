@@ -1493,3 +1493,33 @@ msgstr ""
 #: hledger-web/templates/add-form.hamlet
 msgid "From"
 msgstr ""
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Breakdown"
+msgstr ""
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show where the money went, by kind and category"
+msgstr ""
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Nothing in this period."
+msgstr ""
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Shares of the total, as a ring"
+msgstr ""
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show the entries behind this"
+msgstr ""
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "breakdown - hledger-web"
+msgstr ""

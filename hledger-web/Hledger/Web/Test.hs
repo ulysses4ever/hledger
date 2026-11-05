@@ -943,6 +943,34 @@ hledgerWebTest = do
       bodyContains "href=\"register?q=type:L+date:2025-01-01..2025-02-07&amp;accum=historical\""
       bodyNotContains "Net:"
 
+    yit "breaks the period down by kind, then category, then account, then the register" $ do
+      get BreakdownR
+      statusIs 200
+      bodyContains "<span class=\"breakdown-amount\">100</span>"   -- income
+      bodyContains "<span class=\"breakdown-amount\">11</span>"    -- expenses
+      bodyContains "<span class=\"breakdown-amount\">1000</span>"  -- the opening transfer
+      bodyContains "/breakdown?kind=expenses&amp;period=all\""
+      bodyContains "<circle class=\"donut-slice slice-0\""
+      request $ do
+        setMethod "GET"
+        setUrl BreakdownR
+        addGetParam "kind" "expenses"
+      statusIs 200
+      -- the categories: food, and the one with a payload, escaped; both
+      -- with nothing under them, so leading to their registers
+      bodyContains "href=\"http://127.0.0.1:5000/register?q=inacct%3Aexpenses%3Afood&amp;period=all\""
+      bodyContains "snacks&lt;i&gt;x"
+      bodyNotContains "snacks<i>x"
+      bodyContains "<span class=\"breakdown-pct\">90.9%</span>"
+      request $ do
+        setMethod "GET"
+        setUrl BreakdownR
+        addGetParam "kind" "income"
+        addGetParam "period" "2025-01"
+      statusIs 200
+      bodyContains "<span class=\"breakdown-amount\">100</span>"
+      htmlAnyContain ".period-name" "January 2025"
+
     yit "opens the income statement on its expenses" $ do
       get IncomestatementR
       statusIs 200

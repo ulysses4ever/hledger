@@ -331,6 +331,94 @@ tr.future-toggle[hidden] {
   background-color: var(--band);
 }
 
+/* The breakdown page: the way back up, the ring chart, the total, the
+   list of parts with a bar each. The slices' colours are one palette for
+   the ring and the bars. */
+.breakdown-path {
+  margin: 4px 0 8px;
+  font-size: 15px;
+  color: var(--account-parents);
+}
+.breakdown-path .sep {
+  margin: 0 0.3em;
+}
+.breakdown-path .current {
+  font-weight: 600;
+  color: var(--text);
+}
+.donut {
+  display: block;
+  width: min(60vw, 300px);
+  margin: 0 auto;
+}
+.donut-track {
+  stroke: var(--band);
+}
+.donut-label {
+  font-size: 2.6px;
+  fill: #fff;
+}
+.donut-centre {
+  font-size: 2.8px;
+  fill: var(--text);
+}
+.breakdown-total {
+  margin: 8px 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+.breakdown-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--header-rule);
+}
+.breakdown-list li {
+  border-bottom: 1px solid var(--header-rule);
+}
+.breakdown-list a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  padding: 10px 4px;
+  color: inherit;
+  text-decoration: none;
+}
+.breakdown-list a:hover {
+  background-color: var(--row-hover);
+}
+.breakdown-name {
+  font-size: 17px;
+}
+.breakdown-amount {
+  grid-column: 1;
+  color: var(--account-parents);
+}
+.breakdown-pct {
+  grid-column: 2;
+  grid-row: 1 / 3;
+  align-self: center;
+  font-size: 17px;
+}
+.breakdown-bar {
+  grid-column: 1 / 3;
+  width: 100%;
+  height: 8px;
+}
+.bar-track {
+  fill: var(--band);
+}
+.slice-0 { stroke: #ff5a4f; fill: #ff5a4f; }
+.slice-1 { stroke: #5ec8f8; fill: #5ec8f8; }
+.slice-2 { stroke: #ffc400; fill: #ffc400; }
+.slice-3 { stroke: #55d47a; fill: #55d47a; }
+.slice-4 { stroke: #ff9a1f; fill: #ff9a1f; }
+.slice-5 { stroke: #3b6ff5; fill: #3b6ff5; }
+.slice-6 { stroke: #b26bff; fill: #b26bff; }
+.slice-7 { stroke: #9aa2ad; fill: #9aa2ad; }
+.breakdown-bar .bar-fill { stroke: none; }
+
 /* The kind of entry: three buttons across the form, the chosen one pressed. */
 #addform .kind-select {
   display: flex;

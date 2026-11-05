@@ -1117,3 +1117,33 @@ msgstr "Nach"
 #: hledger-web/templates/add-form.hamlet
 msgid "From"
 msgstr "Von"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Breakdown"
+msgstr "Aufteilung"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show where the money went, by kind and category"
+msgstr "Zeigen, wohin das Geld ging, nach Art und Kategorie"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Nothing in this period."
+msgstr "Nichts in diesem Zeitraum."
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Shares of the total, as a ring"
+msgstr "Anteile am Ganzen, als Ring"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show the entries behind this"
+msgstr "Die Buchungen dahinter zeigen"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "breakdown - hledger-web"
+msgstr "Aufteilung - hledger-web"

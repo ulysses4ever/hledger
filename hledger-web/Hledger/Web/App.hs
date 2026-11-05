@@ -219,7 +219,7 @@ instance Yesod App where
         onJournal = here `elem` [RootR, JournalR]
         onAccounts = here `elem` [BalancesheetR, BalancesheetequityR, BalanceR, RegisterR]
         onAdd = here == AddR
-        onReports = here `elem` [IncomestatementR, CashflowR]
+        onReports = here `elem` [BreakdownR, IncomestatementR, CashflowR]
         searching = not $ T.null $ T.unwords $ removeInacct qparam
 
     -- We break up the default layout into two components:
@@ -427,7 +427,8 @@ data ReportMenuItem = ReportMenuItem {
 reportMenu :: [ReportMenuItem]
 reportMenu =
   -- TRANSLATORS: the report links above each report page and in the sidebar: each link's text, and its tooltip.
-  [ ReportMenuItem BalancesheetR       (i18n "Balance sheet")             (i18n "Show assets, liabilities, and net worth")          (cbcaccum balancesheetSpec)       True
+  [ ReportMenuItem BreakdownR          (i18n "Breakdown")                 (i18n "Show where the money went, by kind and category")  PerPeriod                         True
+  , ReportMenuItem BalancesheetR       (i18n "Balance sheet")             (i18n "Show assets, liabilities, and net worth")          (cbcaccum balancesheetSpec)       True
   , ReportMenuItem BalancesheetequityR (i18n "Balance sheet with equity") (i18n "Show assets, liabilities, and equity")             (cbcaccum balancesheetequitySpec) False
   , ReportMenuItem IncomestatementR    (i18n "Income statement")          (i18n "Show revenues and expenses")                       (cbcaccum incomestatementSpec)    True
   , ReportMenuItem CashflowR           (i18n "Cashflow statement")        (i18n "Show changes in liquid assets")                    (cbcaccum cashflowSpec)           True

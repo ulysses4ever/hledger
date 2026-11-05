@@ -1,6 +1,6 @@
 // Browser tests for the tab bar along the foot of a phone's screen (section
 // 16 of hledger.css): Journal, Accounts (the balance sheet), a round + to
-// add a transaction, Reports (the income statement), and Search. It marks
+// add a transaction, Reports (the breakdown), and Search. It marks
 // the tab of the page shown, stands in for the sidebar's toggle button and
 // the journal's add button, never covers the page, and is hidden at 768px
 // and wider.
@@ -34,7 +34,7 @@ test('the tabs lead to the journal, the balance sheet and the income statement',
   await expect(page).toHaveURL(/\/balancesheet$/);
   await expect(tab(page, 'Accounts')).toHaveAttribute('aria-current', 'page');
   await tab(page, 'Reports').click();
-  await expect(page).toHaveURL(/\/incomestatement$/);
+  await expect(page).toHaveURL(/\/breakdown$/);
   await expect(tab(page, 'Reports')).toHaveAttribute('aria-current', 'page');
   await tab(page, 'Journal').click();
   await expect(page).toHaveURL(/\/journal$/);

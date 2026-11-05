@@ -1117,3 +1117,33 @@ msgstr "Куда"
 #: hledger-web/templates/add-form.hamlet
 msgid "From"
 msgstr "Откуда"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Breakdown"
+msgstr "Разбивка"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show where the money went, by kind and category"
+msgstr "Куда ушли деньги, по виду и категории"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Nothing in this period."
+msgstr "За этот период ничего нет."
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Shares of the total, as a ring"
+msgstr "Доли от целого, кольцом"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show the entries behind this"
+msgstr "Показать записи за этим"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "breakdown - hledger-web"
+msgstr "разбивка - hledger-web"

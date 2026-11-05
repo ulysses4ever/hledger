@@ -75,7 +75,7 @@ $# On a phone, a bar of tabs along the foot of the screen (hledger.css
 $# section 16), marking the one for the page shown: the journal; the
 $# accounts (the balance sheet, and the registers); adding a transaction
 $# (in the dialog on a page that has it, otherwise on the add page); the
-$# reports (the income statement); and the search form, which hledger.js
+$# reports (the breakdown); and the search form, which hledger.js
 $# opens and focuses (without javascript, the link shows it).
 $if elem ViewPermission perms
   <nav #tabbar aria-label=_{HMsgc "tab bar" "Pages"}>
@@ -93,7 +93,7 @@ $if elem ViewPermission perms
         <span .tab-add-button>
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M12 5v14M5 12h14">
-    <a .tab href=@{IncomestatementR} :onReports:aria-current="page">
+    <a .tab href=@{BreakdownR} :onReports:aria-current="page">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M12 3v9h9A9 9 0 1 1 12 3z">
         <path d="M15 3.5A9 9 0 0 1 20.5 9H15z">

@@ -15,6 +15,7 @@
 /cashflow           CashflowR           GET
 /add             AddR            GET POST PUT
 /transaction/#Integer TransactionR GET POST
+/breakdown       BreakdownR      GET
 
 /manage             ManageR         GET
 /edit/#FilePath     EditR           GET POST

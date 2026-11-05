@@ -1577,3 +1577,33 @@ msgstr "转入"
 #: hledger-web/templates/add-form.hamlet
 msgid "From"
 msgstr "转出"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Breakdown"
+msgstr "明细"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show where the money went, by kind and category"
+msgstr "按类型和类别查看钱去了哪里"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Nothing in this period."
+msgstr "此期间没有记录。"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Shares of the total, as a ring"
+msgstr "各部分占比环形图"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "Show the entries behind this"
+msgstr "显示相关记录"
+
+#. hledger-web: the breakdown page.
+#: hledger-web/Hledger/Web/Handler/BreakdownR.hs
+msgid "breakdown - hledger-web"
+msgstr "明细 - hledger-web"
