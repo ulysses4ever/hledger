@@ -1277,3 +1277,8 @@ msgstr "Развернуть все"
 #: hledger-web/templates/default-layout.hamlet
 msgid "The top menu links to the balance sheet, income statement, and cashflow statement, each linking to the other reports"
 msgstr "Верхнее меню ведёт к балансу, отчёту о доходах и отчёту о движении денег, каждый из которых ссылается на остальные"
+
+#. hledger-web: the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "The sidebar shows revenues positive too, and liabilities negative: what is owed"
+msgstr "Боковая панель тоже показывает доходы положительными, а обязательства отрицательными: то, что должны"

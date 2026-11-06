@@ -561,6 +561,13 @@ hledgerWebTest = do
       bodyNotContains "Showing "
       bodyNotContains "Years:"
 
+    yit "shows revenue accounts positive in the sidebar" $ do
+      get JournalR
+      statusIs 200
+      -- (checking 90, food 10: only the salary's amount is 100)
+      htmlAnyContain ".sidebar-offcanvas td.amount" "100"
+      htmlNoneContain ".sidebar-offcanvas td.amount" "-100"
+
     yit "serves the balance report, linking accounts to their register" $ do
       get BalanceR
       statusIs 200

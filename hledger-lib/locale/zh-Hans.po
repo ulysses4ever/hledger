@@ -1737,3 +1737,8 @@ msgstr "全部展开"
 #: hledger-web/templates/default-layout.hamlet
 msgid "The top menu links to the balance sheet, income statement, and cashflow statement, each linking to the other reports"
 msgstr "顶部菜单链接到资产负债表、损益表和现金流量表，每个报表都链接到其他报表"
+
+#. hledger-web: the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "The sidebar shows revenues positive too, and liabilities negative: what is owed"
+msgstr "侧栏同样以正数显示收入，以负数显示负债：即所欠金额"

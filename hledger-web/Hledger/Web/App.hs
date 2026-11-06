@@ -205,8 +205,15 @@ instance Yesod App where
         journalLink = (JournalR, [p | p@("q", _) <- sidebarParams])
         accounts =
           balanceReportAsHtml RegisterR hideEmptyAccts trs j qparam qopts $
+          revenuePositive $
           styleAmounts (journalCommodityStylesWith HardRounding j) $
           balanceReport rspec' j
+        -- Revenue accounts are shown positive, as the income statement
+        -- shows them (hledger keeps them negative). Liabilities keep their
+        -- sign: what is owed reads as a minus.
+        revenuePositive (items, total) =
+          ([(a, d, i, if isRevenue a then maNegate bal else bal) | (a, d, i, bal) <- items], total)
+        isRevenue a = (journalAccountType j a <|> accountNameInferType a) == Just Revenue
 
         topShowmd = if showSidebar then "col-md-4" else "col-any-0" :: Text
         topShowsm = if showSidebar then "col-sm-4" else "" :: Text

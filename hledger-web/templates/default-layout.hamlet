@@ -147,6 +147,7 @@ $if elem ViewPermission perms
                 <li> _{HMsg "Click an amount to see the transactions it is made of, in a register ending on that amount"}
                 <li> _{HMsg "Click date links to see journal entries on that date"}
                 <li> _{HMsg "The balance sheet and income statement show liabilities, equity, and revenues as positive amounts; their registers show them negative, as hledger does"}
+                <li> _{HMsg "The sidebar shows revenues positive too, and liabilities negative: what is owed"}
           <div .col-xs-6>
             <p>
               <b>_{HMsgc "help heading" "Search"}
