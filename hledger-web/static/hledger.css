@@ -1859,10 +1859,12 @@ a:focus > .account-name > * {
 /* The sidebar: a quarter of the width is plenty for account names, and
    the main pane gets the rest. Smaller type there, and lighter rules. */
 @media (min-width: 992px) {   /* (in print too, so the chart keeps its width) */
-  #sidebar-menu.col-md-4 {
+  #sidebar-menu.col-md-4,
+  #spacer.col-md-4 {
     width: 25%;
   }
-  #main-content.col-md-8 {
+  #main-content.col-md-8,
+  #spacer.col-md-4 + #topbar {
     width: 75%;
   }
 }
