@@ -1262,3 +1262,18 @@ msgstr "Die Konten darunter einklappen"
 #: hledger-web/templates/balance-report.hamlet
 msgid "Unfold the accounts under this one"
 msgstr "Die Konten darunter ausklappen"
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Fold all"
+msgstr "Alle einklappen"
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Unfold all"
+msgstr "Alle ausklappen"
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "The top menu links to the balance sheet, income statement, and cashflow statement, each linking to the other reports"
+msgstr "Das Menü oben führt zu Bilanz, Einnahmenüberschussrechnung und Kapitalflussrechnung, jeweils mit Links zu den anderen Berichten"

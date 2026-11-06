@@ -1638,3 +1638,18 @@ msgstr ""
 #: hledger-web/templates/balance-report.hamlet
 msgid "Unfold the accounts under this one"
 msgstr ""
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Fold all"
+msgstr ""
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Unfold all"
+msgstr ""
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "The top menu links to the balance sheet, income statement, and cashflow statement, each linking to the other reports"
+msgstr ""

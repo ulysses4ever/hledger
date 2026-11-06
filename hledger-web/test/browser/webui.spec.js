@@ -367,7 +367,27 @@ test.describe('sidebar tree and top menu', () => {
     await page.goto('/journal');
     await food.locator('.tree-toggle').click();
     await expect(groceries).toBeVisible();
+    // the whole tree at once
+    await page.locator('.tree-all[data-fold="all"]').click();
+    await expect(groceries).toBeHidden();
+    await expect(food).toBeHidden();
+    await expect(page.locator('#sidebar-menu tr[data-acct="expenses"]')).toBeVisible();
+    await page.goto('/journal');
+    await expect(food).toBeHidden();
+    await page.locator('.tree-all[data-fold="none"]').click();
+    await expect(groceries).toBeVisible();
     expect(pageErrors).toEqual([]);
+  });
+
+  test('the header is a band across the top, the menu lined up with the main pane', async ({ page }) => {
+    await page.goto('/journal');
+    const bar = await page.locator('#topbar').boundingBox();
+    const sidebar = await page.locator('#sidebar-menu').boundingBox();
+    expect(bar.width).toBeGreaterThan(sidebar.width * 3);
+    const menu = await page.locator('.topmenu a').first().boundingBox();
+    const heading = await page.locator('#main-content h2').boundingBox();
+    expect(Math.abs(menu.x + 14 - heading.x)).toBeLessThan(2);
+    expect(await page.locator('.topmenu a').first().evaluate(a => parseFloat(getComputedStyle(a).fontSize))).toBeGreaterThanOrEqual(16);
   });
 
   test('the pages are a menu across the top, the page shown marked', async ({ page }) => {

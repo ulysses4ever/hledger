@@ -1722,3 +1722,18 @@ msgstr "折叠此账户下的账户"
 #: hledger-web/templates/balance-report.hamlet
 msgid "Unfold the accounts under this one"
 msgstr "展开此账户下的账户"
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Fold all"
+msgstr "全部折叠"
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Unfold all"
+msgstr "全部展开"
+
+#. hledger-web: the sidebar's tree, and the help.
+#: hledger-web/templates/default-layout.hamlet
+msgid "The top menu links to the balance sheet, income statement, and cashflow statement, each linking to the other reports"
+msgstr "顶部菜单链接到资产负债表、损益表和现金流量表，每个报表都链接到其他报表"

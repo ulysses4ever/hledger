@@ -17,6 +17,11 @@
 
 $if elem ViewPermission perms
   <div#sidebar-menu .sidebar-offcanvas.#{sideShowmd}.#{sideShowsm}>
+    $# Folding the whole tree at once (hledger.js; without it, the buttons
+    $# do nothing, so they are shown by it).
+    <div .tree-tools hidden>
+      <button type=button .tree-all data-fold=all>_{HMsg "Fold all"}
+      <button type=button .tree-all data-fold=none>_{HMsg "Unfold all"}
     <table .main-menu .table>
       ^{accounts}
   $# Restore the sidebar's scroll position (saved per-tab in sessionStorage)
@@ -135,7 +140,7 @@ $if elem ViewPermission perms
               <ul>
                 <li> _{HMsg "The Journal view shows general journal entries, representing zero-sum movements of money (or other commodity) between hierarchical accounts"}
                 <li> _{HMsg "The sidebar shows the resulting accounts and their final balances"}
-                <li> _{HMsg "The sidebar's report links show the balance sheet, income statement, and cashflow statement, each linking to the other reports"}
+                <li> _{HMsg "The top menu links to the balance sheet, income statement, and cashflow statement, each linking to the other reports"}
                 <li> _{HMsg "Parent account balances include subaccount balances"}
                 <li> _{HMsg "Multiple currencies in balances are displayed one above the other"}
                 <li> _{HMsg "Click account name links to see transactions affecting that account, with running balance"}

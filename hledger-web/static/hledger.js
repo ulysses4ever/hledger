@@ -629,6 +629,22 @@ function sidebarTreeInit() {
       apply();
     });
   });
+  // The whole tree at once: fold all leaves the top level, and the
+  // account shown; unfold all opens everything.
+  var tools = document.querySelector('#sidebar-menu .tree-tools');
+  if (tools) {
+    tools.hidden = false;
+    tools.querySelectorAll('.tree-all').forEach(function(b) {
+      b.addEventListener('click', function() {
+        folded = {};
+        if (b.dataset.fold === 'all') {
+          rows.forEach(function(r) { if (r.querySelector('.tree-toggle')) { folded[r.dataset.acct] = true; } });
+        }
+        save();
+        apply();
+      });
+    });
+  }
   apply();
 }
 

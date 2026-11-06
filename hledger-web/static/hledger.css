@@ -1842,7 +1842,7 @@ a:focus > .account-name > * {
   margin: 14px 0 6px;
   font-size: 18px;
   font-weight: 600;
-  color: var(--account-parents);
+  color: var(--account);
 }
 @media screen and (min-width: 768px) {
   #searchform {
@@ -1863,8 +1863,7 @@ a:focus > .account-name > * {
   #spacer.col-md-4 {
     width: 25%;
   }
-  #main-content.col-md-8,
-  #spacer.col-md-4 + #topbar {
+  #main-content.col-md-8 {
     width: 75%;
   }
 }
@@ -1956,13 +1955,44 @@ a:focus > .account-name > * {
 /*------------------------------------------------------------------------------------------*/
 /* 9. the top menu, and the sidebar's tree */
 
-/* The pages' links beside the journal's name, the page shown filled; a
-   phone has its tab bar instead. */
-#topbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 18px;
+/* The header is a band across the whole width: the journal's name over
+   the sidebar, and the pages' links over the main pane, lined up with
+   its heading, the page shown filled. A phone has its tab bar instead,
+   and keeps its own header (section 16). */
+@media screen and (min-width: 768px) {
+  #spacer {
+    display: none;
+  }
+  #topbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 24px;
+    width: 100%;
+    padding: 12px 15px 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--sidebar-rule);
+  }
+  #topbar h1 {
+    margin: 0;
+    font-size: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  /* (the name takes the sidebar's width, so the menu starts where the
+     main pane's text does: its column, plus its padding, less the first
+     pill's own; the spacer's class says whether the sidebar is shown) */
+  #spacer.col-sm-4 + #topbar h1 {
+    flex: 0 0 calc(33.333% + 11px);
+    margin-right: -24px;
+  }
+}
+@media screen and (min-width: 992px) {
+  #spacer.col-md-4 + #topbar h1 {
+    flex: 0 0 calc(25% + 8px);
+    margin-right: -24px;
+  }
 }
 .topmenu {
   display: flex;
@@ -1970,7 +2000,8 @@ a:focus > .account-name > * {
   gap: 2px;
 }
 .topmenu a {
-  padding: 3px 10px;
+  padding: 4px 14px;
+  font-size: 16px;
   color: var(--account);
   border-radius: 999px;
   text-decoration: none;
@@ -1990,7 +2021,25 @@ a:focus > .account-name > * {
 }
 
 /* The tree: each depth indented by a step, a guide line down each step
-   from the parent's chevron, and the chevron folding what is under. */
+   from the parent's chevron, and the chevron folding what is under;
+   above it, folding or unfolding the whole tree at once. */
+.tree-tools {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  padding: 2px 14px 4px;
+}
+.tree-all {
+  padding: 0;
+  font-size: 12px;
+  color: var(--account-parents);
+  background: none;
+  border: 0;
+}
+.tree-all:hover {
+  color: var(--account-current);
+  text-decoration: underline;
+}
 #sidebar-menu .main-menu .ff-wrapper {
   background-repeat: no-repeat;
   background-size: 1px 100%;
