@@ -195,15 +195,16 @@ instance Yesod App where
 
     hideEmptyAccts <- hideEmptyAccounts
 
-    -- The sidebar's report links keep the search, minus any account term,
+    -- The top menu's report links keep the search, minus any account term,
     -- which the reports ignore, and a report page's period, as the report
     -- pages' own Report row does.
     let sidebarReports = reportLinkItems $ filter rmInSidebar reportMenu
         sidebarParams =
           [p | p@("period", _) <- keptParams] ++
           [("q", qt) | let qt = T.unwords $ removeInacct qparam, not (T.null qt)]
+        journalLink = (JournalR, [p | p@("q", _) <- sidebarParams])
         accounts =
-          balanceReportAsHtml (JournalR, RegisterR) here sidebarReports sidebarParams hideEmptyAccts trs j qparam qopts $
+          balanceReportAsHtml RegisterR hideEmptyAccts trs j qparam qopts $
           styleAmounts (journalCommodityStylesWith HardRounding j) $
           balanceReport rspec' j
 

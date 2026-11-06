@@ -347,6 +347,42 @@ test.describe('search', () => {
 
 });
 
+test.describe('sidebar tree and top menu', () => {
+
+  test("a chevron folds the accounts under one, the browser remembers, and the account shown stays in sight", async ({ page }) => {
+    await page.goto('/journal');
+    // (assets:bank:checking is one row: a lone chain is not a tree)
+    const food = page.locator('#sidebar-menu tr[data-acct="expenses:food"]');
+    const groceries = page.locator('#sidebar-menu tr[data-acct="expenses:food:groceries"]');
+    await expect(groceries).toBeVisible();
+    await expect(food.locator('.tree-toggle')).toHaveAttribute('aria-expanded', 'true');
+    await food.locator('.tree-toggle').click();
+    await expect(groceries).toBeHidden();
+    await expect(food.locator('.tree-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await page.goto('/journal');
+    await expect(groceries).toBeHidden();
+    // the account shown is in sight whatever was folded
+    await page.goto('/register?q=' + encodeURIComponent('inacct:expenses:food:groceries'));
+    await expect(groceries).toBeVisible();
+    await page.goto('/journal');
+    await food.locator('.tree-toggle').click();
+    await expect(groceries).toBeVisible();
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('the pages are a menu across the top, the page shown marked', async ({ page }) => {
+    await page.goto('/journal');
+    expect(await page.locator('.topmenu a').allTextContents()).toEqual(['Journal', 'Breakdown', 'Balance sheet', 'Income statement', 'Cashflow statement', 'Recurring']);
+    await expect(page.locator('.topmenu a.current')).toHaveText('Journal');
+    await page.locator('.topmenu a', { hasText: 'Balance sheet' }).click();
+    await expect(page).toHaveURL(/\/balancesheet$/);
+    await expect(page.locator('.topmenu a.current')).toHaveText('Balance sheet');
+    // the sidebar holds the accounts alone now
+    expect(await page.locator('#sidebar-menu td.top').count()).toBe(0);
+  });
+
+});
+
 test.describe('keyboard shortcuts', () => {
 
   test('"s" toggles the sidebar, and the choice survives navigation', async ({ page }) => {
@@ -444,17 +480,14 @@ test.describe('sidebar', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('links to the financial statements, marking the one shown', async ({ page }) => {
-    // at a laptop width the sidebar is narrow; the report labels must still fit
+  test('links to the financial statements from the top menu, marking the one shown', async ({ page }) => {
+    // at a laptop width too, every page is reachable from the menu
     await page.setViewportSize({ width: 1000, height: 800 });
     await page.goto('/journal');
-    const clipped = await page.locator('#sidebar-menu td.top').evaluateAll(
-      tds => tds.filter(td => td.scrollWidth > td.clientWidth).map(td => td.textContent.trim()));
-    expect(clipped).toEqual([]);
-    await page.locator('#sidebar-menu a', { hasText: 'Income statement' }).click();
+    await page.locator('.topmenu a', { hasText: 'Income statement' }).click();
     await expect(page).toHaveURL(/\/incomestatement$/);
     await expect(page.locator('#main-content h2')).toContainText('Income Statement');
-    await expect(page.locator('#sidebar-menu tr.inacct a')).toHaveText('Income statement');
+    await expect(page.locator('.topmenu a.current')).toHaveText('Income statement');
     // from a report, the other reports are one click away in the Report row
     await page.locator('#main-content .report-links a', { hasText: 'Balance sheet with equity' }).click();
     await expect(page).toHaveURL(/\/balancesheetequity$/);

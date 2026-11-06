@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
   entryTooltipInit();
   futureRowsInit();
   entryHoverInit();
+  sidebarTreeInit();
   registerChartInit();
 });
 
@@ -585,6 +586,50 @@ function entryHoverInit() {
     lit.forEach(function(r) { r.classList.add('entry-hover'); });
   });
   table.addEventListener('mouseleave', clear);
+}
+
+// The sidebar's account tree folds: the chevron before an account hides
+// the accounts under it, and the browser remembers which are folded
+// (localStorage). The account shown stays in sight: its parents are open
+// for it, until one is folded on purpose.
+function sidebarTreeInit() {
+  var rows = [].slice.call(document.querySelectorAll('#sidebar-menu tr[data-acct]'));
+  if (!rows.length) { return; }
+  var key = 'hledgerSidebarFolded';
+  var folded = {};
+  try { JSON.parse(localStorage.getItem(key) || '[]').forEach(function(a) { folded[a] = true; }); } catch (e) {}
+  var current = document.querySelector('#sidebar-menu tr.inacct[data-acct]');
+  var open = {};   // the parents of the account shown, open whatever was remembered
+  if (current) {
+    var parts = current.dataset.acct.split(':');
+    for (var i = 1; i < parts.length; i++) { open[parts.slice(0, i).join(':')] = true; }
+  }
+  function isFolded(a) { return !!folded[a] && !open[a]; }
+  function save() { try { localStorage.setItem(key, JSON.stringify(Object.keys(folded))); } catch (e) {} }
+  function apply() {
+    rows.forEach(function(r) {
+      var a = r.dataset.acct;
+      r.hidden = Object.keys(folded).some(function(f) { return isFolded(f) && a.indexOf(f + ':') === 0; });
+      var t = r.querySelector('.tree-toggle');
+      if (t) {
+        var isOpen = !isFolded(a);
+        t.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        t.setAttribute('aria-label', isOpen ? t.dataset.collapse : t.dataset.expand);
+      }
+    });
+  }
+  rows.forEach(function(r) {
+    var t = r.querySelector('.tree-toggle');
+    if (!t) { return; }
+    t.addEventListener('click', function(e) {
+      e.preventDefault();
+      var a = r.dataset.acct;
+      if (isFolded(a)) { delete folded[a]; } else { folded[a] = true; delete open[a]; }
+      save();
+      apply();
+    });
+  });
+  apply();
 }
 
 function futureRowsInit() {

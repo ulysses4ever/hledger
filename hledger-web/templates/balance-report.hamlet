@@ -1,23 +1,16 @@
-<tr :here == journalR:.inacct>
-  <td .top .acct>
-    <a href=@?{journallink} :here == journalR:.inacct
-       title=#{tr trs "Show general journal entries, most recent first"}>
-      #{tr trs "Journal"}
-  <td .top>
-$# A report's label spans both columns: it is longer than an account name,
-$# and nothing goes beside it.
-$forall (route, label, title) <- reports
-  <tr :here == route:.inacct>
-    <td .top .acct colspan=2>
-      <a href=@?{(route, reportParams)} :here == route:.inacct title=#{tr trs title}>
-        #{tr trs label}
+$# (the pages' links are in the top menu, see default-layout.hamlet)
+$# Each account on a row of its own, indented to its depth, with a chevron
+$# before one that has accounts under it, which folds them (hledger.js).
 $forall (acct, adisplay, aindent, abal) <- items
-  <tr
+  <tr data-acct=#{acct} data-depth=#{aindent}
      :matchesAcctSelector acct:.inacct
      :hideEmpty && not (isInterestingAccount acct):.hide>
     <td .acct :not (isInterestingAccount acct):.empty>
       <div .ff-wrapper>
-        \#{indent aindent}
+        $if hasSubAccounts acct
+          <button type=button .tree-toggle aria-expanded=true aria-label=#{tr trs "Fold the accounts under this one"} data-collapse=#{tr trs "Fold the accounts under this one"} data-expand=#{tr trs "Unfold the accounts under this one"}>
+        $else
+          <span .tree-leaf aria-hidden="true">
         <a.acct-name href="@?{(registerR, [("q", replaceInacct qparam $ accountQuery acct)])}"
            title=#{tr trs "Show transactions affecting this account and subaccounts"}>
           ^{wholeAccountNameAsHtml adisplay}

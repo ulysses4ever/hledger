@@ -6,6 +6,14 @@
 
 <div#topbar .col-md-8 .col-sm-8 .col-xs-10>
   <h1>#{takeFileName (journalFilePath j)}
+  $# The pages, as a menu across the top (a phone has its tab bar instead).
+  $if elem ViewPermission perms
+    <nav .topmenu aria-label=_{HMsgc "tab bar" "Pages"}>
+      <a href=@?{journalLink} :onJournal:.current title=_{HMsg "Show general journal entries, most recent first"}>_{HMsgc "tab bar" "Journal"}
+      $forall (route, label, title) <- sidebarReports
+        <a href=@?{(route, sidebarParams)} :here == route:.current title=#{tr trs title}>#{tr trs label}
+      $if elem AddPermission perms
+        <a href=@{RecurringR} :here == RecurringR:.current>_{HMsg "Recurring"}
 
 $if elem ViewPermission perms
   <div#sidebar-menu .sidebar-offcanvas.#{sideShowmd}.#{sideShowsm}>

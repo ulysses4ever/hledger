@@ -1952,3 +1952,112 @@ a:focus > .account-name > * {
   color: var(--text, inherit);
   background-color: var(--band);
 }
+
+/*------------------------------------------------------------------------------------------*/
+/* 9. the top menu, and the sidebar's tree */
+
+/* The pages' links beside the journal's name, the page shown filled; a
+   phone has its tab bar instead. */
+#topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 18px;
+}
+.topmenu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.topmenu a {
+  padding: 3px 10px;
+  color: var(--account);
+  border-radius: 999px;
+  text-decoration: none;
+}
+.topmenu a:hover {
+  background-color: var(--band);
+  text-decoration: none;
+}
+.topmenu a.current {
+  font-weight: 600;
+  background-color: var(--band);
+}
+@media screen and (max-width: 767px) {
+  .topmenu {
+    display: none;
+  }
+}
+
+/* The tree: each depth indented by a step, a guide line down each step
+   from the parent's chevron, and the chevron folding what is under. */
+#sidebar-menu .main-menu .ff-wrapper {
+  background-repeat: no-repeat;
+  background-size: 1px 100%;
+}
+#sidebar-menu .main-menu tr[data-depth="1"] .ff-wrapper {
+  padding-left: 14px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0;
+}
+#sidebar-menu .main-menu tr[data-depth="2"] .ff-wrapper {
+  padding-left: 28px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0, 21px 0;
+}
+#sidebar-menu .main-menu tr[data-depth="3"] .ff-wrapper {
+  padding-left: 42px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0, 21px 0, 35px 0;
+}
+#sidebar-menu .main-menu tr[data-depth="4"] .ff-wrapper {
+  padding-left: 56px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0, 21px 0, 35px 0, 49px 0;
+}
+#sidebar-menu .main-menu tr[data-depth="5"] .ff-wrapper {
+  padding-left: 70px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0, 21px 0, 35px 0, 49px 0, 63px 0;
+}
+#sidebar-menu .main-menu tr[data-depth="6"] .ff-wrapper {
+  padding-left: 84px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0, 21px 0, 35px 0, 49px 0, 63px 0, 77px 0;
+}
+#sidebar-menu .main-menu tr[data-depth="7"] .ff-wrapper {
+  padding-left: 98px;
+  background-image: linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule)), linear-gradient(var(--sidebar-rule), var(--sidebar-rule));
+  background-position: 7px 0, 21px 0, 35px 0, 49px 0, 63px 0, 77px 0, 91px 0;
+}
+#sidebar-menu .main-menu a.acct-name {
+  padding: 3px 6px;
+}
+.tree-toggle,
+.tree-leaf {
+  display: inline-block;
+  width: 14px;
+  height: 18px;
+  vertical-align: middle;
+}
+.tree-toggle {
+  padding: 0;
+  font-size: 10px;
+  line-height: 18px;
+  color: var(--account-parents);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.tree-toggle::before {
+  content: "\25BE";   /* a small triangle down */
+}
+.tree-toggle[aria-expanded="false"]::before {
+  content: "\25B8";   /* and right, when folded */
+}
+.tree-toggle:hover {
+  color: var(--account-current);
+}
+#sidebar-menu .main-menu tr[hidden] {
+  display: none;
+}

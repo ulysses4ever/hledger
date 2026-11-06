@@ -39,7 +39,6 @@ import System.FilePath (takeFileName)
 import Text.Blaze ((!), textValue)
 import Text.Blaze.Html5 qualified as H
 import Text.Blaze.Html5.Attributes qualified as A
-import Text.Blaze.Internal (preEscapedString)
 import Text.Hamlet (hamletFile)
 import Text.Printf (printf)
 import Yesod
@@ -89,24 +88,21 @@ helplink :: Text -> Text -> HtmlUrl r
 helplink topic label _ = H.a ! A.href u ! A.target "hledgerhelp" $ toHtml label
   where u = textValue $ manualurl <> if T.null topic then "" else T.cons '#' topic
 
--- | Render a "BalanceReport" as the sidebar: the journal and report
--- links (each report's route, label, and title, with the parameters
--- their links carry), then the accounts. The current page's row is marked.
+-- | Render a "BalanceReport" as the sidebar: the accounts as a tree, each
+-- linking to its register, with the account shown marked. (The pages'
+-- links are the top menu, in the layout.)
 balanceReportAsHtml ::
-  Eq r => (r, r) -> r -> [(r, Text, Text)] -> [(Text, Text)] -> Bool -> Translations -> Journal -> Text -> [QueryOpt] -> BalanceReport -> HtmlUrl r
-balanceReportAsHtml (journalR, registerR) here reports reportParams hideEmpty trs j qparam qopts (items, total) =
+  r -> Bool -> Translations -> Journal -> Text -> [QueryOpt] -> BalanceReport -> HtmlUrl r
+balanceReportAsHtml registerR hideEmpty trs j qparam qopts (items, total) =
   $(hamletFile "templates/balance-report.hamlet")
   where
     l = ledgerFromJournal Any j
-    indent a = preEscapedString $ concat $ replicate (2 + 2 * a) "&nbsp;"
     hasSubAccounts acct = maybe True (not . null . asubs) $ ledgerAccount l acct
     isInterestingAccount acct = maybe False isInteresting $ ledgerAccount l acct
       where isInteresting a = not (all (mixedAmountLooksZero . bdexcludingsubs) . pdperiods $ adata a) || any isInteresting (asubs a)
     matchesAcctSelector acct = Just True == ((`matchesAccount` acct) <$> inAccountQuery qopts)
-    -- The journal, and the register of everything, for the sidebar's
-    -- search minus any account term; the search form's clear button is
-    -- the way out of a search.
-    journallink = (journalR, [("q", t) | let t = T.unwords $ removeInacct qparam, not (T.null t)])
+    -- The register of everything, for the sidebar's search minus any
+    -- account term; the search form's clear button is the way out of a search.
     totallink = (registerR, [("q", t) | let t = T.unwords $ removeInacct qparam, not (T.null t)])
 
 -- | A row of links above a report: a label, then each link's label,

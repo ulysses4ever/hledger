@@ -16,7 +16,6 @@ import Control.Applicative ((<|>))
 import Control.Monad.State.Strict (evalStateT)
 import Data.Bifunctor (first)
 import Data.Char (isAlpha)
-import Data.Foldable (toList)
 import Data.Function (on)
 import Data.List (dropWhileEnd, elemIndex, groupBy, maximumBy, nub, sortOn, unfoldr)
 import Data.Map.Strict qualified as M
@@ -119,7 +118,6 @@ addForm' forRule j today mtxn extra = do
     payeeCounts = M.fromListWith (+) [(transactionPayee t, 1 :: Int) | t <- jtxns j, not (T.null (transactionPayee t))]
     frequentPayees = map fst $ take 10 $ sortOn (negate . snd) $ M.toList payeeCounts
     allPayees = sortOn T.toLower $ filter (not . T.null) $ journalPayeesDeclaredOrUsed j
-    payeePlaceholder = trc trs "placeholder" "Payee"
     files = fst <$> jfiles j
     deffile = journalFilePath j
     accountPlaceholder = tr trs "Account {n}"

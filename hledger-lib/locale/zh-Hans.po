@@ -1712,3 +1712,13 @@ msgstr "来自周期规则"
 #: hledger-web/Hledger/Web/Handler/RecurringR.hs
 msgid "Nothing due in the coming year"
 msgstr "来年无到期项"
+
+#. hledger-web: the sidebar's chevron that folds an account's subaccounts.
+#: hledger-web/templates/balance-report.hamlet
+msgid "Fold the accounts under this one"
+msgstr "折叠此账户下的账户"
+
+#. hledger-web: the sidebar's chevron that folds an account's subaccounts.
+#: hledger-web/templates/balance-report.hamlet
+msgid "Unfold the accounts under this one"
+msgstr "展开此账户下的账户"

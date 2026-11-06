@@ -1628,3 +1628,13 @@ msgstr ""
 #: hledger-web/Hledger/Web/Handler/RecurringR.hs
 msgid "Nothing due in the coming year"
 msgstr ""
+
+#. hledger-web: the sidebar's chevron that folds an account's subaccounts.
+#: hledger-web/templates/balance-report.hamlet
+msgid "Fold the accounts under this one"
+msgstr ""
+
+#. hledger-web: the sidebar's chevron that folds an account's subaccounts.
+#: hledger-web/templates/balance-report.hamlet
+msgid "Unfold the accounts under this one"
+msgstr ""
