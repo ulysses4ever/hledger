@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   entryTooltipInit();
   futureRowsInit();
+  entryHoverInit();
   registerChartInit();
 });
 
@@ -560,6 +561,32 @@ function getCookie(name) {
 // away: their rows get hidden, and the row with the button, which the
 // page sends hidden, shows and unfolds them. Without this script every
 // row shows, and the button's row stays hidden.
+// In the journal an entry is a title row and its posting rows: under the
+// pointer, all of them light up together (hledger.css), not one at a time.
+function entryHoverInit() {
+  var table = document.querySelector('.transactionsreport');
+  if (!table) { return; }
+  var lit = [];
+  function rowsOf(row) {
+    var title = row.classList.contains('title') ? row : row.previousElementSibling;
+    while (title && !title.classList.contains('title')) { title = title.previousElementSibling; }
+    if (!title) { return []; }
+    var rows = [title];
+    for (var r = title.nextElementSibling; r && r.classList.contains('posting'); r = r.nextElementSibling) { rows.push(r); }
+    return rows;
+  }
+  function clear() { lit.forEach(function(r) { r.classList.remove('entry-hover'); }); lit = []; }
+  table.addEventListener('mouseover', function(e) {
+    var row = e.target.closest('tr');
+    if (!row || !(row.classList.contains('title') || row.classList.contains('posting'))) { clear(); return; }
+    if (lit.indexOf(row) >= 0) { return; }
+    clear();
+    lit = rowsOf(row);
+    lit.forEach(function(r) { r.classList.add('entry-hover'); });
+  });
+  table.addEventListener('mouseleave', clear);
+}
+
 function futureRowsInit() {
   document.querySelectorAll('tr.future-toggle').forEach(function(row) {
     var table = row.closest('table');
@@ -768,6 +795,7 @@ function registerChart($container, series) {
   return $container.plot(
     series,
     {
+      colors: [color('--chart-line'), color('--income'), color('--negative')],
       series: {
         // hollow points: filled with the page's own background
         points: { fillColor: color('--bg') },

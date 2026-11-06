@@ -54,11 +54,12 @@
 
   /* The register chart. hledger.js hands these to flot, which draws on a
      canvas and understands only hex, rgb() and rgba() colors. */
-  --chart-grid: #545454;         /* frame, ticks and labels */
-  --chart-past-negative: #ffdddd;
-  --chart-future: #e0e0e0;
-  --chart-future-negative: #e8c8c8;
-  --chart-zero: #bb0000;
+  --chart-grid: #8a93a0;         /* frame, ticks and labels */
+  --chart-line: #2e6da4;         /* the balance line */
+  --chart-past-negative: #fbeaea;
+  --chart-future: #f3f4f6;
+  --chart-future-negative: #f3e6e6;
+  --chart-zero: #d6a5a5;
 }
 
 /* Printing is always light. Bootstrap prints every background as
@@ -113,6 +114,7 @@
     --sidebar-rule: var(--rule);
 
     --chart-grid: #9aa3ae;
+    --chart-line: #7db3e8;
     --chart-past-negative: #3b2326;
     --chart-future: #2a2e35;
     --chart-future-negative: #3b2a2d;
@@ -1829,4 +1831,122 @@ a:focus > .account-name > * {
     text-align: right;
     color: var(--account-parents);
   }
+}
+
+/*------------------------------------------------------------------------------------------*/
+/* 8. the desktop: a slimmer header, a narrower sidebar, quieter tables */
+
+/* The header is the journal's name, small, with the search under it no
+   wider than it needs to be. */
+#topbar h1 {
+  margin: 14px 0 6px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--account-parents);
+}
+@media screen and (min-width: 768px) {
+  #searchform {
+    max-width: 560px;
+    margin-bottom: 14px;
+  }
+  #main-content h2 {
+    margin: 6px 0 12px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+/* The sidebar: a quarter of the width is plenty for account names, and
+   the main pane gets the rest. Smaller type there, and lighter rules. */
+@media (min-width: 992px) {   /* (in print too, so the chart keeps its width) */
+  #sidebar-menu.col-md-4 {
+    width: 25%;
+  }
+  #main-content.col-md-8 {
+    width: 75%;
+  }
+}
+#sidebar-menu .main-menu td,
+#sidebar-menu .main-menu a {
+  font-size: 14px;
+}
+#sidebar-menu .main-menu a {
+  padding: 3px 14px;
+}
+#sidebar-menu .main-menu .amount {
+  font-size: 14px;
+}
+
+/* The journal's entries: a hairline between entries, the postings set
+   small and muted under the title, and the whole entry lit under the
+   pointer (hledger.js marks its rows) rather than one row of it. */
+.transactionsreport > tbody > tr > td {
+  padding: 4px 8px;
+  border-top-color: var(--header-rule);
+}
+.transactionsreport > tbody > tr.title > td {
+  padding-top: 9px;
+}
+.transactionsreport > tbody > tr.posting > td {
+  padding-top: 1px;
+  padding-bottom: 1px;
+  font-size: 13px;
+  color: var(--account-parents);
+}
+.transactionsreport > tbody > tr.posting + tr.title > td,
+.transactionsreport > tbody > tr.future-toggle > td {
+  border-top: 1px solid var(--header-rule);
+}
+.transactionsreport > tbody > tr:hover > td {
+  background-color: transparent;
+}
+.transactionsreport > tbody > tr.entry-hover > td,
+.registerreport > tbody > tr:hover > td {
+  background-color: var(--row-hover);
+}
+.registerreport > tbody > tr > td {
+  padding: 5px 8px;
+  border-top-color: var(--header-rule);
+}
+/* Account names and dates in the rows are links, but read as text. */
+.transactionsreport td a,
+.registerreport td.account a,
+.registerreport td.description a {
+  color: inherit;
+}
+.transactionsreport td.date a,
+.registerreport td.date a {
+  color: var(--account-parents);
+}
+.transactionsreport td a:hover,
+.registerreport td a:hover {
+  color: var(--account-current);
+  text-decoration: none;
+}
+.transactionsreport tr.title td.description {
+  font-weight: 500;
+}
+.transactionsreport td a .account-name .leaf,
+.registerreport td.account a .account-name .leaf {
+  color: var(--account);
+}
+.transactionsreport > tbody > tr > td.date,
+.registerreport > tbody > tr > td.date {
+  width: 7.5em;
+}
+
+/* The rows of links above a report, as pills, the current one filled. */
+.report-links a {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+.report-links a:hover {
+  background-color: var(--band);
+  text-decoration: none;
+}
+.report-links a.current {
+  color: var(--text, inherit);
+  background-color: var(--band);
 }
