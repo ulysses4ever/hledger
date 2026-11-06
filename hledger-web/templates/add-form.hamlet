@@ -30,8 +30,9 @@ $# A free note, kept after the payee in the description ("Payee | note").
     <div .form-group>
       ^{fvInput noteView}
 $# The status: unmarked, pending (!) or cleared (*). A new entry is unmarked;
-$# the field shows only when editing, where confirming an entry means something.
-<div .row .status-row :not editing:.hidden>
+$# the field shows only when editing an entry, where confirming it means
+$# something; never on a rule, whose instances get their own.
+<div .row .status-row :statusHidden:.hidden>
   <div .col-sm-3.col-xs-6>
     <div .form-group>
       ^{fvInput statusView}

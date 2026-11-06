@@ -88,6 +88,7 @@ addForm' forRule j today mtxn extra = do
   trs <- lift requestTranslations
   let  -- bindings used in add-form.hamlet
     editing = isJust mtxn
+    statusHidden = not editing || forRule
     -- the existing transaction's fields, as the form shows them
     (defPayee, defNote) = case T.breakOn " | " . tdescription <$> mtxn of
       Just (p, n) | not (T.null n) -> (Just (T.strip p), Just (T.strip (T.drop 3 n)))
