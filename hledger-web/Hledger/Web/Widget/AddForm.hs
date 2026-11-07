@@ -117,6 +117,16 @@ addForm' forRule j today mtxn extra = do
     payeeCounts = M.fromListWith (+) [(transactionPayee t, 1 :: Int) | t <- jtxns j, not (T.null (transactionPayee t))]
     frequentPayees = map fst $ take 10 $ sortOn (negate . snd) $ M.toList payeeCounts
     allPayees = sortOn T.toLower $ filter (not . T.null) $ journalPayeesDeclaredOrUsed j
+    -- the notes the note field offers as it is typed into: the books' notes,
+    -- the most used first, and with each payee the notes it is used with
+    -- most, which hledger.js offers first once that payee is named
+    payeeNoteCounts = M.fromListWith (+)
+      [((p, n), 1 :: Int) | t <- jtxns j, let (p, n) = payeeAndNoteFromDescription (tdescription t), not (T.null n)]
+    noteCounts = M.fromListWith (+) [(n, c) | ((_, n), c) <- M.toList payeeNoteCounts]
+    frequentNotes = map fst $ take 500 $ sortOn (negate . snd) $ M.toList noteCounts
+    payeeNotesMap = M.map (T.intercalate "\t" . map fst . take 5 . sortOn (negate . snd)) $
+      M.fromListWith (++) [(p, [(n, c)]) | ((p, n), c) <- M.toList payeeNoteCounts]
+    payeeNotes p = M.findWithDefault "" p payeeNotesMap
     files = fst <$> jfiles j
     deffile = journalFilePath j
     accountPlaceholder = tr trs "Account {n}"
@@ -200,7 +210,7 @@ addForm' forRule j today mtxn extra = do
           fixSmartDateStrEither' today (T.strip s)
     dateSettings = FieldSettings "date" Nothing Nothing (Just "date") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Date")]
     descSettings = FieldSettings "desc" Nothing Nothing (Just "description") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Payee"), ("size", "40"), ("autocomplete", "off")]
-    noteSettings = FieldSettings "note" Nothing Nothing (Just "note") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Note"), ("size", "40")]
+    noteSettings = FieldSettings "note" Nothing Nothing (Just "note") [("class", "form-control input-lg"), ("placeholder", trc trs "placeholder" "Note"), ("size", "40"), ("autocomplete", "off")]
     statusSettings = FieldSettings "status" Nothing Nothing (Just "status") [("class", "form-control input-lg")]
   (dateRes, dateView) <- mreq dateField dateSettings (tdate <$> mtxn)
   (descRes, descView) <- mopt textField descSettings (Just defPayee)

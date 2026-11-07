@@ -263,14 +263,41 @@ function addformFocus() {
 // first, the ones used most before the others. Arrows and Enter pick one,
 // as does a tap; a name no payee has is simply typed. (Nothing shows
 // until something is typed: a list over the form on focus got in the way.)
+// The payee and the note fields offer what the books have as they are
+// typed into: the payees, and the notes, the ones used with the payee
+// named first (both from the lists at the page's end).
 function addformPayeeInit() {
-  var input = document.querySelector('#addform input[name=description]');
-  var list = document.querySelector('#addform .payee-matches');
+  var payeeInput = document.querySelector('#addform input[name=description]');
   var names = document.getElementById('payeenames');
-  if (!input || !list || !names || input.dataset.wired) { return; }
-  input.dataset.wired = '1';
   var payees = [];
-  [].forEach.call(names.options, function(o) { if (payees.indexOf(o.value) < 0) { payees.push(o.value); } });
+  if (names) { [].forEach.call(names.options, function(o) { if (payees.indexOf(o.value) < 0) { payees.push(o.value); } }); }
+  typeaheadInit(payeeInput, document.querySelector('#addform .payee-matches'), function() { return payees; });
+  var noteNames = document.getElementById('notenames');
+  var notes = [];
+  if (noteNames) { [].forEach.call(noteNames.options, function(o) { notes.push(o.value); }); }
+  typeaheadInit(document.querySelector('#addform input[name=note]'), document.querySelector('#addform .note-matches'), function() {
+    var own = [];
+    var typed = payeeInput ? payeeInput.value.trim().toLowerCase() : '';
+    if (names && typed) {
+      [].forEach.call(names.options, function(o) {
+        if (o.value.toLowerCase() === typed && o.dataset.notes) {
+          o.dataset.notes.split('\t').forEach(function(n) { if (n && own.indexOf(n) < 0) { own.push(n); } });
+        }
+      });
+    }
+    var all = own.concat(notes.filter(function(n) { return own.indexOf(n) < 0; }));
+    all.preferred = own.length;
+    return all;
+  });
+}
+
+// A field offering candidates() as it is typed into: the first
+// candidates.preferred of them above the rest whatever the match, then
+// the best matches first and, among equals, the earlier candidates;
+// arrows, Enter and a tap pick one. Nothing shows until something is typed.
+function typeaheadInit(input, list, candidates) {
+  if (!input || !list || input.dataset.wired) { return; }
+  input.dataset.wired = '1';
   var active = -1;
   // how well a payee answers what is typed: 0 starts with it, 1 a word of
   // it does, 2 it is somewhere inside, 3 its letters are inside in order
@@ -284,10 +311,11 @@ function addformPayeeInit() {
   }
   function refresh() {
     var q = input.value.trim().toLowerCase();
-    var found = !q ? [] : payees.map(function(p) { return [rank(q, p.toLowerCase()), p]; })
-                      .filter(function(x) { return x[0] >= 0 && x[1].toLowerCase() !== q; })
-                      .sort(function(a, b) { return a[0] - b[0]; })
-                      .map(function(x) { return x[1]; });
+    var all = candidates(), preferred = all.preferred || 0;
+    var found = !q ? [] : all.map(function(p, i) { return [i < preferred ? 0 : 1, rank(q, p.toLowerCase()), i, p]; })
+                      .filter(function(x) { return x[1] >= 0 && x[3].toLowerCase() !== q; })
+                      .sort(function(a, b) { return a[0] - b[0] || a[1] - b[1] || a[2] - b[2]; })
+                      .map(function(x) { return x[3]; });
     list.textContent = '';
     found.slice(0, 8).forEach(function(p) {
       var li = document.createElement('li');
@@ -314,9 +342,9 @@ function addformPayeeInit() {
     else if (e.key === 'ArrowUp') { setActive(active - 1); e.preventDefault(); }
     else if (e.key === 'Escape') { close(); }
     else if (e.key === 'Enter') {
-      // what is typed is a payee already: the form goes on
+      // what is typed is in the books already: the form goes on
       var typed = input.value.trim().toLowerCase();
-      if (active < 0 && payees.some(function(p) { return p.toLowerCase() === typed; })) { close(); return; }
+      if (active < 0 && candidates().some(function(p) { return p.toLowerCase() === typed; })) { close(); return; }
       var li = list.children[active >= 0 ? active : 0];
       if (li) { pick(li); }
       e.preventDefault();

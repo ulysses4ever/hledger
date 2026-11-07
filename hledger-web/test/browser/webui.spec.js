@@ -116,6 +116,30 @@ test.describe('add form', () => {
     expect(pageErrors).toEqual([]);
   });
 
+  test("the note field offers notes as it is typed into, the payee's own first", async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    const note = page.locator('#addform input[name=note]');
+    const list = page.locator('#addform .note-matches');
+    await note.click();
+    await expect(list).toBeHidden();   // nothing until something is typed
+    await note.fill('pay');
+    await expect(list.locator('li')).toHaveText(['payroll']);
+    await note.press('Enter');
+    await expect(note).toHaveValue('payroll');
+    await expect(list).toBeHidden();
+    // with a payee named, its own notes come first, whatever else matches
+    await page.locator('#addform input[name=description]').fill('Grocer Green');
+    await note.fill('o');
+    await expect(list.locator('li').first()).toHaveText('weekly shop');
+    await page.locator('#addform input[name=description]').fill('Employer Inc');
+    await note.fill('o');
+    await expect(list.locator('li').first()).toHaveText('payroll');
+    await list.locator('li').first().click();
+    await expect(note).toHaveValue('payroll');
+    expect(pageErrors).toEqual([]);
+  });
+
   test('the first row picks a category, then an account within it; the second row lists assets first', async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);

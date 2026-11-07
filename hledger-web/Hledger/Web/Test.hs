@@ -1606,6 +1606,28 @@ hledgerWebTest = do
       ls <- addTyped "CurrencyPicked" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
       assertEq "the amount should be in euros" (any (T.isInfixOf "5 EUR") ls) True
 
+    yit "offers the books' notes, and each payee's own, to the add form" $ do
+      get JournalR
+      statusIs 200
+      request $ do
+        setMethod "POST"
+        setUrl AddR
+        addToken
+        addPostParam "_formid" "identify-add"
+        addPostParam "date" "2025-02-03"
+        addPostParam "description" "Grocer"
+        addPostParam "note" "lunch money"
+        forM_ ["income:gifts", "assets:bank:checking"] $ \acct -> do
+          addPostParam "account" acct
+          addPostParam "amount" "5"
+          addPostParam "commodity" ""
+      statusIs 303
+      get JournalR
+      statusIs 200
+      bodyContains "<datalist id=\"notenames\">"
+      bodyContains "<option value=\"lunch money\">"
+      bodyContains "<option value=\"Grocer\" data-notes=\"lunch money\">"
+
     yit "lists the currencies as the books write them, dollars first" $ do
       -- (the test books' amounts are bare: two currencies have to be brought in)
       _ <- addTyped "CurrencyDollars" [("assets:bank:checking", "5", "$"), ("income:gifts", "5", "$")]

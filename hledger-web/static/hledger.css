@@ -280,11 +280,14 @@ td.date,
   font-weight: bold;
 }
 
-/* The payees offered under the payee field as it is typed into. */
-#addform .payee-group {
+/* The payees offered under the payee field as it is typed into, and the
+   notes under the note field. */
+#addform .payee-group,
+#addform .note-group {
   position: relative;
 }
-#addform .payee-matches {
+#addform .payee-matches,
+#addform .note-matches {
   position: absolute;
   right: 0;
   left: 0;
@@ -299,13 +302,16 @@ td.date,
   border-radius: 4px;
   box-shadow: 0 4px 12px var(--dialog-border);
 }
-#addform .payee-matches li {
+#addform .payee-matches li,
+#addform .note-matches li {
   padding: 8px 12px;
   font-size: 16px;
   cursor: pointer;
 }
 #addform .payee-matches li.active,
-#addform .payee-matches li:hover {
+#addform .payee-matches li:hover,
+#addform .note-matches li.active,
+#addform .note-matches li:hover {
   background-color: var(--band);
 }
 

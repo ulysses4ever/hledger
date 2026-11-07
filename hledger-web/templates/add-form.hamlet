@@ -25,10 +25,13 @@
     $maybe err <- fvErrors descView
       <span .help-block .error-block>#{err}
 $# A free note, kept after the payee in the description ("Payee | note").
+$# The field offers the books' notes as it is typed into, the payee's own
+$# first (hledger.js, from the lists at the page's end).
 <div .row>
   <div .col-xs-12>
-    <div .form-group>
+    <div .form-group .note-group>
       ^{fvInput noteView}
+      <ul .note-matches role=listbox hidden>
 $# The status: unmarked, pending (!) or cleared (*). A new entry is unmarked;
 $# the field shows only when editing an entry, where confirming it means
 $# something; never on a rule, whose instances get their own.
@@ -125,9 +128,13 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
   <div .col-sm-3.col-xs-5.text-right>
     <button type=submit .btn .btn-default .btn-lg name=submit>_{HMsg "Save"}
 
-$# The payees the payee field offers, the frequent ones first.
+$# The payees the payee field offers, the frequent ones first, each with
+$# the notes it is used with most; and the notes the note field offers.
 <datalist #payeenames>
   $forall p <- frequentPayees
-    <option value=#{p}>
+    <option value=#{p} data-notes=#{payeeNotes p}>
   $forall p <- allPayees
-    <option value=#{p}>
+    <option value=#{p} data-notes=#{payeeNotes p}>
+<datalist #notenames>
+  $forall n <- frequentNotes
+    <option value=#{n}>
