@@ -1572,14 +1572,37 @@ a:focus > .account-name > * {
   background-color: var(--band);
   border-radius: 4px;
 }
+/* The links to the period before and after are buttons, wide and as
+   tall as the band's middle, so they are easy to hit and plain to see;
+   the band keeps its height. Where there is no period before or after
+   (all dates), an empty space of the same width keeps the name centred. */
 .period-band .period-prev,
 .period-band .period-next {
   flex: none;
-  width: 1.6em;
-  font-size: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: 48px;
+  min-height: 32px;
+  font-size: 30px;
   line-height: 1;
-  text-align: center;
   color: var(--account-parents);
+  text-decoration: none;
+}
+.period-band a.period-prev,
+.period-band a.period-next {
+  color: inherit;
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.period-band a.period-prev:hover,
+.period-band a.period-next:hover,
+.period-band a.period-prev:active,
+.period-band a.period-next:active {
+  background-color: var(--surface-hover);
+  border-color: var(--border-hover);
   text-decoration: none;
 }
 .period-band .period-mid {
