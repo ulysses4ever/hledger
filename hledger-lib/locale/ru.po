@@ -1297,3 +1297,8 @@ msgstr "Во времени"
 #: hledger-web/templates/breakdown.hamlet
 msgid "What the chart follows"
 msgstr "Что показывает график"
+
+#. hledger-web: the add form's button swapping a transfer's accounts.
+#: hledger-web/templates/add-form.hamlet
+msgid "Swap to and from"
+msgstr "Поменять местами куда и откуда"

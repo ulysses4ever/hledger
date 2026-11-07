@@ -116,6 +116,42 @@ test.describe('add form', () => {
     expect(pageErrors).toEqual([]);
   });
 
+  test('the form runs kind, amount, date, category, account, payee, note; and focuses the amount', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    const tops = await page.locator('#addform').evaluate(form => {
+      const top = sel => form.querySelector(sel).getBoundingClientRect().top;
+      return [top('.kind-select'), top('input[name=amount]'), top('input[name=date]'), top('.category-select'),
+              top('select[name=account][data-row="2"]'), top('input[name=description]'), top('input[name=note]')];
+    });
+    for (let i = 1; i < tops.length; i++) { expect(tops[i]).toBeGreaterThanOrEqual(tops[i - 1]); }
+    await expect(page.locator('#addform input[name=amount]').first()).toBeFocused();
+    expect(pageErrors).toEqual([]);
+  });
+
+  test("an account's register starts a new entry on that account, and a transfer's sides swap", async ({ page }) => {
+    await page.goto('/register?q=' + encodeURIComponent('inacct:assets:bank:checking'));
+    await openAddForm(page);
+    const to = page.locator('#addform select[name=account]').nth(0);
+    const from = page.locator('#addform select[name=account]').nth(1);
+    await expect(from).toHaveValue('assets:bank:checking');
+    await expect(page.locator('#addform .swap-sides')).toBeHidden();   // (not on an expense)
+    await page.locator('#addform .kind-option[data-kind=transfer]').click();
+    await expect(from).toHaveValue('assets:bank:checking');
+    await to.selectOption('equity:opening');
+    await page.locator('#addform .swap-sides').click();
+    await expect(to).toHaveValue('assets:bank:checking');
+    await expect(from).toHaveValue('equity:opening');
+    await page.locator('#addform .kind-option[data-kind=expenses]').click();
+    // an expense account's register starts the entry on that expense
+    await page.goto('/register?q=' + encodeURIComponent('inacct:expenses:food:groceries'));
+    await openAddForm(page);
+    await expect(page.locator('#addform .kind-option[data-kind=expenses]')).toHaveClass(/active/);
+    await expect(page.locator('#addform .category-select')).toHaveValue('expenses:food');
+    await expect(to).toHaveValue('expenses:food:groceries');
+    expect(pageErrors).toEqual([]);
+  });
+
   test("the note field offers notes as it is typed into, the payee's own first", async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);

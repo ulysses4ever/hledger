@@ -1,7 +1,39 @@
 ^{extra}
 
+$# The form in the order the phone money apps have: the kind of entry,
+$# the amount, the date, the category and the account, the payee, the note.
+
+$# What the entry is - an expense, income, or a transfer between accounts -
+$# narrows the category list to that kind (hledger.js); the choice is kept
+$# in a cookie. On a transfer the rows are the accounts paid to and from.
+<div .row .kind-row>
+  <div .col-xs-12>
+    <div .btn-group .kind-select role=group aria-label=_{HMsg "Kind of entry"}
+         data-to-side=_{HMsg "To"} data-from-side=_{HMsg "From"}
+         data-subcategory=_{HMsg "Subcategory"} data-account=#{accountLabel 2}>
+      <button type=button .btn .btn-default .kind-option data-kind=expenses>_{HMsg "Expense"}
+      <button type=button .btn .btn-default .kind-option data-kind=income>_{HMsg "Income"}
+      <button type=button .btn .btn-default .kind-option data-kind=transfer>_{HMsg "Transfer"}
+
 <div .row>
-  <div .col-md-3.col-sm-5.col-xs-12 :isJust (fvErrors dateView):.has-error>
+  $# The amount, with the currency it is in picked beside it when the
+  $# books hold more than one, each as the books write it ($, EUR). It is
+  $# the first row's; a row added after the second asks for its own, and
+  $# the last row's is left to hledger (see hledger.css), so a two-row
+  $# entry is one account, one amount, and the account it comes from.
+  <div .col-sm-5.col-xs-12 :isJust amtE1:.has-error>
+    <div .form-group .amount-with-currency>
+      $if length commodities <= 1
+        <input type=hidden name=commodity value=#{defaultCommodity}>
+      <input .amount-input.form-control.input-lg type=text inputmode=decimal
+        name=amount placeholder=#{amountLabel 1} value="#{amt1}">
+      $if length commodities > 1
+        <select .currency-select.form-control.input-lg name=commodity aria-label=_{HMsg "Currency"}>
+          $forall c <- commodities
+            <option value=#{c} :c == pickedCommodity cmdty1:selected>#{c}
+    $maybe err <- amtE1
+      <span .help-block .error-block>_{err}
+  <div .col-sm-4.col-xs-12 :isJust (fvErrors dateView):.has-error>
     $# The date field stays a text input so that hledger's smart dates
     $# ("today", "2/15") still work. The button opens the browser's own date
     $# picker: an unseen date input lies over the button (see hledger.css),
@@ -15,7 +47,71 @@
         <input #datepicked type=date aria-label=_{HMsg "Pick a date"}>
     $maybe err <- fvErrors dateView
       <span .help-block .error-block>#{err}
-  <div .col-md-9.col-sm-7.col-xs-12 :isJust (fvErrors descView):.has-error>
+
+$# The placeholder templates are also read by hledger.js when it adds rows.
+$# data-current-row names the row the account in view (a register's)
+$# starts on, which the browser's remembered choice then leaves alone.
+<div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder} data-current-row=#{currentRow}>
+  $forall (n, (acc, amt, cmdty, accE, amtE)) <- displayRows
+    <div .form-group .row .account-group>
+      $# Lists to pick from, rather than fields to type in: on a phone typing
+      $# an account name is the hard part of an entry, and the books accept
+      $# no new accounts anyway. The first row picks a category, then an
+      $# account within it (hledger.js narrows the second list to the
+      $# category; until one is picked it lists every account). The second
+      $# row starts on the account in view, else on the account the books
+      $# use most, and hledger.js keeps each browser's last choices (see
+      $# addformFocus).
+      $if n == 1
+        <div .col-xs-12 .category-col>
+          <select .category-select.form-control.input-lg data-row=#{n} aria-label=_{HMsg "Category"}>
+            <option value="" selected>_{HMsg "Category"}
+            $forall (kind, grp, cats) <- categoryGroups
+              <optgroup label=#{grp} data-kind=#{kind}>
+                $forall (key, label, _) <- cats
+                  <option value=#{key}>#{label}
+      <div :n == 1:.col-xs-12 :n /= 1:.col-sm-9 :n /= 1:.col-xs-7 :isJust accE:.has-error>
+        <div .input-group .input-group-lg .account-with-side>
+          $# on a transfer, "To" or "From" beside the list (hledger.js)
+          <span .input-group-addon .account-side hidden>
+          <select .account-input.form-control.input-lg name=account data-row=#{n}>
+            $if n == 1
+              <option value="" :T.null (chosen n acc):selected>_{HMsg "Subcategory"}
+              $forall (_, _, cats) <- categoryGroups
+                $forall (key, _, items) <- cats
+                  $forall (v, l) <- items
+                    <option value=#{v} data-category=#{key} :v == chosen n acc:selected>#{l}
+            $else
+              <option value="" :T.null (chosen n acc):selected>#{accountLabel n}
+              $forall (grp, opts) <- accountGroupsFor n
+                <optgroup label=#{grp}>
+                  $forall (v, l) <- opts
+                    <option value=#{v} :v == chosen n acc:selected>#{l}
+          $# on a transfer, a button swapping the accounts paid to and from (hledger.js)
+          $if n == 2
+            <span .input-group-btn .swap-wrap hidden>
+              <button type=button .btn .btn-default .swap-sides title=_{HMsg "Swap to and from"} aria-label=_{HMsg "Swap to and from"}>
+                <span .glyphicon .glyphicon-transfer aria-hidden="true">
+        $maybe err <- accE
+          <span .help-block .error-block>_{err}
+      $# a row after the first asks for its amount beside it (the first
+      $# row's is at the top of the form; the last row's is hidden)
+      $if n /= 1
+        <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
+          <div .amount-with-currency>
+            $if length commodities <= 1
+              <input type=hidden name=commodity value=#{defaultCommodity}>
+            <input .amount-input.form-control.input-lg type=text inputmode=decimal
+              name=amount placeholder=#{amountLabel n} value="#{amt}">
+            $if length commodities > 1
+              <select .currency-select.form-control.input-lg name=commodity aria-label=_{HMsg "Currency"}>
+                $forall c <- commodities
+                  <option value=#{c} :c == pickedCommodity cmdty:selected>#{c}
+          $maybe err <- amtE
+            <span .help-block .error-block>_{err}
+
+<div .row>
+  <div .col-xs-12 :isJust (fvErrors descView):.has-error>
     $# The payee field offers the books' payees as it is typed into, the
     $# frequent ones first (hledger.js, from the list at the page's end);
     $# a name no payee has is simply typed.
@@ -40,86 +136,13 @@ $# something; never on a rule, whose instances get their own.
     <div .form-group>
       ^{fvInput statusView}
 
-$# What the entry is - an expense, income, or a transfer between accounts -
-$# narrows the category list to that kind (hledger.js); the choice is kept
-$# in a cookie. On a transfer the rows are the accounts paid to and from.
-<div .row .kind-row>
-  <div .col-xs-12>
-    <div .btn-group .kind-select role=group aria-label=_{HMsg "Kind of entry"}
-         data-to-side=_{HMsg "To"} data-from-side=_{HMsg "From"}
-         data-subcategory=_{HMsg "Subcategory"} data-account=#{accountLabel 2}>
-      <button type=button .btn .btn-default .kind-option data-kind=expenses>_{HMsg "Expense"}
-      <button type=button .btn .btn-default .kind-option data-kind=income>_{HMsg "Income"}
-      <button type=button .btn .btn-default .kind-option data-kind=transfer>_{HMsg "Transfer"}
-
-$# The placeholder templates are also read by hledger.js when it adds rows.
-<div .account-postings data-account-placeholder=#{accountPlaceholder} data-amount-placeholder=#{amountPlaceholder}>
-  $forall (n, (acc, amt, cmdty, accE, amtE)) <- displayRows
-    <div .form-group .row .account-group>
-      $# Lists to pick from, rather than fields to type in: on a phone typing
-      $# an account name is the hard part of an entry, and the books accept
-      $# no new accounts anyway. The first row picks a category, then an
-      $# account within it (hledger.js narrows the second list to the
-      $# category; until one is picked it lists every account). The second
-      $# row starts on the account the books use most, and hledger.js keeps
-      $# each browser's last choices (see addformFocus).
-      $if n == 1
-        <div .col-xs-12>
-          <select .category-select.form-control.input-lg data-row=#{n} aria-label=_{HMsg "Category"}>
-            <option value="" selected>_{HMsg "Category"}
-            $forall (kind, grp, cats) <- categoryGroups
-              <optgroup label=#{grp} data-kind=#{kind}>
-                $forall (key, label, _) <- cats
-                  <option value=#{key}>#{label}
-      <div .col-sm-9.col-xs-7 :isJust accE:.has-error>
-        <div .input-group .input-group-lg .account-with-side>
-          $# on a transfer, "To" or "From" beside the list (hledger.js)
-          <span .input-group-addon .account-side hidden>
-          <select .account-input.form-control.input-lg name=account data-row=#{n}>
-            $if n == 1
-              <option value="" :T.null (chosen n acc):selected>_{HMsg "Subcategory"}
-              $forall (_, _, cats) <- categoryGroups
-                $forall (key, _, items) <- cats
-                  $forall (v, l) <- items
-                    <option value=#{v} data-category=#{key} :v == chosen n acc:selected>#{l}
-            $else
-              <option value="" :T.null (chosen n acc):selected>#{accountLabel n}
-              $forall (grp, opts) <- accountGroupsFor n
-                <optgroup label=#{grp}>
-                  $forall (v, l) <- opts
-                    <option value=#{v} :v == chosen n acc:selected>#{l}
-        $maybe err <- accE
-          <span .help-block .error-block>_{err}
-      $# The amount, with the currency it is in picked beside it when the
-      $# books hold more than one, each as the books write it ($, EUR).
-      $# The last row's amount is left to hledger
-      $# (see hledger.css), so a two-row entry is one account, one amount,
-      $# and the account it comes from. Another row shows it again.
-      <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
-        <div .amount-with-currency>
-          $if length commodities <= 1
-            <input type=hidden name=commodity value=#{defaultCommodity}>
-          <input .amount-input.form-control.input-lg type=text
-            name=amount placeholder=#{amountLabel n} value="#{amt}">
-          $if length commodities > 1
-            <select .currency-select.form-control.input-lg name=commodity aria-label=_{HMsg "Currency"}>
-              $forall c <- commodities
-                <option value=#{c} :c == pickedCommodity cmdty:selected>#{c}
-        $maybe err <- amtE
-          <span .help-block .error-block>_{err}
-<div .add-row>
-  <button type=button #addrow .btn .btn-default>_{HMsg "Add a row"}
-
 <div .row>
   <div .col-sm-9.col-xs-7>
+    $# an entry of more than two postings: another row, under the others
+    <button type=button #addrow .btn .btn-default>_{HMsg "Add a row"}
     $# New entries go to the journal's main file. A chooser for another of
     $# its files only confused, so it is kept out of sight; the form still
     $# says which file.
-    $# (the recurring rules are a page of their own, reached from here)
-    $if not forRule
-      <a .recurring-link href=@{RecurringR}>
-        <span .glyphicon .glyphicon-repeat aria-hidden="true">
-        _{HMsg "Recurring rules"}
     $if length files > 1
       <div .form-group .file-select .hidden :isJust (fvErrors fileView):.has-error>
         ^{fvInput fileView}

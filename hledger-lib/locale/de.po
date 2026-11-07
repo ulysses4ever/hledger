@@ -1297,3 +1297,8 @@ msgstr "Im Zeitverlauf"
 #: hledger-web/templates/breakdown.hamlet
 msgid "What the chart follows"
 msgstr "Was das Diagramm verfolgt"
+
+#. hledger-web: the add form's button swapping a transfer's accounts.
+#: hledger-web/templates/add-form.hamlet
+msgid "Swap to and from"
+msgstr "Nach und von tauschen"

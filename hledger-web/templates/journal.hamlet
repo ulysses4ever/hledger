@@ -130,4 +130,4 @@ $# given with --css can rearrange them with the order property.
     ^{pagingLinks trs JournalR qparam page}
 
 $if elem AddPermission perms
-  ^{addModal AddR j today}
+  ^{addModal AddR j today Nothing}

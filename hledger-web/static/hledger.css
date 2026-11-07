@@ -338,6 +338,31 @@ tr.future-toggle[hidden] {
   color: var(--account-parents);
   background-color: var(--band);
 }
+/* The list in its group keeps its corners rounded while the side label
+   before it, or the swap button after it, is hidden (bootstrap squares
+   them by position alone). */
+#addform .account-with-side > .account-side[hidden] + .form-control {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+#addform .account-with-side > .form-control:has(+ .swap-wrap[hidden]) {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+#addform .swap-sides {
+  color: var(--account-parents);
+}
+/* The list fills its row whatever its options' width; and the last
+   row, whose amount is not asked for, gives its account the whole row
+   on a wide screen too (a phone's rule is in section 10). */
+#addform .account-with-side {
+  width: 100%;
+}
+@media screen and (min-width: 768px) {
+  #addform .account-group:last-child > .col-sm-9 {
+    width: 100%;
+  }
+}
 
 /* The breakdown page: the way back up, the ring chart, the total, the
    list of parts with a bar each. The slices' colours are one palette for
@@ -566,11 +591,6 @@ html.no-js .breakdown-chart {
 .rule-accounts {
   color: var(--entry-account);
 }
-#addform .recurring-link {
-  display: inline-block;
-  margin-top: 10px;
-  color: var(--account-parents);
-}
 .schedule-label {
   display: block;
   margin-bottom: 2px;
@@ -625,10 +645,7 @@ html.no-js .breakdown-chart {
 #addform .account-group:last-child .amount-with-currency {
   display: none;
 }
-#addform .add-row {
-  margin: -5px 0 15px;
-}
-#addform .account-group .col-xs-12 {
+#addform .account-group .category-col {
   margin-bottom: 10px;
 }
 

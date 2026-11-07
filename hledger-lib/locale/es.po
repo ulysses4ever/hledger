@@ -1674,3 +1674,8 @@ msgstr "A lo largo del tiempo"
 #: hledger-web/templates/breakdown.hamlet
 msgid "What the chart follows"
 msgstr "Lo que sigue el gráfico"
+
+#. hledger-web: the add form's button swapping a transfer's accounts.
+#: hledger-web/templates/add-form.hamlet
+msgid "Swap to and from"
+msgstr "Intercambiar origen y destino"

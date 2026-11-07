@@ -1757,3 +1757,8 @@ msgstr "随时间变化"
 #: hledger-web/templates/breakdown.hamlet
 msgid "What the chart follows"
 msgstr "图表所跟踪的内容"
+
+#. hledger-web: the add form's button swapping a transfer's accounts.
+#: hledger-web/templates/add-form.hamlet
+msgid "Swap to and from"
+msgstr "交换转入与转出"

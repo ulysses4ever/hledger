@@ -122,4 +122,5 @@ $if isAccountPage
 ^{pagingLinks trs RegisterR qparam page}
 
 $if elem AddPermission perms
-  ^{addModal AddR j today}
+  $# (the register's account starts a new entry)
+  ^{addModal AddR j today (fst <$> inAccount qopts)}

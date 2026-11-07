@@ -1630,6 +1630,26 @@ hledgerWebTest = do
       ls <- addTyped "CurrencyPicked" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
       assertEq "the amount should be in euros" (any (T.isInfixOf "5 EUR") ls) True
 
+    yit "starts a new entry on the register's account: paid from an asset, or being an expense" $ do
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:assets:bank:checking"
+      statusIs 200
+      bodyContains "data-current-row=\"2\""
+      bodyContains "<option value=\"assets:bank:checking\" selected>"
+      request $ do
+        setMethod "GET"
+        setUrl RegisterR
+        addGetParam "q" "inacct:income:gifts"
+      statusIs 200
+      bodyContains "data-current-row=\"1\""
+      bodyContains "<option value=\"income:gifts\" data-category=\"income:gifts\" selected>"
+      -- the journal starts on the books' usual account, as before
+      get JournalR
+      statusIs 200
+      bodyContains "data-current-row=\"\""
+
     yit "offers the books' notes, and each payee's own, to the add form" $ do
       get JournalR
       statusIs 200

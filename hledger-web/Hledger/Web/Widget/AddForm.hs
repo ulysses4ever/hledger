@@ -7,6 +7,7 @@
 
 module Hledger.Web.Widget.AddForm
   ( addForm
+  , addFormIn
   , addFormForRule
   , addModal
   , transactionCollapseNewlines
@@ -57,9 +58,11 @@ transactionCollapseNewlines t = t
     -- would end the account name when the entry is read back.
     collapseacct p = p{paccount = T.unwords . T.words $ paccount p}
 
-addModal :: Route App -> Journal -> Day -> Widget
-addModal addR j today = do
-  (addView, addEnctype) <- handlerToWidget $ generateFormPost (addForm j today Nothing)
+-- | The add form in its dialog, on the journal and register pages; the
+-- register's account, when given, starts the entry (see 'addFormIn').
+addModal :: Route App -> Journal -> Day -> Maybe AccountName -> Widget
+addModal addR j today macct = do
+  (addView, addEnctype) <- handlerToWidget $ generateFormPost (addFormIn macct j today Nothing)
   [whamlet|
 <dialog #addmodal aria-labelledby="addLabel">
   <div .modal-header>
@@ -75,15 +78,21 @@ addModal addR j today = do
 -- transaction keeps its code, comment and tags, which the form does not
 -- show; its status comes from the form.
 addForm :: Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
-addForm j today mtxn = identifyForm "add" (addForm' False j today mtxn)
+addForm = addFormIn Nothing
 
--- | The add form as a recurring rule's page embeds it: without the link
--- to the rules.
+-- | The add form on a page about one account (a register): a new entry
+-- starts on it, as what it is paid from (an asset, liability or equity
+-- account) or what it is (an expense or revenue account).
+addFormIn :: Maybe AccountName -> Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
+addFormIn macct j today mtxn = identifyForm "add" (addForm' False macct j today mtxn)
+
+-- | The add form as a recurring rule's page embeds it: an instance of
+-- the rule, whose status is the rule's business, not the form's.
 addFormForRule :: Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
-addFormForRule j today mtxn = identifyForm "add" (addForm' True j today mtxn)
+addFormForRule j today mtxn = identifyForm "add" (addForm' True Nothing j today mtxn)
 
-addForm' :: Bool -> Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
-addForm' forRule j today mtxn extra = do
+addForm' :: Bool -> Maybe AccountName -> Journal -> Day -> Maybe Transaction -> Markup -> MForm Handler (FormResult (Transaction,FilePath), Widget)
+addForm' forRule macct j today mtxn extra = do
   trs <- lift requestTranslations
   let  -- bindings used in add-form.hamlet
     editing = isJust mtxn
@@ -196,10 +205,22 @@ addForm' forRule j today mtxn extra = do
       case M.toList $ M.fromListWith (+) [(paccount p, 1 :: Int) | p <- journalPostings j, accountType (paccount p) `elem` [Just Asset, Just Cash, Just Liability]] of
         [] -> ""
         counts -> fst $ maximumBy (comparing snd) counts
+    -- The account in view starts a new entry: an asset, liability or
+    -- equity account is what it is paid from (the second row), an expense
+    -- or revenue account what it is (the first); the browser's remembered
+    -- choice leaves that row alone (hledger.js reads data-current-row).
+    currentRowN :: Maybe Int
+    currentRowN = case (mtxn, macct, accountType =<< macct) of
+      (Nothing, Just _, Just t)
+        | any (t `isAccountSubtypeOf`) [Asset, Liability, Equity] -> Just 2
+        | any (t `isAccountSubtypeOf`) [Expense, Revenue] -> Just 1
+      _ -> Nothing
+    currentRow = maybe "" (T.pack . show) currentRowN :: Text
     -- The account a row shows: what was submitted, else the row's default.
     chosen :: Int -> Text -> Text
     chosen n acc
       | not (T.null acc) = acc
+      | Just n == currentRowN, Just a <- macct = a
       | n == 2 = fundingDefault
       | otherwise = ""
     -- custom fields
@@ -224,6 +245,10 @@ addForm' forRule j today mtxn extra = do
   (fileRes, fileView) <- mopt fileField' fileSettings Nothing
   let
     (postingsRes, displayRows) = validatePostings trs isRevenue defRows acctsRes amtsRes cmdtysRes
+    -- the first row's amount, asked for at the top of the form
+    (amt1, cmdty1, amtE1) = case displayRows of
+      (_, (_, a, c, _, e)) : _ -> (a, c, e)
+      [] -> ("", "", Nothing)
     -- hledger keeps a note after the payee in the description: "Payee | note".
     descWithNote = joinNote <$> descRes <*> noteRes
     joinNote mpayee mnote = case (T.strip <$> mpayee, T.strip <$> mnote) of

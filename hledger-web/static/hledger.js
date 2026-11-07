@@ -225,10 +225,12 @@ function addformReset(showmsg) {
   addform.reset();
 }
 
-// Pre-fill today's date and focus the description field in the add form.
+// Pre-fill today's date and focus the amount field in the add form.
 // The first two account rows start on what this browser last saved
 // (cookies addaccount1 and addaccount2, written on submit), if the
-// books still have those accounts; else on the page's own defaults.
+// books still have those accounts; else on the page's own defaults. A
+// row the page filled from the account in view (data-current-row on the
+// rows' container) keeps it.
 function addformFocus() {
   var addform = document.getElementById('addform');
   if (!addform) { return; }
@@ -241,7 +243,10 @@ function addformFocus() {
   addformCategoryInit();
   addformKindInit();
   addformPayeeInit();
+  var postings = addform.querySelector('.account-postings');
+  var currentRow = postings ? postings.dataset.currentRow : '';
   addform.querySelectorAll('select[name=account]').forEach(function(sel) {
+    if (sel.dataset.row === currentRow) { return; }
     var saved = getCookie('addaccount' + sel.dataset.row);
     if (!saved) { return; }
     var value = decodeURIComponent(saved);
@@ -255,8 +260,22 @@ function addformFocus() {
   });
   // Deferred, so the field is focusable: http://stackoverflow.com/a/7046837
   setTimeout(function() {
-    addform.querySelector('input[name=description]').focus();
+    addform.querySelector('input[name=amount]').focus();
   }, 0);
+}
+
+// On a transfer, the button beside the second list swaps the accounts
+// paid to and from.
+function addformSwapSides() {
+  var to = document.querySelector('#addform select[name=account][data-row="1"]');
+  var from = document.querySelector('#addform select[name=account][data-row="2"]');
+  if (!to || !from) { return; }
+  var has = function(sel, v) { return v && [].some.call(sel.options, function(o) { return o.value === v; }); };
+  var wasTo = to.value, wasFrom = from.value;
+  to.value = has(to, wasFrom) ? wasFrom : '';
+  from.value = has(from, wasTo) ? wasTo : '';
+  if (!to.value) { to.options[0].selected = true; }
+  if (!from.value) { from.options[0].selected = true; }
 }
 
 // The payee field offers the books' payees as it is typed into: those
@@ -440,6 +459,8 @@ function addformKindInit() {
         setCookie('addkind', b.dataset.kind);
       });
     });
+    var swap = document.querySelector('#addform .swap-sides');
+    if (swap) { swap.addEventListener('click', addformSwapSides); }
   }
   var account = document.querySelector('#addform select[name=account][data-row="1"]');
   var chosen = account && account.options[account.selectedIndex];
@@ -491,6 +512,8 @@ function addformSetKind(kind, categoryKey) {
   var payeeGroup = document.querySelector('#addform .payee-group');
   var payeeInput = document.querySelector('#addform input[name=description]');
   if (payeeGroup) { payeeGroup.hidden = transfer && !(payeeInput && payeeInput.value); }
+  var swapWrap = document.querySelector('#addform .swap-wrap');
+  if (swapWrap) { swapWrap.hidden = !transfer; }
   var categoryCol = category.parentElement;
   if (categoryCol) { categoryCol.hidden = transfer; }
   if (transfer) {
@@ -527,6 +550,8 @@ function addformAddPosting() {
   var amount = newrow.querySelector('input[name=amount]');
   var side = newrow.querySelector('.account-side');
   if (side) { side.textContent = ''; side.hidden = true; }
+  var swap = newrow.querySelector('.swap-wrap');
+  if (swap) { swap.remove(); }
   account.value = '';
   account.dataset.row = num;
   amount.value = '';
