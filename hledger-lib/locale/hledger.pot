@@ -1658,3 +1658,8 @@ msgstr ""
 #: hledger-web/templates/default-layout.hamlet
 msgid "The sidebar shows revenues positive too, and liabilities negative: what is owed"
 msgstr ""
+
+#. hledger-web: the reports page (the breakdown), in the menu, the tab bar and the page's path.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Reports"
+msgstr ""

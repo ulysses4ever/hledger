@@ -110,7 +110,7 @@ $if elem ViewPermission perms
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M12 3v9h9A9 9 0 1 1 12 3z">
         <path d="M15 3.5A9 9 0 0 1 20.5 9H15z">
-      <span .tab-label>_{HMsgc "tab bar" "Reports"}
+      <span .tab-label>_{HMsg "Reports"}
     <a .tab .tab-search href="#searchform" aria-controls="searchform">
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <circle cx="11" cy="11" r="6">

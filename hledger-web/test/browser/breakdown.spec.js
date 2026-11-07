@@ -30,10 +30,10 @@ test('the breakdown drills from the kinds to the categories to the register', as
 test('the way back up is a path of links, and the period band steps the breakdown', async ({ page }) => {
   await page.goto('/breakdown?kind=expenses&acct=expenses%3Afood&period=2025-02');
   await expect(page.locator('.period-name')).toHaveText('February 2025');
-  expect(await page.locator('.breakdown-path a').allTextContents()).toEqual(['Breakdown', 'Expense']);
+  expect(await page.locator('.breakdown-path a').allTextContents()).toEqual(['Reports', 'Expense']);
   await page.locator('.period-band a.period-prev').click();
   await expect(page).toHaveURL(/kind=expenses&acct=expenses%3Afood/);
   await expect(page).toHaveURL(/period=2025-01/);
-  await page.locator('.breakdown-path a', { hasText: 'Breakdown' }).click();
+  await page.locator('.breakdown-path a', { hasText: 'Reports' }).click();
   await expect(page).toHaveURL(/\/breakdown\?period=2025-01/);
 });

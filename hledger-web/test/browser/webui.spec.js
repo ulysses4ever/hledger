@@ -392,7 +392,7 @@ test.describe('sidebar tree and top menu', () => {
 
   test('the pages are a menu across the top, the page shown marked', async ({ page }) => {
     await page.goto('/journal');
-    expect(await page.locator('.topmenu a').allTextContents()).toEqual(['Journal', 'Breakdown', 'Balance sheet', 'Income statement', 'Cashflow statement', 'Recurring']);
+    expect(await page.locator('.topmenu a').allTextContents()).toEqual(['Journal', 'Reports', 'Balance sheet', 'Income statement', 'Cashflow statement', 'Recurring']);
     await expect(page.locator('.topmenu a.current')).toHaveText('Journal');
     await page.locator('.topmenu a', { hasText: 'Balance sheet' }).click();
     await expect(page).toHaveURL(/\/balancesheet$/);

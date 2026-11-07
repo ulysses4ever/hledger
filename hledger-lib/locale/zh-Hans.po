@@ -1742,3 +1742,8 @@ msgstr "顶部菜单链接到资产负债表、损益表和现金流量表，每
 #: hledger-web/templates/default-layout.hamlet
 msgid "The sidebar shows revenues positive too, and liabilities negative: what is owed"
 msgstr "侧栏同样以正数显示收入，以负数显示负债：即所欠金额"
+
+#. hledger-web: the reports page (the breakdown), in the menu, the tab bar and the page's path.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Reports"
+msgstr "报表"

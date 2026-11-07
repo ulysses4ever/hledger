@@ -1282,3 +1282,8 @@ msgstr "Верхнее меню ведёт к балансу, отчёту о д
 #: hledger-web/templates/default-layout.hamlet
 msgid "The sidebar shows revenues positive too, and liabilities negative: what is owed"
 msgstr "Боковая панель тоже показывает доходы положительными, а обязательства отрицательными: то, что должны"
+
+#. hledger-web: the reports page (the breakdown), in the menu, the tab bar and the page's path.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Reports"
+msgstr "Отчёты"

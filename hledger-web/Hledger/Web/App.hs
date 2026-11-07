@@ -435,7 +435,7 @@ data ReportMenuItem = ReportMenuItem {
 reportMenu :: [ReportMenuItem]
 reportMenu =
   -- TRANSLATORS: the report links above each report page and in the sidebar: each link's text, and its tooltip.
-  [ ReportMenuItem BreakdownR          (i18n "Breakdown")                 (i18n "Show where the money went, by kind and category")  PerPeriod                         True
+  [ ReportMenuItem BreakdownR          (i18n "Reports")                   (i18n "Show where the money went, by kind and category")  PerPeriod                         True
   , ReportMenuItem BalancesheetR       (i18n "Balance sheet")             (i18n "Show assets, liabilities, and net worth")          (cbcaccum balancesheetSpec)       True
   , ReportMenuItem BalancesheetequityR (i18n "Balance sheet with equity") (i18n "Show assets, liabilities, and equity")             (cbcaccum balancesheetequitySpec) False
   , ReportMenuItem IncomestatementR    (i18n "Income statement")          (i18n "Show revenues and expenses")                       (cbcaccum incomestatementSpec)    True

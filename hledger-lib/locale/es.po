@@ -1659,3 +1659,8 @@ msgstr "El menú superior enlaza al balance, el estado de resultados y el flujo 
 #: hledger-web/templates/default-layout.hamlet
 msgid "The sidebar shows revenues positive too, and liabilities negative: what is owed"
 msgstr "La barra lateral también muestra los ingresos en positivo y los pasivos en negativo: lo que se debe"
+
+#. hledger-web: the reports page (the breakdown), in the menu, the tab bar and the page's path.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Reports"
+msgstr "Informes"

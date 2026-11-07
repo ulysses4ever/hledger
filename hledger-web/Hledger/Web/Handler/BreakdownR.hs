@@ -148,7 +148,7 @@ getBreakdownR = do
         y = 21 - 15.9 * cos angle
     pctText pct = T.pack (printf "%.1f" (realToFrac pct :: Double))
     -- What the page is about, and the way back up: Breakdown › Expense › food
-    path = [(tr trs "Breakdown", link [])]
+    path = [(tr trs "Reports", link [])]
         ++ [(kindLabel k, link [("kind", kindKey k)]) | Just k <- [mkind]]
         ++ [ (part, link ([("kind", kindKey k) | Just k <- [mkind]] ++ [("acct", T.intercalate ":" (take n parts))]))
            | Just a <- [macct], let parts = accountNameComponents a, (n, part) <- zip [2 ..] (drop 1 parts) ]
