@@ -112,7 +112,6 @@ addForm' forRule j today mtxn extra = do
     commodities = filter (not . T.null) $ S.toList $ journalCommodities j
     defaultCommodity = if "$" `elem` commodities then "$" else fromMaybe "" (listToMaybe commodities)
     pickedCommodity c = if T.null c then defaultCommodity else c
-    commodityLabel c = fromMaybe c $ lookup c [("$", "USD"), ("\8364", "EUR"), ("\163", "GBP"), ("\8381", "RUB"), ("\165", "JPY")]
     statusOptions = [(tr trs "Unmarked", Unmarked), (tr trs "Pending", Pending), (tr trs "Cleared", Cleared)]
     -- the payees the field offers as it is typed into: the ten used most, then all of them
     payeeCounts = M.fromListWith (+) [(transactionPayee t, 1 :: Int) | t <- jtxns j, not (T.null (transactionPayee t))]

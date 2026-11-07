@@ -1247,6 +1247,21 @@ ul {
   #addform .file-select {
     max-width: 100%;
   }
+  /* A posting row shares its width evenly between the account and the
+     amount, the currency beside the amount being only its symbol; the
+     last row, whose amount is not asked for, gives its account the whole
+     width. */
+  #addform .account-group > .col-xs-7,
+  #addform .account-group > .col-xs-5 {
+    width: 50%;
+  }
+  #addform .account-group:last-child > .col-xs-7 {
+    width: 100%;
+  }
+  #addform .currency-select.input-lg {
+    padding-right: 2px;
+    padding-left: 6px;
+  }
 }
 
 /* A report with one column of amounts, such as a balance sheet on a date,

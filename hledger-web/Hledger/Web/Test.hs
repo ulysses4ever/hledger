@@ -1606,6 +1606,16 @@ hledgerWebTest = do
       ls <- addTyped "CurrencyPicked" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
       assertEq "the amount should be in euros" (any (T.isInfixOf "5 EUR") ls) True
 
+    yit "lists the currencies as the books write them, dollars first" $ do
+      -- (the test books' amounts are bare: two currencies have to be brought in)
+      _ <- addTyped "CurrencyDollars" [("assets:bank:checking", "5", "$"), ("income:gifts", "5", "$")]
+      _ <- addTyped "CurrencyEuros" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
+      get JournalR
+      statusIs 200
+      bodyContains "<option value=\"$\" selected>$</option>"
+      bodyContains "<option value=\"EUR\">EUR</option>"
+      bodyNotContains ">USD</option>"
+
     yit "does not delete an entry when the CSRF token is missing" $ do
       (n, original) <- addEntry "TxnKeepMe"
       request $ do

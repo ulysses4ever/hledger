@@ -88,7 +88,8 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
         $maybe err <- accE
           <span .help-block .error-block>_{err}
       $# The amount, with the currency it is in picked beside it when the
-      $# books hold more than one. The last row's amount is left to hledger
+      $# books hold more than one, each as the books write it ($, EUR).
+      $# The last row's amount is left to hledger
       $# (see hledger.css), so a two-row entry is one account, one amount,
       $# and the account it comes from. Another row shows it again.
       <div .col-sm-3.col-xs-5 :isJust amtE:.has-error>
@@ -100,7 +101,7 @@ $# The placeholder templates are also read by hledger.js when it adds rows.
           $if length commodities > 1
             <select .currency-select.form-control.input-lg name=commodity aria-label=_{HMsg "Currency"}>
               $forall c <- commodities
-                <option value=#{c} :c == pickedCommodity cmdty:selected>#{commodityLabel c}
+                <option value=#{c} :c == pickedCommodity cmdty:selected>#{c}
         $maybe err <- amtE
           <span .help-block .error-block>_{err}
 <div .add-row>

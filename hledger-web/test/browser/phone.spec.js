@@ -155,6 +155,17 @@ test("the add form's fields have room for what they hold", async ({ page }) => {
       return found;
     });
     expect(tooNarrow, `at ${phone.width}px`).toEqual([]);
+    // a posting row is shared evenly between the account and the amount,
+    // and the last row, which asks no amount, gives its account the width
+    const shares = await page.locator('#addform').evaluate(form => {
+      const width = el => el.getBoundingClientRect().width / form.getBoundingClientRect().width;
+      return {
+        amount: width(form.querySelector('input[name=amount]')),
+        last: width(form.querySelector('.account-group:last-child select[name=account]')),
+      };
+    });
+    expect(shares.amount, `at ${phone.width}px`).toBeGreaterThan(0.4);
+    expect(shares.last, `at ${phone.width}px`).toBeGreaterThan(0.9);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   }
 });
