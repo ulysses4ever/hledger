@@ -112,8 +112,11 @@ balanceReportAsHtml registerR hideEmpty trs j qparam qopts (items, total) =
 -- another's, so a translation cannot be assembled from parts.
 -- The same choices come as a drop-down list too, which a phone shows
 -- instead of the row (see 'reportChoices').
-linksRow :: Text -> [(Text, Text, (r, [(Text, Text)]), Bool)] -> HtmlUrl r
-linksRow rowlabel items = $(hamletFile "templates/balance-links.hamlet")
+-- | A row of links above a report, labelled; the first argument says
+-- whether it is the Report row, the pages' links, which the top menu
+-- has on wider screens, so there the row is not shown (hledger.css).
+linksRow :: Bool -> Text -> [(Text, Text, (r, [(Text, Text)]), Bool)] -> HtmlUrl r
+linksRow isReportRow rowlabel items = $(hamletFile "templates/balance-links.hamlet")
   where
     -- The list's label goes above it, where a field's label has no colon.
     choicename = T.dropWhileEnd (`elem` (":\65306 " :: String)) rowlabel
@@ -133,7 +136,7 @@ reportChoices rows render =
 reportLinks :: Eq r => Translations -> r -> [(Text, Text)] -> [(r, Text, Text)] -> HtmlUrl r
 reportLinks trs here kept menu =
   -- TRANSLATORS: the label before a page's report links.
-  linksRow (tr trs "Report:") [ (tr trs label, tr trs title, (route, kept), route == here) | (route, label, title) <- menu ]
+  linksRow True (tr trs "Report:") [ (tr trs label, tr trs title, (route, kept), route == here) | (route, label, title) <- menu ]
 
 -- | Links to the same report page for each reporting interval, keeping
 -- the search, the period's date span, and the given parameters; the
@@ -143,7 +146,7 @@ reportLinks trs here kept menu =
 intervalLinks :: Translations -> r -> [(Text, Text)] -> Text -> DateSpan -> Interval -> HtmlUrl r
 intervalLinks trs route kept qparam spn current =
   -- TRANSLATORS: the label before a report's interval links, which choose a column per year, month etc.
-  linksRow (tr trs "Period:")
+  linksRow False (tr trs "Period:")
     [ (label, title, link mword, ivl == current) | (label, title, mword, ivl) <- intervals ]
   where
     -- TRANSLATORS: the interval links above a report: each link's text, and its tooltip. "Whole" is one column for the whole period.
@@ -173,7 +176,7 @@ intervalLinks trs route kept qparam spn current =
 accumulationLinks :: Translations -> r -> [(Text, Text)] -> BalanceAccumulation -> HtmlUrl r
 accumulationLinks trs route kept current =
   -- TRANSLATORS: the label before a report's accumulation mode links, and the links' text and tooltips.
-  linksRow (tr trs "Show:")
+  linksRow False (tr trs "Show:")
     [ (tr trs "Balance changes", tr trs "Show how much each balance changed in each period",
         (route, kept), current /= Historical)
     , (tr trs "Ending balances", tr trs "Show each balance at the end of each period, including everything before it",

@@ -2014,6 +2014,15 @@ a:focus > .account-name > * {
   flex-wrap: wrap;
   gap: 2px;
 }
+/* The Report row above a statement says what the menu says, so it shows
+   only where the menu does not: on a phone, as a list (section 10). The
+   two reports only it names, the balance sheet with equity and the
+   balance report, keep their addresses. */
+@media screen and (min-width: 768px) {
+  .report-links.report-row {
+    display: none;
+  }
+}
 .topmenu a {
   padding: 4px 14px;
   font-size: 16px;

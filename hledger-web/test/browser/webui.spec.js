@@ -508,9 +508,9 @@ test.describe('sidebar', () => {
     await expect(page).toHaveURL(/\/incomestatement$/);
     await expect(page.locator('#main-content h2')).toContainText('Income Statement');
     await expect(page.locator('.topmenu a.current')).toHaveText('Income statement');
-    // from a report, the other reports are one click away in the Report row
-    await page.locator('#main-content .report-links a', { hasText: 'Balance sheet with equity' }).click();
-    await expect(page).toHaveURL(/\/balancesheetequity$/);
+    // the Report row would say the same, so it is not shown here
+    await expect(page.locator('#main-content .report-links.report-row')).toBeHidden();
+    await expect(page.locator('#main-content .report-links', { hasText: 'Section' })).toBeVisible();
     expect(pageErrors).toEqual([]);
   });
 

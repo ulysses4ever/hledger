@@ -90,9 +90,10 @@ test.describe('on a phone without javascript', () => {
   });
 });
 
-test('on a wider screen, the rows of links show and the lists do not', async ({ page }) => {
+test('on a wider screen, the rows of links show (but the Report row, which the top menu stands in for) and the lists do not', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/balancesheet');
-  await expect(page.locator('#main-content .report-links').first()).toBeVisible();
+  await expect(page.locator('#main-content .report-links', { hasText: 'Section' })).toBeVisible();
+  await expect(page.locator('#main-content .report-links.report-row')).toBeHidden();
   await expect(page.locator('#main-content .report-choice').first()).toBeHidden();
 });

@@ -171,7 +171,7 @@ statementPage here tabtitle spec defaultSection = do
             -- Links to the sections keep the search, the period and the mode.
             sectionLinks =
               -- TRANSLATORS: the label before a statement's section links, and the links' tooltips.
-              linksRow (tr trs "Section:") $
+              linksRow False (tr trs "Section:") $
                 [ (name, tr trs "Show only this section", (here, sectionParam (OneSection i) ++ kept), shown == OneSection i)
                 | (i, name) <- zip [0..] sectionNames ] ++
                 [ (tr trs "All", tr trs "Show every section, and the net total", (here, sectionParam AllSections ++ kept), shown == AllSections) ]
