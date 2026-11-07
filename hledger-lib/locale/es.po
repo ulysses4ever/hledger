@@ -1664,3 +1664,8 @@ msgstr "La barra lateral también muestra los ingresos en positivo y los pasivos
 #: hledger-web/Hledger/Web/App.hs
 msgid "Reports"
 msgstr "Informes"
+
+#. hledger-web: the reports page's chart of the periods before.
+#: hledger-web/templates/breakdown.hamlet
+msgid "Over time"
+msgstr "A lo largo del tiempo"

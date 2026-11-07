@@ -957,6 +957,29 @@ hledgerWebTest = do
       bodyContains "<span class=\"breakdown-amount\">11</span>"    -- expenses
       bodyContains "<span class=\"breakdown-amount\">1000</span>"  -- the opening transfer
       bodyContains "/breakdown?kind=expenses&amp;period=all\""
+      -- all dates: nothing to follow over time
+      bodyNotContains "id=\"reports-chart\""
+
+    yit "charts what is shown over the periods before, a line per kind at the top" $ do
+      request $ do
+        setMethod "GET"
+        setUrl BreakdownR
+        addGetParam "period" "2025-02"
+      statusIs 200
+      bodyContains "id=\"reports-chart\""
+      bodyContains "&quot;labels&quot;:[&quot;Mar&quot;,&quot;Apr&quot;"
+      bodyContains "&quot;label&quot;:&quot;Income&quot;"
+      bodyContains "&quot;label&quot;:&quot;Expense&quot;"
+      bodyContains "/breakdown?period=2025-01&quot;"
+      request $ do
+        setMethod "GET"
+        setUrl BreakdownR
+        addGetParam "period" "2025-02"
+        addGetParam "kind" "expenses"
+        addGetParam "acct" "expenses:food"
+      statusIs 200
+      bodyContains "&quot;label&quot;:&quot;food&quot;"
+      bodyNotContains "&quot;label&quot;:&quot;Income&quot;"
       bodyContains "<circle class=\"donut-slice slice-0\""
       request $ do
         setMethod "GET"

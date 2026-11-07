@@ -1747,3 +1747,8 @@ msgstr "侧栏同样以正数显示收入，以负数显示负债：即所欠金
 #: hledger-web/Hledger/Web/App.hs
 msgid "Reports"
 msgstr "报表"
+
+#. hledger-web: the reports page's chart of the periods before.
+#: hledger-web/templates/breakdown.hamlet
+msgid "Over time"
+msgstr "随时间变化"

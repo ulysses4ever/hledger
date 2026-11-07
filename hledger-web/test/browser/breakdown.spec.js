@@ -27,6 +27,23 @@ test('the breakdown drills from the kinds to the categories to the register', as
   expect(errors).toEqual([]);
 });
 
+test('a chart beside the ring follows what is shown over the periods before', async ({ page }) => {
+  const errors = watchPageErrors(page);
+  await page.goto('/breakdown?period=2025-02');
+  await expect(page.locator('#reports-chart canvas').first()).toBeVisible();
+  // the kinds, with a legend; deeper down one line, no legend
+  await expect(page.locator('#reports-chart-label .legend-item')).toHaveText(['Income', 'Expense', 'Transfer']);
+  await page.goto('/breakdown?period=2025-02&kind=expenses&acct=expenses%3Afood');
+  await expect(page.locator('#reports-chart canvas').first()).toBeVisible();
+  await expect(page.locator('#reports-chart-label .legend-item')).toHaveCount(0);
+  // the ticks are the periods
+  await expect(page.locator('#reports-chart .flot-tick-label', { hasText: 'Feb' })).toBeVisible();
+  // all dates has nothing to follow
+  await page.goto('/breakdown?period=all');
+  await expect(page.locator('#reports-chart')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});
+
 test('the way back up is a path of links, and the period band steps the breakdown', async ({ page }) => {
   await page.goto('/breakdown?kind=expenses&acct=expenses%3Afood&period=2025-02');
   await expect(page.locator('.period-name')).toHaveText('February 2025');

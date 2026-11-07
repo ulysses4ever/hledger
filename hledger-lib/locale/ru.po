@@ -1287,3 +1287,8 @@ msgstr "Боковая панель тоже показывает доходы �
 #: hledger-web/Hledger/Web/App.hs
 msgid "Reports"
 msgstr "Отчёты"
+
+#. hledger-web: the reports page's chart of the periods before.
+#: hledger-web/templates/breakdown.hamlet
+msgid "Over time"
+msgstr "Во времени"

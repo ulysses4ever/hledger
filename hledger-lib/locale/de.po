@@ -1287,3 +1287,8 @@ msgstr "Die Seitenleiste zeigt Einnahmen ebenfalls positiv und Verbindlichkeiten
 #: hledger-web/Hledger/Web/App.hs
 msgid "Reports"
 msgstr "Berichte"
+
+#. hledger-web: the reports page's chart of the periods before.
+#: hledger-web/templates/breakdown.hamlet
+msgid "Over time"
+msgstr "Im Zeitverlauf"

@@ -12,31 +12,43 @@ $# the ring chart, the total, and the list of parts, each a link deeper.
       $else
         <a href=@?{target}>#{name}
 
-  $if null slices
-    <p .breakdown-empty>_{HMsg "Nothing in this period."}
-  $else
-    <svg .donut viewBox="0 0 42 42" role="img" aria-label=_{HMsg "Shares of the total, as a ring"}>
-      <circle .donut-track cx="21" cy="21" r="15.9155" fill="transparent" stroke-width="10">
-      $forall (i, _, _, dashv, offv, _, _, _) <- ring
-        <circle class="donut-slice slice-#{i}" cx="21" cy="21" r="15.9155" fill="transparent" stroke-width="10" stroke-dasharray="#{dashv}" stroke-dashoffset="#{offv}">
-      $forall (_, _, pct, _, _, lx, ly, big) <- ring
-        $if big
-          <text .donut-label x="#{lx}" y="#{ly}" text-anchor="middle" dominant-baseline="middle">#{pct}%
-      $if not (T.null centreShort)
-        <text .donut-centre x="21" y="21" text-anchor="middle" dominant-baseline="middle">#{centreShort}
-    <p .breakdown-total>
-      $maybe target <- entriesLink
-        <a href=@?{target} title=_{HMsg "Show the entries behind this"}>#{oneLine grandAmount}
-      $nothing
-        #{oneLine grandAmount}
+  $# The ring with its total, the list, and the chart over time: on a wide
+  $# screen the chart sits beside the ring, on a phone under the list.
+  <div .breakdown-body>
+    <div .breakdown-ring>
+      $if null slices
+        <p .breakdown-empty>_{HMsg "Nothing in this period."}
+      $else
+        <svg .donut viewBox="0 0 42 42" role="img" aria-label=_{HMsg "Shares of the total, as a ring"}>
+          <circle .donut-track cx="21" cy="21" r="15.9155" fill="transparent" stroke-width="10">
+          $forall (i, _, _, dashv, offv, _, _, _) <- ring
+            <circle class="donut-slice slice-#{i}" cx="21" cy="21" r="15.9155" fill="transparent" stroke-width="10" stroke-dasharray="#{dashv}" stroke-dashoffset="#{offv}">
+          $forall (_, _, pct, _, _, lx, ly, big) <- ring
+            $if big
+              <text .donut-label x="#{lx}" y="#{ly}" text-anchor="middle" dominant-baseline="middle">#{pct}%
+          $if not (T.null centreShort)
+            <text .donut-centre x="21" y="21" text-anchor="middle" dominant-baseline="middle">#{centreShort}
+        <p .breakdown-total>
+          $maybe target <- entriesLink
+            <a href=@?{target} title=_{HMsg "Show the entries behind this"}>#{oneLine grandAmount}
+          $nothing
+            #{oneLine grandAmount}
 
-    <ul .breakdown-list>
-      $forall (i, s, pct, _, _, _, _, _) <- ring
-        <li>
-          <a href=@?{sLink s}>
-            <span .breakdown-name>^{sLabel s}
-            <span .breakdown-amount>#{oneLine (sAmount s)}
-            <span .breakdown-pct>#{pct}%
-            <svg .breakdown-bar viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
-              <rect .bar-track x="0" y="0" width="100" height="6" rx="3">
-              <rect class="bar-fill slice-#{i}" x="0" y="0" width="#{pct}" height="6" rx="3">
+    $if not (null slices)
+      <ul .breakdown-list>
+        $forall (i, s, pct, _, _, _, _, _) <- ring
+          <li>
+            <a href=@?{sLink s}>
+              <span .breakdown-name>^{sLabel s}
+              <span .breakdown-amount>#{oneLine (sAmount s)}
+              <span .breakdown-pct>#{pct}%
+              <svg .breakdown-bar viewBox="0 0 100 6" preserveAspectRatio="none" aria-hidden="true">
+                <rect .bar-track x="0" y="0" width="100" height="6" rx="3">
+                <rect class="bar-fill slice-#{i}" x="0" y="0" width="#{pct}" height="6" rx="3">
+
+    $maybe json <- mchartjson
+      <div .breakdown-chart>
+        <p .breakdown-chart-title>
+          _{HMsg "Over time"}
+          <span #reports-chart-label>
+        <div #reports-chart data-series=#{json}>

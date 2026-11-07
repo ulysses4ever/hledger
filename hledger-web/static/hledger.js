@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
   entryHoverInit();
   sidebarTreeInit();
   registerChartInit();
+  reportsChartInit();
 });
 
 // The entry targeted by the url hash is marked by a :target rule in
@@ -862,6 +863,77 @@ function registerChartInit() {
   });
   $chartdiv.bind('plotclick', registerChartClick);
   $chartdiv.bind('plotselected', registerChartSelect);
+}
+
+// The reports page's chart over time (#reports-chart, its data as JSON on
+// the div like the register's): a line per series, a point per period,
+// the periods' labels as the ticks. Hovering a point shows its figure, a
+// click opens that period's breakdown. The lines take the ring's colours.
+function reportsChartInit() {
+  var $div = $('#reports-chart');
+  if (!$div.length || !$div.is(':visible')) { return; }
+  var data = JSON.parse($div.attr('data-series'));
+  var $label = $('#reports-chart-label');
+  // a slice's colour, as the stylesheet gives it to the ring and the bars
+  function sliceColour(i) {
+    var probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    var rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('class', 'bar-fill slice-' + i);
+    probe.appendChild(rect);
+    document.body.appendChild(probe);
+    var c = getComputedStyle(rect).fill;
+    document.body.removeChild(probe);
+    return c;
+  }
+  var draw = function() {
+    var style = getComputedStyle(document.documentElement);
+    var color = function(name) { return style.getPropertyValue(name).trim(); };
+    var series = data.series.map(function(s) {
+      return {
+        data: s.values.map(function(v, i) { return [i, v]; }),
+        label: data.series.length > 1 ? s.label : undefined,
+        color: sliceColour(s.colour), texts: s.texts,
+        lines: { show: true }, points: { show: true },
+      };
+    });
+    // a label per period, every other one when they would crowd
+    var room = $div.width() / data.labels.length;
+    var ticks = data.labels.map(function(l, i) { return [i, room < 40 && i % 2 ? '' : l]; });
+    var plot = $div.plot(series, {
+      series: { lines: { lineWidth: 2 }, points: { radius: 3, fillColor: color('--bg') }, shadowSize: 0 },
+      xaxis: { ticks: ticks, min: -0.5, max: data.labels.length - 0.5 },
+      yaxis: { min: 0, tickDecimals: 0 },
+      legend: { show: false },
+      grid: { color: color('--chart-grid'), borderWidth: { top: 0, right: 0, bottom: 1, left: 0 },
+              hoverable: true, autoHighlight: true, clickable: true },
+      tooltip: true,
+      tooltipOpts: {
+        defaultTheme: false,
+        content: function(label, x, y, item) {
+          var text = data.labels[item.dataIndex] + ': ' + item.series.texts[item.dataIndex];
+          if (data.series.length > 1) { text = item.series.label + ', ' + text; }
+          return $('<div>').append(document.createTextNode(text)).html();
+        },
+        onHover: function(item, $tip) { $tip.css('border-color', item.series.color); },
+      },
+    }).data('plot');
+    $label.empty();
+    registerChartLegend($label, plot);
+  };
+  draw();
+  ['(prefers-color-scheme: dark)', 'print'].forEach(function(query) {
+    window.matchMedia(query).addEventListener('change', draw);
+  });
+  var width = $div.width(), resized = null;
+  window.addEventListener('resize', function() {
+    clearTimeout(resized);
+    resized = setTimeout(function() {
+      if ($div.width() !== width) { width = $div.width(); draw(); }
+    }, 200);
+  });
+  $div.bind('plotclick', function(ev, pos, item) {
+    if (item && data.urls[item.dataIndex]) { window.location = data.urls[item.dataIndex]; }
+  });
 }
 
 function registerChart($container, series) {
