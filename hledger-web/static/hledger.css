@@ -439,6 +439,23 @@ tr.future-toggle[hidden] {
   text-transform: none;
   letter-spacing: 0;
 }
+/* The list of what to follow, small, in the title line. Without the
+   script there is no chart, so the block stays out of the way. */
+.breakdown-chart-title #reports-chart-pick {
+  display: inline-block;
+  width: auto;
+  height: 26px;
+  margin-left: 10px;
+  padding: 0 6px;
+  font-size: 13px;
+  font-weight: normal;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: middle;
+}
+html.no-js .breakdown-chart {
+  display: none;
+}
 #reports-chart-label .legend-swatch {
   display: inline-block;
   width: 9px;

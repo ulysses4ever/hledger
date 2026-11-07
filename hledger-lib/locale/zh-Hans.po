@@ -1752,3 +1752,8 @@ msgstr "报表"
 #: hledger-web/templates/breakdown.hamlet
 msgid "Over time"
 msgstr "随时间变化"
+
+#. hledger-web: the reports page's chart, the list of what to follow.
+#: hledger-web/templates/breakdown.hamlet
+msgid "What the chart follows"
+msgstr "图表所跟踪的内容"

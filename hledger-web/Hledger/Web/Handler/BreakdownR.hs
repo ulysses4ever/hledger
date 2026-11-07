@@ -4,8 +4,9 @@
 -- opens on its categories, a category on its subcategories, and an
 -- account with nothing under it on its register for the period. The
 -- period is chosen as on the journal and the registers (the band). Beside
--- the ring, a chart follows what is shown over the periods before: a line
--- per kind at the top, one line deeper down (hledger.js draws it).
+-- the ring, a chart follows what is shown over the periods before, one
+-- line at a time: the whole, or a part of the ring picked from a list
+-- (hledger.js draws it).
 
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
@@ -38,6 +39,7 @@ data Slice = Slice
   , sQty    :: Quantity
   , sLink   :: (AppRoute, [(Text, Text)])
   , sColour :: Maybe Int   -- ^ a colour of its own (the kinds); else by rank
+  , sAcct   :: Maybe AccountName   -- ^ the account it stands for (not for a kind)
   }
 
 -- | The kinds of money movement the first page splits a period into.
@@ -106,7 +108,7 @@ getBreakdownR = do
     total ps = styleAmounts styles $ maSum (map pamount ps)
     kindSlice k ps negated =
       let amt = (if negated then maNegate else id) (total ps)
-      in Slice (textLabel (kindLabel k)) amt (qty amt) (link [("kind", kindKey k)]) (Just (kindColour k))
+      in Slice (textLabel (kindLabel k)) amt (qty amt) (link [("kind", kindKey k)]) (Just (kindColour k)) Nothing
     -- the kinds' colours, always the same: income blue, transfers yellow, expenses red
     kindColour Income = 1
     kindColour Transfer = 2
@@ -122,7 +124,7 @@ getBreakdownR = do
       let amt = (if negated then maNegate else id) (total ps)
           deeper = any ((> length (accountNameComponents a)) . length . accountNameComponents . paccount) ps
           target = if deeper then link ([("kind", kindKey k) | Just k <- [mkind]] ++ [("acct", a)]) else registerLink a
-      in Slice (accountNameAsHtml a) amt (qty amt) target Nothing
+      in Slice (accountNameAsHtml a) amt (qty amt) target Nothing (Just a)
     under a ps = [p | p <- ps, paccount p == a || (a <> ":") `T.isPrefixOf` paccount p]
     slices0 = case (mkind, macct) of
       (Nothing, _) ->
@@ -176,10 +178,12 @@ getBreakdownR = do
     noBelow = const mempty
     -- Over time: the periods before the one shown, of its length (a dozen
     -- weeks or months, eight quarters or years), and for each the figure
-    -- for what is shown: at the top each kind, deeper the kind or the
-    -- account. Nothing for all dates or a span of one's own. hledger.js
-    -- draws it from the JSON on the chart's div, with each period's label
-    -- and the address of its breakdown.
+    -- of what is shown and of each part of the ring, each in its colour
+    -- on the ring. The page draws one at a time, picked from a list: the
+    -- whole first, then the parts; at the top, the three kinds together
+    -- first, then each. Nothing for all dates or a span of one's own.
+    -- hledger.js draws it from the JSON on the chart's div, with each
+    -- period's label and the address of its breakdown.
     buckets = case shown of
       WeekPeriod{}    -> back 12
       MonthPeriod{}   -> back 12
@@ -202,11 +206,21 @@ getBreakdownR = do
       Transfer -> transferPsOf
     -- (each line: its name, its colour, and its figure for a period's entries)
     lines' :: [(Text, Int, [Transaction] -> MixedAmount)]
-    lines' = case (mkind, macct) of
-      (Nothing, _)       -> [ (kindLabel k, kindColour k, signed k . total . kindPs k) | k <- [Income, Expenses, Transfer] ]
-      (Just Transfer, _) -> [ (kindLabel Transfer, kindColour Transfer, total . transferPsOf) ]
-      (Just k, Nothing)  -> [ (kindLabel k, kindColour k, signed k . total . kindPs k) ]
-      (Just k, Just a)   -> [ (accountLeafName a, kindColour k, signed k . total . under a . kindPs k) ]
+    lines' = wholeLine ++ partLines
+    wholeLine = case (mkind, macct) of
+      (Just k, Just a)  -> [ (accountLeafName a, kindColour k, signed k . total . under a . kindPs k) ]
+      (Just k, Nothing) -> [ (kindLabel k, kindColour k, signed k . total . kindPs k) ]
+      (Nothing, _)      -> []
+    partLines = case mkind of
+      Nothing -> [ (kindLabel k, kindColour k, signed k . total . kindPs k) | k <- [Income, Expenses, Transfer] ]
+      Just k  -> take 12
+        [ (accountLeafName a, fromMaybe (i `mod` 8) (sColour s), signed k . total . under a . kindPs k)
+        | (i, s) <- zip [0 :: Int ..] slices, Just a <- [sAcct s], Just a /= macct ]
+    -- (each choice: its name, and the lines it draws)
+    choices :: [(Text, [Int])]
+    choices = case mkind of
+      Nothing -> (tr trs "All", [0 .. length partLines - 1]) : [ (name, [i]) | (i, (name, _, _)) <- zip [0 ..] partLines ]
+      Just _  -> [ (name, [i]) | (i, (name, _, _)) <- zip [0 ..] lines' ]
     bucketTxns = map (txnsIn . periodAsDateSpan) buckets
     lineAmounts = [ (name, colour, map f bucketTxns) | (name, colour, f) <- lines' ]
     hasData = any (\(_, _, amts) -> any ((/= 0) . qty) amts) lineAmounts
@@ -215,6 +229,7 @@ getBreakdownR = do
       | otherwise = Just $ encodeToLazyText $ object
           [ "labels" .= map bucketLabel buckets
           , "urls"   .= [ uncurry urlRender (linkIn p kept) | p <- buckets ]
+          , "choices" .= [ object [ "label" .= name, "lines" .= is ] | (name, is) <- choices ]
           , "series" .= [ object [ "label" .= name, "colour" .= colour
                                  , "values" .= [ realToFrac (qty amt) :: Double | amt <- amts ]
                                  , "texts" .= map oneLine amts ]

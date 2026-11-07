@@ -960,7 +960,7 @@ hledgerWebTest = do
       -- all dates: nothing to follow over time
       bodyNotContains "id=\"reports-chart\""
 
-    yit "charts what is shown over the periods before, a line per kind at the top" $ do
+    yit "charts what is shown over the periods before, with a choice of the whole or a part" $ do
       request $ do
         setMethod "GET"
         setUrl BreakdownR
@@ -970,15 +970,16 @@ hledgerWebTest = do
       bodyContains "&quot;labels&quot;:[&quot;Mar&quot;,&quot;Apr&quot;"
       bodyContains "&quot;label&quot;:&quot;Income&quot;"
       bodyContains "&quot;label&quot;:&quot;Expense&quot;"
+      bodyContains "&quot;choices&quot;:[{&quot;label&quot;:&quot;All&quot;,&quot;lines&quot;:[0,1,2]}"
       bodyContains "/breakdown?period=2025-01&quot;"
       request $ do
         setMethod "GET"
         setUrl BreakdownR
         addGetParam "period" "2025-02"
         addGetParam "kind" "expenses"
-        addGetParam "acct" "expenses:food"
       statusIs 200
-      bodyContains "&quot;label&quot;:&quot;food&quot;"
+      -- the whole first, then its parts
+      bodyContains "&quot;choices&quot;:[{&quot;label&quot;:&quot;Expense&quot;,&quot;lines&quot;:[0]},{&quot;label&quot;:&quot;food&quot;,&quot;lines&quot;:[1]}"
       bodyNotContains "&quot;label&quot;:&quot;Income&quot;"
       bodyContains "<circle class=\"donut-slice slice-0\""
       request $ do

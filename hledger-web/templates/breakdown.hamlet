@@ -50,5 +50,7 @@ $# the ring chart, the total, and the list of parts, each a link deeper.
       <div .breakdown-chart>
         <p .breakdown-chart-title>
           _{HMsg "Over time"}
+          $# what to follow: the whole, or a part (hledger.js fills it)
+          <select #reports-chart-pick .form-control aria-label=_{HMsg "What the chart follows"}>
           <span #reports-chart-label>
         <div #reports-chart data-series=#{json}>

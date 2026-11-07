@@ -27,15 +27,23 @@ test('the breakdown drills from the kinds to the categories to the register', as
   expect(errors).toEqual([]);
 });
 
-test('a chart beside the ring follows what is shown over the periods before', async ({ page }) => {
+test('a chart beside the ring follows what is shown over the periods before, the whole or a part picked', async ({ page }) => {
   const errors = watchPageErrors(page);
   await page.goto('/breakdown?period=2025-02');
   await expect(page.locator('#reports-chart canvas').first()).toBeVisible();
-  // the kinds, with a legend; deeper down one line, no legend
+  // at the top, the kinds together first, with a legend, then each alone
+  const pick = page.locator('#reports-chart-pick');
+  expect(await pick.locator('option').allTextContents()).toEqual(['All', 'Income', 'Expense', 'Transfer']);
   await expect(page.locator('#reports-chart-label .legend-item')).toHaveText(['Income', 'Expense', 'Transfer']);
+  await pick.selectOption({ label: 'Expense' });
+  await expect(page.locator('#reports-chart-label .legend-item')).toHaveCount(0);
+  await expect(page.locator('#reports-chart canvas').first()).toBeVisible();
+  // deeper, the whole first, then its parts, one line at a time
   await page.goto('/breakdown?period=2025-02&kind=expenses&acct=expenses%3Afood');
   await expect(page.locator('#reports-chart canvas').first()).toBeVisible();
-  await expect(page.locator('#reports-chart-label .legend-item')).toHaveCount(0);
+  expect((await pick.locator('option').allTextContents()).slice(0, 2)).toEqual(['food', 'groceries']);
+  await pick.selectOption({ label: 'groceries' });
+  await expect(page.locator('#reports-chart canvas').first()).toBeVisible();
   // the ticks are the periods
   await expect(page.locator('#reports-chart .flot-tick-label', { hasText: 'Feb' })).toBeVisible();
   // all dates has nothing to follow

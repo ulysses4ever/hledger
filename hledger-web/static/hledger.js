@@ -866,14 +866,21 @@ function registerChartInit() {
 }
 
 // The reports page's chart over time (#reports-chart, its data as JSON on
-// the div like the register's): a line per series, a point per period,
-// the periods' labels as the ticks. Hovering a point shows its figure, a
-// click opens that period's breakdown. The lines take the ring's colours.
+// the div like the register's): the lines of the choice picked in the
+// list beside the title (the whole, a part of the ring, or at the top all
+// the kinds), a point per period, the periods' labels as the ticks.
+// Hovering a point shows its figure, a click opens that period's
+// breakdown. The lines take the ring's colours; when there are several,
+// the legend names them.
 function reportsChartInit() {
   var $div = $('#reports-chart');
   if (!$div.length || !$div.is(':visible')) { return; }
   var data = JSON.parse($div.attr('data-series'));
   var $label = $('#reports-chart-label');
+  var $pick = $('#reports-chart-pick');
+  var chosen = 0;
+  data.choices.forEach(function(c, i) { $('<option>').val(i).text(c.label).appendTo($pick); });
+  $pick.on('change', function() { chosen = parseInt($pick.val(), 10) || 0; draw(); });
   // a slice's colour, as the stylesheet gives it to the ring and the bars
   function sliceColour(i) {
     var probe = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -888,11 +895,12 @@ function reportsChartInit() {
   var draw = function() {
     var style = getComputedStyle(document.documentElement);
     var color = function(name) { return style.getPropertyValue(name).trim(); };
-    var series = data.series.map(function(s) {
+    var shown = (data.choices[chosen] || data.choices[0]).lines.map(function(i) { return data.series[i]; });
+    var series = shown.map(function(s) {
       return {
         data: s.values.map(function(v, i) { return [i, v]; }),
-        label: data.series.length > 1 ? s.label : undefined,
-        color: sliceColour(s.colour), texts: s.texts,
+        label: shown.length > 1 ? s.label : undefined,
+        color: sliceColour(s.colour), texts: s.texts, name: s.label,
         lines: { show: true }, points: { show: true },
       };
     });
@@ -910,8 +918,7 @@ function reportsChartInit() {
       tooltipOpts: {
         defaultTheme: false,
         content: function(label, x, y, item) {
-          var text = data.labels[item.dataIndex] + ': ' + item.series.texts[item.dataIndex];
-          if (data.series.length > 1) { text = item.series.label + ', ' + text; }
+          var text = item.series.name + ', ' + data.labels[item.dataIndex] + ': ' + item.series.texts[item.dataIndex];
           return $('<div>').append(document.createTextNode(text)).html();
         },
         onHover: function(item, $tip) { $tip.css('border-color', item.series.color); },
