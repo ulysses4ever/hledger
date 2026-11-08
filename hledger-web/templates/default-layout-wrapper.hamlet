@@ -8,7 +8,14 @@ $newline never
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <meta name="viewport" content="width=device-width,initial-scale=1">
+        $# viewport-fit=cover: the page lays itself out under a phone's status
+        $# bar and rounded corners, and keeps clear of them with the safe-area
+        $# insets (hledger.css), rather than iOS drawing its translucent status
+        $# bar over whatever happens to be at the top. The theme colour is the
+        $# page's background, so the bar blends in.
+        <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+        <meta name="theme-color" content="#1b1e23" media="(prefers-color-scheme: dark)">
 
         ^{pageHead pc}
 

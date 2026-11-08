@@ -1922,6 +1922,15 @@ a:focus > .account-name > * {
   body:has(#tabbar) {
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
+  /* The page keeps clear of the status bar and the rounded corners (the
+     viewport reaches under them, see default-layout-wrapper.hamlet), so
+     the first thing on it, the period band on a journal without a
+     heading, is not half under the bar. */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-right: env(safe-area-inset-right);
+    padding-left: env(safe-area-inset-left);
+  }
   /* The sidebar's toggle button gives way to the tab bar, and the file
      name has the width of the screen. */
   #spacer {
