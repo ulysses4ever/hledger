@@ -1933,11 +1933,18 @@ a:focus > .account-name > * {
   /* The page keeps clear of the status bar and the rounded corners (the
      viewport reaches under them, see default-layout-wrapper.hamlet), so
      the first thing on it, the period band on a journal without a
-     heading, is not half under the bar. */
+     heading, is not half under the bar. iOS also blurs the content for
+     some thirty points below its bar, so there the page starts lower
+     still (-webkit-touch-callout is iOS's alone). */
   body {
     padding-top: env(safe-area-inset-top);
     padding-right: env(safe-area-inset-right);
     padding-left: env(safe-area-inset-left);
+  }
+  @supports (-webkit-touch-callout: none) {
+    body {
+      padding-top: calc(env(safe-area-inset-top) + 32px);
+    }
   }
   /* The sidebar's toggle button gives way to the tab bar, and the file
      name has the width of the screen. */
