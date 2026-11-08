@@ -71,13 +71,17 @@ getJournalR = do
       -- TRANSLATORS: under the period at the top of the journal, as in
       -- "spent $120.00 · earned $3,200.00": the total of its expenses, and
       -- of its income.
+      -- (each label stays on one line with its amount; a narrow screen
+      -- breaks the line at the dot between them, hledger.css)
       totals = [hamlet|
         <div .period-totals>
-          <span .totals-label>#{tr trs "spent"} #
-          <span .amount .spent>#{oneLine spent}
+          <span .totals-part>
+            <span .totals-label>#{tr trs "spent"} #
+            <span .amount .spent>#{oneLine spent}
           \ · #
-          <span .totals-label>#{tr trs "earned"} #
-          <span .amount .earned>#{oneLine earned}
+          <span .totals-part>
+            <span .totals-label>#{tr trs "earned"} #
+            <span .amount .earned>#{oneLine earned}
         |]
       noParams = []
       transactionFrag = transactionFragment j

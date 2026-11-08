@@ -305,7 +305,7 @@ test.describe('add form', () => {
 test.describe('transaction page', () => {
 
   // Each test adds the entry it works on, leaving the fixture's entries to
-  // the other tests, then opens its page from the journal's pencil.
+  // the other tests, then opens its page with a click on its row.
   async function openEntry(page, desc, amount) {
     await page.goto('/journal');
     await openAddForm(page);
@@ -316,12 +316,28 @@ test.describe('transaction page', () => {
     await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
     await page.locator('#addform button[type=submit]').click();
     await expect(page.locator('#message')).toContainText('Transaction added.');
-    await page.locator('#main-content tr.title', { hasText: desc }).locator('a.entry-edit:visible').click();
+    await page.locator('#main-content tr.title', { hasText: desc }).locator('td.amount').click();
     await expect(page).toHaveURL(/\/transaction\/\d+$/);
   }
 
-  test('the pencil opens the entry filled in, and saving writes it in place', async ({ page }) => {
+  test("a click anywhere on an entry's row opens its page, a card with Edit and Delete; its links still work", async ({ page }) => {
+    await openEntry(page, 'E2eRowClick', '5.00');
+    await expect(page.locator('.entry-view-amount')).toHaveText(/5\.00/);
+    await expect(page.locator('.entry-view-facts dd', { hasText: 'E2eRowClick' })).toBeVisible();
+    await expect(page.locator('#addform')).toBeHidden();
+    await expect(page.locator('.entry-actions a.entry-edit-button')).toBeVisible();
+    await expect(page.locator('#deleteform button[type=submit]')).toBeVisible();
+    // a link inside the row goes where it says, not to the entry
+    await page.goto('/journal');
+    await page.locator('#main-content tr.title', { hasText: 'E2eRowClick' }).locator('td.date a').click();
+    await expect(page).toHaveURL(/\/journal\?q=date/);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('Edit shows the entry filled in, and saving writes it in place', async ({ page }) => {
     await openEntry(page, 'E2eEditMe', '7.00');
+    await page.locator('.entry-actions a.entry-edit-button').click();
+    await expect(page.locator('#addform')).toBeVisible();
     await expect(page.locator('#addform input[name=description]')).toHaveValue('E2eEditMe');
     await expect(page.locator('#addform .category-select')).toHaveValue('expenses:food');
     await expect(page.locator('#addform select[name=account]').nth(0)).toHaveValue('expenses:food:dining');
@@ -594,15 +610,12 @@ test.describe('entry tooltip', () => {
     await expect(tip).toContainText('expenses:food:dining');
     await page.locator('#main-content h2').hover();
     await expect(tip).toBeHidden();
-    // after a click it stays away while the pointer is still on the row
+    // a click on the row opens the entry's page (the tooltip goes with the page)
     await description.hover();
     await expect(tip).toBeVisible();
     await page.mouse.down();
     await page.mouse.up();
-    await expect(tip).toBeHidden();
-    await row.locator('td.date').hover();
-    await page.waitForTimeout(800);
-    await expect(tip).toBeHidden();
+    await expect(page).toHaveURL(/\/transaction\/\d+$/);
     expect(pageErrors).toEqual([]);
   });
 

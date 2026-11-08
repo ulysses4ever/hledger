@@ -1679,3 +1679,8 @@ msgstr "Lo que sigue el gráfico"
 #: hledger-web/templates/add-form.hamlet
 msgid "Swap to and from"
 msgstr "Intercambiar origen y destino"
+
+#. hledger-web: an entry's row and page.
+#: hledger-web/templates/transaction.hamlet
+msgid "Show this entry"
+msgstr "Mostrar esta entrada"

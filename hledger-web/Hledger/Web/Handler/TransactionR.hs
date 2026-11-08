@@ -1,6 +1,6 @@
--- | A transaction's own page: the add form filled with it, to change it,
--- and a button to delete it. Changes are written back to the journal file
--- the transaction came from, in place of its text there.
+-- | A transaction's own page: a card with what it was, Edit and Delete,
+-- and on Edit the add form filled with it. Changes are written back to
+-- the journal file the transaction came from, in place of its text there.
 
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE NamedFieldPuns #-}
@@ -18,11 +18,12 @@ import Data.Text qualified as T
 import Data.Text.IO qualified as T
 
 import Hledger
-import Hledger.Utils.I18n (tr, trf)
+import Hledger.Utils.I18n (tr, trc, trf)
 import Hledger.Web.Import
 import Hledger.Web.WebOptions (WebOpts(..))
 import Hledger.Web.Widget.AddForm (addForm, transactionCollapseNewlines)
-import Hledger.Web.Widget.Common (writeJournalTextIfValidAndChanged)
+import Hledger.Web.Widget.Common (accountNameAsHtml, accountQuery, writeJournalTextIfValidAndChanged)
+import Hledger.Web.Widget.Entry (EntryKind(..), EntrySummary(..), summarizeEntry, entryKindClass, dayWithWeekday)
 
 -- | Where a transaction's text is: its file and its lines, first and last (1-based, inclusive).
 transactionSpan :: Transaction -> (FilePath, Int, Int)
@@ -46,22 +47,42 @@ getTransactionR i = do
   require AddPermission
   (t, _, _, _, original) <- lookupTransaction j i
   (view, enctype) <- generateFormPost (addForm j today (Just t))
-  showPage t original view enctype
+  -- the form shows when Edit asks for it
+  editing <- (== Just "1") <$> lookupGetParam "edit"
+  showPage t original view enctype editing
 
-showPage :: Transaction -> Text -> Widget -> Enctype -> Handler Html
-showPage t original view enctype = do
+showPage :: Transaction -> Text -> Widget -> Enctype -> Bool -> Handler Html
+showPage t original view enctype editing = do
   -- the delete form is not a yesod form, so it carries the session's CSRF
   -- token itself, checked in postTransactionR
   mtoken <- reqToken <$> getRequest
-  VD{j} <- getViewData
+  VD{j, trs} <- getViewData
   -- an instance of a recurring rule says so, and links to the rule
   let mrule = case lookup "recurring" (ttags t) of
         Just n -> listToMaybe [ (i, ptperiodexpr pt) | (i, pt) <- zip [1 :: Int ..] (jperiodictxns j), lookup "recurring" (pttags pt) == Just n ]
         Nothing -> Nothing
+      -- The card: the entry as the journal's blocks sum it up (how much,
+      -- what for), its date, and under them its facts: the account it was
+      -- paid from or into (both, for a transfer), its payee and its note.
+      es = summarizeEntry (journalAccountType j) t
+      kindClass = entryKindClass (esKind es)
+      oneLine = wbToText . showMixedAmountB oneLineNoCostFmt{displayZeroCommodity = True}
+      -- (a description without a pipe is all payee, not all note)
+      (payee, note) = case payeeAndNoteFromDescription' (tdescription t) of
+        ("", whole) -> (whole, "")
+        pn -> pn
+      facts :: [(Text, Either AccountName Text)]
+      facts =
+        (case esKind es of
+           Moving   -> [(tr trs "From", Left a) | a <- esFrom es] ++ [(tr trs "To", Left a) | a <- esTo es]
+           Spending -> [(tr trs "Account", Left a) | a <- esFrom es]
+           Earning  -> [(tr trs "Account", Left a) | a <- esTo es])
+        ++ [(trc trs "placeholder" "Payee", Right payee) | not (T.null payee)]
+        ++ [(trc trs "placeholder" "Note", Right note) | not (T.null note)]
+      editLink = (TransactionR (tindex t), [("edit", "1")])
+      back = (JournalR, [("q", "date:" <> T.pack (show (tdate t)))])
   defaultLayout $ do
-    setTitleI (HMsg "edit transaction - hledger-web")
-    let heading = T.pack (show (tdate t)) <> " " <> tdescription t
-        back = (JournalR, [("q", "date:" <> T.pack (show (tdate t)))])
+    setTitleI (HMsg "transaction - hledger-web")
     $(widgetFile "transaction")
 
 postTransactionR :: Integer -> Handler Html
@@ -100,10 +121,10 @@ postTransactionR i = do
             write f l1 l2 (showTransaction t'')
             setMessageI (HMsg "Transaction saved.")
             redirect (JournalR, [("q", "date:" <> T.pack (show (tdate t'')))])
-          FormMissing -> showPage t current view enctype
+          FormMissing -> showPage t current view enctype True
           FormFailure errs -> do
             setMessage $ toHtml $ T.intercalate "; " errs
-            showPage t current view enctype
+            showPage t current view enctype True
   where
     -- Replace the lines l1..l2 of the file with the text (a transaction, or
     -- nothing), keeping the file parseable: the write is refused otherwise.

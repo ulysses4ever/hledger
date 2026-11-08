@@ -169,6 +169,8 @@ document.addEventListener('DOMContentLoaded', function() {
   entryTooltipInit();
   futureRowsInit();
   entryHoverInit();
+  entryRowsInit();
+  entryPageInit();
   sidebarTreeInit();
   registerChartInit();
   reportsChartInit();
@@ -640,6 +642,40 @@ function entryHoverInit() {
     lit.forEach(function(r) { r.classList.add('entry-hover'); });
   });
   table.addEventListener('mouseleave', clear);
+}
+
+// A journal or register row with data-href (one the reader may edit)
+// leads to its entry's page: a tap or click anywhere on it that is not on
+// a link or a control, and selects no text, goes there. In the journal a
+// posting row belongs to the title row above it.
+function entryRowsInit() {
+  var table = document.querySelector('.transactionsreport, .registerreport');
+  if (!table) { return; }
+  table.addEventListener('click', function(e) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
+    if (e.target.closest('a, button, input, select, label, textarea')) { return; }
+    var sel = window.getSelection();
+    if (sel && sel.toString()) { return; }
+    var row = e.target.closest('tr');
+    if (!row) { return; }
+    while (row && !row.dataset.href && row.classList.contains('posting')) { row = row.previousElementSibling; }
+    if (row && row.dataset.href) { window.location = row.dataset.href; }
+  });
+}
+
+// On an entry's page, Edit shows the form in place, without reloading.
+function entryPageInit() {
+  var button = document.querySelector('.entry-actions .entry-edit-button');
+  var form = document.querySelector('#addform.entry-edit-form');
+  if (!button || !form) { return; }
+  button.addEventListener('click', function(e) {
+    e.preventDefault();
+    form.hidden = false;
+    button.hidden = true;
+    var first = form.querySelector('input[name=amount]');
+    if (first) { first.focus(); }
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
 }
 
 // The sidebar's account tree folds: the chevron before an account hides

@@ -1762,3 +1762,8 @@ msgstr "图表所跟踪的内容"
 #: hledger-web/templates/add-form.hamlet
 msgid "Swap to and from"
 msgstr "交换转入与转出"
+
+#. hledger-web: an entry's row and page.
+#: hledger-web/templates/transaction.hamlet
+msgid "Show this entry"
+msgstr "显示此条目"

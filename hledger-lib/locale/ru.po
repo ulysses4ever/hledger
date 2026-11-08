@@ -1302,3 +1302,8 @@ msgstr "Что показывает график"
 #: hledger-web/templates/add-form.hamlet
 msgid "Swap to and from"
 msgstr "Поменять местами куда и откуда"
+
+#. hledger-web: an entry's row and page.
+#: hledger-web/templates/transaction.hamlet
+msgid "Show this entry"
+msgstr "Показать эту запись"

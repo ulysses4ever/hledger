@@ -1302,3 +1302,8 @@ msgstr "Was das Diagramm verfolgt"
 #: hledger-web/templates/add-form.hamlet
 msgid "Swap to and from"
 msgstr "Nach und von tauschen"
+
+#. hledger-web: an entry's row and page.
+#: hledger-web/templates/transaction.hamlet
+msgid "Show this entry"
+msgstr "Diesen Eintrag zeigen"

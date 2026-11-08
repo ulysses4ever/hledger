@@ -552,12 +552,12 @@ hledgerWebTest = do
     yit "shows no paging and no years row for a small journal" $ do
       get JournalR
       statusIs 200
-      bodyContains "lunch</td>"
+      bodyContains ">lunch<"
       bodyNotContains "Showing "
       bodyNotContains "Years:"
       get RegisterR
       statusIs 200
-      bodyContains "lunch</td>"
+      bodyContains ">lunch<"
       bodyNotContains "Showing "
       bodyNotContains "Years:"
 
@@ -1540,10 +1540,14 @@ hledgerWebTest = do
       statusIs 200
       bodyContains ("/transaction/" ++ show n ++ "\"")
 
-    yit "shows an entry's page, with the add form filled from it" $ do
+    yit "shows an entry's page: a card with its facts, Edit and Delete, and the add form filled from it" $ do
       (n, _) <- addEntry "TxnPageShow"
       get (TransactionR n)
       statusIs 200
+      htmlAnyContain ".entry-view-facts dd" "TxnPageShow"
+      htmlAnyContain ".entry-view-facts dd" "checking"
+      htmlAnyContain ".entry-actions a.entry-edit-button" "Edit"
+      bodyContains "class=\"form entry-edit-form\""
       bodyContains "value=\"TxnPageShow\""
       bodyContains "value=\"2025-02-02\""
       bodyContains "name=\"original\""
@@ -1811,9 +1815,9 @@ hledgerWebTest = do
       get JournalR
       statusIs 200
       bodyContains "Showing 1 to 1,000 of 2,300 transactions"
-      bodyContains "txn 2300</td>"
-      bodyContains "txn 1301</td>"
-      bodyNotContains "txn 1300</td>"
+      bodyContains ">txn 2300<"
+      bodyContains ">txn 1301<"
+      bodyNotContains ">txn 1300<"
       bodyContains "/journal?page=2\" title=\"Show the older transactions\">Older"
       bodyNotContains "Show the newer transactions"
       -- the newer link's place is held, so the numbers do not shift on page 2
@@ -1831,10 +1835,10 @@ hledgerWebTest = do
         addGetParam "page" "2"
       statusIs 200
       bodyContains "Showing 1,001 to 2,000 of 2,300 transactions"
-      bodyContains "txn 1300</td>"
-      bodyContains "txn 301</td>"
-      bodyNotContains "txn 1301</td>"
-      bodyNotContains "txn 300</td>"
+      bodyContains ">txn 1300<"
+      bodyContains ">txn 301<"
+      bodyNotContains ">txn 1301<"
+      bodyNotContains ">txn 300<"
       bodyContains "/journal\" title=\"Show the newer transactions\">‹ Newer"
       bodyContains "/journal?page=3\" title=\"Show the older transactions\">Older"
       bodyContains "/journal\" title=\"Show page 1\" aria-label=\"Page 1\">1</a>"
@@ -1854,7 +1858,7 @@ hledgerWebTest = do
         addGetParam "page" "18446744073709551617"  -- past an Int, too
       statusIs 200
       bodyContains "Showing 2,001 to 2,300 of 2,300 transactions"
-      bodyContains "txn 1</td>"
+      bodyContains ">txn 1<"
       bodyContains "/journal?page=2\" title=\"Show the newer transactions\">‹ Newer"
       bodyNotContains "Show the older transactions"
       bodyContains "<span class=\"older placeholder\" aria-hidden=\"true\">Older ›</span>"
@@ -1880,15 +1884,15 @@ hledgerWebTest = do
         addGetParam "q" "date:..2025-09-27"  -- txn 1000 is on 2025-09-26
       statusIs 200
       bodyNotContains "Showing "
-      bodyContains "txn 1000</td>"
-      bodyContains "txn 1</td>"
+      bodyContains ">txn 1000<"
+      bodyContains ">txn 1<"
       request $ do
         setMethod "GET"
         setUrl JournalR
         addGetParam "q" "date:..2025-09-28"
       statusIs 200
       bodyContains "Showing 1 to 1,000 of 1,001 transactions"
-      bodyNotContains "txn 1</td>"
+      bodyNotContains ">txn 1<"
 
     yit "opens the page holding a linked transaction" $ do
       -- A posting's account link names its transaction, so the register it
@@ -2042,8 +2046,8 @@ hledgerWebTest = do
       get JournalR
       statusIs 200
       htmlAnyContain ".period-name" "February 2025"
-      bodyContains "lunch</td>"
-      bodyNotContains "pay</td>"
+      bodyContains ">lunch<"
+      bodyNotContains ">pay<"
       bodyContains ("<a class=\"period-prev\" href=\"" ++ base ++ "/journal?period=2025-01\"")
       bodyContains ("<a class=\"period-next\" href=\"" ++ base ++ "/journal?period=2025-03\"")
 
@@ -2058,8 +2062,8 @@ hledgerWebTest = do
         addGetParam "period" "2025-01"
       statusIs 200
       htmlAnyContain ".period-name" "January 2025"
-      bodyContains "pay</td>"
-      bodyNotContains "lunch</td>"
+      bodyContains ">pay<"
+      bodyNotContains ">lunch<"
       bodyContains "<span class=\"amount spent\">0</span>"
       bodyContains "<span class=\"amount earned\">100</span>"
 
@@ -2071,15 +2075,15 @@ hledgerWebTest = do
       statusIs 200
       htmlAnyContain ".period-name" "All dates"
       htmlCount ".period-prev[href]" 0
-      bodyContains "pay</td>"
-      bodyContains "lunch</td>"
+      bodyContains ">pay<"
+      bodyContains ">lunch<"
       request $ do
         setMethod "GET"
         setUrl JournalR
         addGetParam "q" "desc:pay"
       statusIs 200
       htmlAnyContain ".period-name" "All dates"
-      bodyContains "pay</td>"
+      bodyContains ">pay<"
 
     yit "lets a date in the search replace the month, and steps from it without the date term" $ do
       request $ do
@@ -2088,7 +2092,7 @@ hledgerWebTest = do
         addGetParam "q" "date:2025-01-05 desc:pay"
       statusIs 200
       htmlAnyContain ".period-name" "2025-01-05 (Sun)"
-      bodyContains "pay</td>"
+      bodyContains ">pay<"
       bodyContains ("<a class=\"period-next\" href=\"" ++ base ++ "/journal?q=desc%3Apay&amp;period=2025-01-06\"")
 
     yit "lists the lengths of period to switch between, holding the period shown" $ do
@@ -2126,7 +2130,7 @@ hledgerWebTest = do
         addGetParam "q" "inacct:assets:bank:checking"
       statusIs 200
       htmlAnyContain ".period-name" "February 2025"
-      bodyNotContains "pay</td>"
+      bodyNotContains ">pay<"
       bodyContains ("<a class=\"period-prev\" href=\"" ++ base ++ "/register?q=inacct%3Aassets%3Abank%3Achecking&amp;period=2025-01\"")
       request $ do
         setMethod "GET"
@@ -2134,7 +2138,7 @@ hledgerWebTest = do
         addGetParam "q" "inacct:assets:bank:checking"
         addGetParam "period" "2025-01"
       statusIs 200
-      bodyContains "pay</td>"
+      bodyContains ">pay<"
 
     yit "reports a period it cannot read, and shows all dates" $ do
       request $ do

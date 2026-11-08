@@ -1678,3 +1678,8 @@ msgstr ""
 #: hledger-web/templates/add-form.hamlet
 msgid "Swap to and from"
 msgstr ""
+
+#. hledger-web: an entry's row and page.
+#: hledger-web/templates/transaction.hamlet
+msgid "Show this entry"
+msgstr ""

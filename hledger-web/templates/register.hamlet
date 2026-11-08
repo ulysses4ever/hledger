@@ -58,17 +58,21 @@ $if isAccountPage
         $forall (torig, tacct, split, _acct, amt, bal) <- dayitems
           $# data-account and data-kind are for an instance stylesheet, to give
           $# the row an icon (see the manual's "Customising the look").
+          $# With add permission the row leads to the entry's page: a tap or
+          $# click anywhere on it, through hledger.js (data-href), or on the
+          $# description.
           <tr ##{transactionFrag torig} :isFuture tacct:.future data-entry="#{showTransaction torig}"
-              data-account="#{mainAccount torig}" data-kind="#{entryKindClass (esKind (summary torig))}">
+              data-account="#{mainAccount torig}" data-kind="#{entryKindClass (esKind (summary torig))}"
+              :elem AddPermission perms:data-href=@{TransactionR (tindex torig)}>
             <td .date nowrap>
               <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
                  title=_{HMsg "Show this entry and the other journal entries on its date"}>
                 #{show (tdate tacct)}
             <td .description>
               $if elem AddPermission perms
-                <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
-                  <span .glyphicon .glyphicon-pencil aria-hidden="true">
-              #{textElideRight 30 (tdescription tacct)}
+                <a .entry-link href=@{TransactionR (tindex torig)}>#{textElideRight 30 (tdescription tacct)}
+              $else
+                #{textElideRight 30 (tdescription tacct)}
               $if isRecurring torig
                 <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
             <td .account>
@@ -93,16 +97,16 @@ $if isAccountPage
                 $if not split || not (mixedAmountLooksZero amt)
                   #{oneLine amt}
               <span .entry-memo>
-                #{payeeAndNote torig}
+                $if elem AddPermission perms
+                  <a .entry-link href=@{TransactionR (tindex torig)}>#{payeeAndNote torig}
+                $else
+                  #{payeeAndNote torig}
                 $if isRecurring torig
                   <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
               <span .entry-balance>
                 <span .sr-only>_{HMsg "Balance after this entry:"}
                 <span aria-hidden="true">» #
                 #{oneLine (runningBalance bal)}
-              $if elem AddPermission perms
-                <a .entry-edit href=@{TransactionR (tindex torig)} title=_{HMsg "Edit this entry"} aria-label=_{HMsg "Edit this entry"}>
-                  <span .glyphicon .glyphicon-pencil aria-hidden="true">
       $if historical && lastpage
         $maybe start <- mstart
           <tr .broughtforward>
