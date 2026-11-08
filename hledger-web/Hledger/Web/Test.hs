@@ -1634,6 +1634,13 @@ hledgerWebTest = do
       ls <- addTyped "CurrencyPicked" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
       assertEq "the amount should be in euros" (any (T.isInfixOf "5 EUR") ls) True
 
+    yit "offers only the accounts with nothing under them: a group is not a place to post to" $ do
+      get JournalR
+      statusIs 200
+      bodyContains "<option value=\"assets:bank:checking\""
+      -- (the top level, "assets", is a category heading in the first list, not an account)
+      bodyNotContains "<option value=\"assets:bank\""
+
     yit "starts a new entry on the register's account: paid from an asset, or being an expense" $ do
       request $ do
         setMethod "GET"

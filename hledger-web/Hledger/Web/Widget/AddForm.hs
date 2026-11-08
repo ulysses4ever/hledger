@@ -166,7 +166,13 @@ addForm' forRule macct j today mtxn extra = do
     withinLabel k a = case drop (length (accountNameComponents k)) (accountNameComponents a) of
       [] -> categoryLabel k
       rest -> T.intercalate " \8250 " rest
-    names = journalAccountNamesDeclaredOrImplied j
+    -- The accounts to post to: those with nothing under them, and those
+    -- the books declare or post to themselves. An account that only has
+    -- accounts under it is a group, not a place money sits, and a posting
+    -- to one was a slip (A › checking, for A › checking › chase).
+    allNames = journalAccountNamesDeclaredOrImplied j
+    declaredOrUsed = journalAccountNamesDeclared j ++ journalAccountNamesUsed j
+    names = [a | a <- allNames, a `elem` declaredOrUsed || not (any ((a <> ":") `T.isPrefixOf`) allNames)]
     -- A category's accounts are those under it; one with none is itself the account.
     within k = case [(a, withinLabel k a) | a <- names, categoryKey a == k, a /= k, not (isCategoryTop a)] of
       [] -> [(k, categoryLabel k)]
@@ -188,7 +194,7 @@ addForm' forRule macct j today mtxn extra = do
     accountGroups :: [(Text, [(Text, Text)])]
     accountGroups =
       [ (T.toTitle (topOf (head g)), [(a, optionLabel a) | a <- g])
-      | g <- groupBy ((==) `on` topOf) (journalAccountNamesDeclaredOrImplied j) ]
+      | g <- groupBy ((==) `on` topOf) names ]
     accountGroupsFor :: Int -> [(Text, [(Text, Text)])]
     accountGroupsFor n = sortOn (rank . fst) accountGroups
       where
@@ -202,7 +208,7 @@ addForm' forRule macct j today mtxn extra = do
     -- the journal's, else what its name says (Assets, liabilities:card, ...).
     accountType a = journalAccountType j a <|> accountNameInferType a
     fundingDefault =
-      case M.toList $ M.fromListWith (+) [(paccount p, 1 :: Int) | p <- journalPostings j, accountType (paccount p) `elem` [Just Asset, Just Cash, Just Liability]] of
+      case M.toList $ M.fromListWith (+) [(paccount p, 1 :: Int) | p <- journalPostings j, paccount p `elem` names, accountType (paccount p) `elem` [Just Asset, Just Cash, Just Liability]] of
         [] -> ""
         counts -> fst $ maximumBy (comparing snd) counts
     -- The account in view starts a new entry: an asset, liability or

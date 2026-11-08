@@ -193,6 +193,11 @@ test.describe('add form', () => {
     await category.selectOption('income:salary');
     await expect(account).toHaveValue('income:salary');
     expect(await page.locator('#addform select[name=account]').nth(1).locator('optgroup').evaluateAll(gs => gs.map(g => g.label))).toEqual(['Assets', 'Equity', 'Expenses', 'Income']);
+    // a group of accounts is not offered, only the accounts in it
+    const offered = await page.locator('#addform select[name=account]').nth(1).locator('option').evaluateAll(os => os.map(o => o.value));
+    expect(offered).toContain('assets:bank:checking');
+    expect(offered).not.toContain('assets:bank');
+    expect(offered).not.toContain('expenses:food');
   });
 
   test('the kind of entry is remembered, and a transfer names the accounts to and from', async ({ page }) => {
