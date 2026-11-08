@@ -75,7 +75,7 @@ for (const scheme of ['light', 'dark']) {
     await expect(opening.locator('.entry-amount')).toHaveText('1000.00');
     await expect(opening.locator('.entry-amount')).toHaveCSS('color',
       await page.locator('#main-content').evaluate(e => getComputedStyle(e).color));
-    await expect(opening.locator('.entry-accounts')).toHaveText(/^\s*from\s*equity:opening\s*→\s*to\s*assets:bank:checking\s*$/);
+    await expect(opening.locator('.entry-accounts')).toHaveText(/^\s*equity:opening\s*→\s*assets:bank:checking\s*$/);
 
     // the accounts link to their registers, the date to its day
     await expect(card.locator('.entry-what a')).toHaveAttribute('href', /register\?q=inacct%3Aexpenses%3Afood%3Adining/);

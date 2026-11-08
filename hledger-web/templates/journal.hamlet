@@ -81,19 +81,16 @@ $# given with --css can rearrange them with the order property.
                 #{dayWithWeekday (tdate torig)}
               <span .entry-accounts>
                 $forall acc <- lineFrom es
-                  $if esKind es == Moving
-                    $# TRANSLATORS: in "from bank › checking → to bank › savings", a transfer between two accounts.
-                    <span .entry-label>_{HMsg "from"}
                   <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
                     ^{accountNameAsHtml acc}
-                $if bothEnds es
-                  <span .entry-label>→
+                $# a transfer reads "bank › checking → bank › savings": the arrow
+                $# says which way, and stays with the account it points to
                 $forall acc <- lineTo es
-                  $if esKind es == Moving
-                    $# TRANSLATORS: in "from bank › checking → to bank › savings", a transfer between two accounts.
-                    <span .entry-label>_{HMsg "to"}
-                  <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
-                    ^{accountNameAsHtml acc}
+                  <span .entry-to>
+                    $if bothEnds es
+                      <span .entry-label>→
+                    <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
+                      ^{accountNameAsHtml acc}
             <span .entry-memo>
               $if elem AddPermission perms
                 <a .entry-link href=@{TransactionR (tindex torig)}>#{payeeAndNote torig}

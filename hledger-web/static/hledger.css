@@ -1824,9 +1824,17 @@ a:focus > .account-name > * {
     margin-left: auto;
     color: var(--entry-account);
   }
-  .entry-card .entry-accounts > a {
+  .entry-card .entry-accounts > a,
+  .entry-card .entry-accounts .entry-to > a {
     min-width: 0;
     color: inherit;
+  }
+  /* the arrow and the account it points to wrap as one */
+  .entry-card .entry-to {
+    display: inline-flex;
+    gap: 0.3em;
+    min-width: 0;
+    white-space: nowrap;
   }
   .entry-card .entry-accounts .account-name .parents,
   .entry-card .entry-accounts .account-name .sep {
