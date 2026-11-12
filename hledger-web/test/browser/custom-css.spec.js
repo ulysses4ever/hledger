@@ -69,7 +69,7 @@ test('the rows name their main account and kind, for a stylesheet to give them i
   await expect(opening).toHaveAttribute('data-account', 'assets:bank:checking');
   await expect(opening).toHaveAttribute('data-kind', 'moving');
   // the stylesheet's icons, before what each entry was for
-  const icon = row => row.locator('.entry-icon').evaluate(e => getComputedStyle(e, '::before').content);
+  const icon = row => row.locator('td.entry-card .entry-icon').evaluate(e => getComputedStyle(e, '::before').content);
   expect(await icon(meal)).toBe('"F"');
   expect(await icon(opening)).toBe('"T"');
   expect(await icon(pay)).toBe('none');

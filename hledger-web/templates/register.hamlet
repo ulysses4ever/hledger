@@ -69,10 +69,11 @@ $if isAccountPage
                  title=_{HMsg "Show this entry and the other journal entries on its date"}>
                 #{show (tdate tacct)}
             <td .description>
+              <span .entry-icon aria-hidden="true">
               $if elem AddPermission perms
-                <a .entry-link href=@{TransactionR (tindex torig)}>#{textElideRight 30 (tdescription tacct)}
+                <a .entry-link :T.null (tdescription tacct):.entry-kind href=@{TransactionR (tindex torig)}>#{entryTitle tacct}
               $else
-                #{textElideRight 30 (tdescription tacct)}
+                <span :T.null (tdescription tacct):.entry-kind>#{entryTitle tacct}
               $if isRecurring torig
                 <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
             <td .account>

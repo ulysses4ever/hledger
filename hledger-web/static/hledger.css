@@ -2105,20 +2105,36 @@ a:focus > .account-name > * {
   font-size: 14px;
 }
 
-/* The journal's entries: a hairline between entries, the postings set
-   small and muted under the title, and the whole entry lit under the
-   pointer (hledger.js marks its rows) rather than one row of it. */
+/* The journal's entries: a hairline between entries, the postings muted
+   under the title, and the whole entry lit under the pointer (hledger.js
+   marks its rows) rather than one row of it. The title row starts with
+   the icon slot an instance stylesheet fills (as the phone's block does;
+   it takes no room without one), and names a transfer without a
+   description as such. */
 .transactionsreport > tbody > tr > td {
   padding: 4px 8px;
+  font-size: 15px;
   border-top-color: var(--header-rule);
 }
 .transactionsreport > tbody > tr.title > td {
   padding-top: 9px;
+  font-size: 16px;
 }
 .transactionsreport > tbody > tr.posting > td {
-  padding-top: 1px;
-  padding-bottom: 1px;
-  font-size: 13px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  color: var(--account-parents);
+}
+.transactionsreport td.description .entry-icon::before,
+.registerreport td.description .entry-icon::before {
+  display: inline-block;
+  min-width: 1.5em;
+  margin-right: 0.35em;
+  text-align: center;
+}
+.transactionsreport td.description .entry-kind,
+.registerreport td.description .entry-kind {
+  font-weight: normal;
   color: var(--account-parents);
 }
 .transactionsreport > tbody > tr.posting + tr.title > td,
@@ -2133,7 +2149,8 @@ a:focus > .account-name > * {
   background-color: var(--row-hover);
 }
 .registerreport > tbody > tr > td {
-  padding: 5px 8px;
+  padding: 6px 8px;
+  font-size: 15px;
   border-top-color: var(--header-rule);
 }
 /* Account names and dates in the rows are links, but read as text. */

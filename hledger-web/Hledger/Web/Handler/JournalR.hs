@@ -89,6 +89,12 @@ getJournalR = do
       -- accounts that summary names on its second line: where a payment
       -- came from, where income went, or both, for a transfer.
       entries = [(t, summarizeEntry atype t) | t <- items]
+      -- a row's title: the description, or for a transfer without one,
+      -- what it is (as the phone's block says)
+      entryTitle t es
+        | not (T.null (tdescription t)) = textElideRight 60 (tdescription t)
+        | esKind es == Moving = tr trs "Transfer"
+        | otherwise = ""
       lineFrom es = if esKind es == Earning then [] else take 1 (esFrom es)
       lineTo es = if esKind es == Spending then [] else take 1 (esTo es)
       bothEnds es = not (null (lineFrom es) || null (lineTo es))

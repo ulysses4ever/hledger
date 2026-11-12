@@ -28,8 +28,7 @@ import Hledger.Web.Widget.AddForm (addModal)
 import Hledger.Web.Widget.Common
              (accountNameAsHtml, accountQuery, accountOnlyQuery, mixedAmountAsHtml,
               transactionFragment, removeDates, removeInacct, replaceInacct, journalDayQuery)
-import Hledger.Web.Widget.Entry
-            (EntrySummary(..), dayWithWeekday, entryKindClass, entryMainOtherAccount, payeeAndNote, summarizeEntry)
+import Hledger.Web.Widget.Entry (EntryKind(..), EntrySummary(..), dayWithWeekday, entryKindClass, entryMainOtherAccount, payeeAndNote, summarizeEntry)
 import Hledger.Web.Widget.Period (isAllTime, pagePeriod, periodBand, periodQuery)
 
 -- | The main journal/account register view, with accounts sidebar.
@@ -120,6 +119,11 @@ getRegisterR = do
       -- What each row's entry did, and the account it is mainly about
       -- other than this register's.
       summary = summarizeEntry (journalAccountType j)
+      -- a row's title: the description, or for a transfer without one, what it is
+      entryTitle t
+        | not (T.null (tdescription t)) = textElideRight 30 (tdescription t)
+        | esKind (summary t) == Moving = tr trs "Transfer"
+        | otherwise = ""
       mainAccount = entryMainOtherAccount acctQuery . summary
       -- The account page's summary of the period, of all its matching
       -- transactions, not only this page's: the balance before it, at its

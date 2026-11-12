@@ -325,6 +325,21 @@ test.describe('transaction page', () => {
     await expect(page).toHaveURL(/\/transaction\/\d+$/);
   }
 
+  test('every journal row starts with an icon slot, and a transfer without a description is named', async ({ page }) => {
+    await page.goto('/journal');
+    expect(await page.locator('#main-content tr.title td.description .entry-icon').count()).toBeGreaterThan(0);
+    // the fixture's opening balances are a transfer with a description; add one without
+    await openAddForm(page);
+    await page.locator('#addform .kind-option[data-kind=transfer]').click();
+    await page.locator('#addform input[name=amount]').nth(0).fill('1');
+    await page.locator('#addform select[name=account]').nth(0).selectOption('assets:bank:checking');
+    await page.locator('#addform select[name=account]').nth(1).selectOption('equity:opening');
+    await page.locator('#addform button[type=submit]').click();
+    await expect(page.locator('#message')).toContainText('Transaction added.');
+    await expect(page.locator('#main-content tr.title td.description .entry-kind').first()).toHaveText('Transfer');
+    expect(pageErrors).toEqual([]);
+  });
+
   test("a click anywhere on an entry's row opens its page, a card with Edit and Delete; its links still work", async ({ page }) => {
     await openEntry(page, 'E2eRowClick', '5.00');
     await expect(page.locator('.entry-view-amount')).toHaveText(/5\.00/);

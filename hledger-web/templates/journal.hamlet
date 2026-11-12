@@ -53,10 +53,12 @@ $# given with --css can rearrange them with the order property.
                title=_{HMsg "Show the journal entries on this date"}>
               #{show (tdate torig)}
           <td .description colspan=2>
+            $# the icon slot, filled by an instance stylesheet as the block's is
+            <span .entry-icon aria-hidden="true">
             $if elem AddPermission perms
-              <a .entry-link href=@{TransactionR (tindex torig)}>#{textElideRight 60 (tdescription torig)}
+              <a .entry-link :T.null (tdescription torig):.entry-kind href=@{TransactionR (tindex torig)}>#{entryTitle torig es}
             $else
-              #{textElideRight 60 (tdescription torig)}
+              <span :T.null (tdescription torig):.entry-kind>#{entryTitle torig es}
             $if isRecurring torig
               <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
           <td .amount>

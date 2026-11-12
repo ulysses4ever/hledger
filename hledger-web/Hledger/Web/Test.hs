@@ -1634,6 +1634,27 @@ hledgerWebTest = do
       ls <- addTyped "CurrencyPicked" [("assets:bank:checking", "5", "EUR"), ("income:gifts", "5", "EUR")]
       assertEq "the amount should be in euros" (any (T.isInfixOf "5 EUR") ls) True
 
+    yit "names a transfer without a description as one in the journal, with an icon slot before every title" $ do
+      get JournalR
+      statusIs 200
+      request $ do
+        setMethod "POST"
+        setUrl AddR
+        addToken
+        addPostParam "_formid" "identify-add"
+        addPostParam "date" "2025-02-04"
+        addPostParam "description" ""
+        forM_ ["assets:bank:checking", "income:gifts"] $ \acct -> do
+          addPostParam "account" acct
+          addPostParam "amount" "1"
+          addPostParam "commodity" ""
+      statusIs 303
+      get JournalR
+      statusIs 200
+      bodyContains "<span class=\"entry-icon\" aria-hidden=\"true\"></span>"
+      -- (money from an income account is earning, not a transfer: no name for it)
+      htmlNoneContain ".transactionsreport td.description .entry-kind" "Transfer"
+
     yit "offers only the accounts with nothing under them: a group is not a place to post to" $ do
       get JournalR
       statusIs 200
