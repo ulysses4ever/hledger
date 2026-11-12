@@ -15,9 +15,18 @@ const { watchPageErrors } = require('./helpers');
 // each is a "from" line, the accounts it names, and its amount.
 function entry(page, description) {
   return page.locator('#main-content tr.title', { hasText: description }).evaluate(title => {
+    const shown = el => getComputedStyle(el).display !== 'none';
     const rows = [];
+    // single-sided, the main posting sits on the title row itself
+    const main = title.querySelector('td.account.main-posting');
+    if (main && shown(main))
+      rows.push({
+        from: false,
+        accounts: [...main.querySelectorAll('a[title]')].map(a => a.title),
+        amount: title.querySelector('td.amount.main-posting').textContent.trim(),
+      });
     for (let r = title.nextElementSibling; r && !r.classList.contains('title'); r = r.nextElementSibling)
-      if (getComputedStyle(r).display !== 'none')
+      if (shown(r))
         rows.push({
           from: r.classList.contains('from'),
           accounts: [...r.querySelectorAll('a[title]')].map(a => a.title),

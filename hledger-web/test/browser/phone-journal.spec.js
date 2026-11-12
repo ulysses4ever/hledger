@@ -97,7 +97,9 @@ test('"Show both sides" and a wide screen show the entries as before', async ({ 
   await page.setViewportSize({ width: 1280, height: 800 });
   await expect(meal.locator('td.entry-card')).toBeHidden();
   await expect(meal.locator('td.description')).toBeVisible();
-  await expect(page.locator('#main-content tr.posting td.account', { hasText: 'dining' }).first()).toBeVisible();
+  // single-sided on a wide screen, the main posting sits on the title row, its own row hidden
+  await expect(meal.locator('td.account.main-posting', { hasText: 'dining' })).toBeVisible();
+  await expect(page.locator('#main-content tr.posting td.account', { hasText: 'dining' }).first()).toBeHidden();
 });
 
 test('without an instance stylesheet, the icon slot takes no room', async ({ page }) => {

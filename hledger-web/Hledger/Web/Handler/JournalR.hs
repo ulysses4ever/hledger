@@ -102,6 +102,17 @@ getJournalR = do
       -- Single-sided, the journal shows those accounts on a line of their
       -- own, without amounts.
       isSource amt = isNegativeMixedAmount amt == Just True
+      -- The entry's postings, the first that is not a source marked as the
+      -- main one: single-sided, it sits on the title row (the category and
+      -- the amount beside the description), and its own row is hidden.
+      postingRows :: Transaction -> [(Posting, Bool)]
+      postingRows t = go False (tpostings t)
+        where
+          go _ [] = []
+          go seen (p : ps)
+            | not seen && not (isSource (pamount p)) = (p, True) : go True ps
+            | otherwise = (p, False) : go seen ps
+      mainPosting t = listToMaybe [p | (p, True) <- postingRows t]
       -- The accounts an entry's money came from, each with the separator
       -- that follows it.
       sourceAccounts :: Transaction -> [(AccountName, Text)]

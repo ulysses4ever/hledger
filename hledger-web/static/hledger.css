@@ -1583,6 +1583,8 @@ a:focus > .account-name > * {
    so that a page is drawn the way it was left from the start; without
    javascript the choice could not be kept, so the box is not shown. */
 .transactionsreport:not(.both-sides) tr.posting.source,
+.transactionsreport:not(.both-sides) tr.posting.main,
+.transactionsreport.both-sides tr.title td.main-posting,
 .transactionsreport.both-sides tr.posting.from {
   display: none;
 }
@@ -2112,18 +2114,24 @@ a:focus > .account-name > * {
    it takes no room without one), and names a transfer without a
    description as such. */
 .transactionsreport > tbody > tr > td {
-  padding: 4px 8px;
+  padding: 3px 8px;
   font-size: 15px;
   border-top-color: var(--header-rule);
 }
 .transactionsreport > tbody > tr.title > td {
-  padding-top: 9px;
+  padding-top: 6px;
   font-size: 16px;
 }
+.transactionsreport > tbody > tr.title > td.main-posting {
+  font-size: 15px;
+}
 .transactionsreport > tbody > tr.posting > td {
-  padding-top: 2px;
-  padding-bottom: 2px;
+  padding-top: 0;
+  padding-bottom: 4px;
   color: var(--account-parents);
+}
+.transactionsreport > tbody > tr.posting.from > td {
+  font-size: 14px;
 }
 .transactionsreport td.description .entry-icon::before,
 .registerreport td.description .entry-icon::before {

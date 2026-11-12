@@ -52,7 +52,7 @@ $# given with --css can rearrange them with the order property.
             <a href="@?{(JournalR, [("q", journalDayQuery qparam (tdate torig))])}##{transactionFrag torig}"
                title=_{HMsg "Show the journal entries on this date"}>
               #{show (tdate torig)}
-          <td .description colspan=2>
+          <td .description>
             $# the icon slot, filled by an instance stylesheet as the block's is
             <span .entry-icon aria-hidden="true">
             $if elem AddPermission perms
@@ -61,7 +61,18 @@ $# given with --css can rearrange them with the order property.
               <span :T.null (tdescription torig):.entry-kind>#{entryTitle torig es}
             $if isRecurring torig
               <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
-          <td .amount>
+          $# Single-sided, the entry's main posting (what it was for, and how
+          $# much) sits here on the title row, and its own row below is
+          $# hidden; both sides shown, these cells hide instead (hledger.css).
+          $maybe p <- mainPosting torig
+            <td .account .main-posting>
+              <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
+                ^{accountNameAsHtml (paccount p)}
+            <td .amount .main-posting>
+              ^{mixedAmountAsHtml (pamount p)}
+          $nothing
+            <td .account .main-posting>
+            <td .amount .main-posting>
           $# On a phone, single-sided, the entry is shown as this block instead
           $# (hledger.css section 15): what it was for and how much; its date and
           $# where the money came from or went; its payee and note.
@@ -101,16 +112,16 @@ $# given with --css can rearrange them with the order property.
               $if isRecurring torig
                 <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
 
-        $forall Posting { paccount = acc, pamount = amt } <- tpostings torig
-          <tr .posting :isSource amt:.source :isFuture torig:.future>
+        $forall (p, isMain) <- postingRows torig
+          <tr .posting :isSource (pamount p):.source :isMain:.main :isFuture torig:.future>
             <td>
             <td>
             <td .account>
               &nbsp;
-              <a href="@?{acctlink acc torig}##{transactionFrag torig}" title="#{acc}">
-                ^{accountNameAsHtml acc}
+              <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
+                ^{accountNameAsHtml (paccount p)}
             <td .amount>
-              ^{mixedAmountAsHtml amt}
+              ^{mixedAmountAsHtml (pamount p)}
         $# Single-sided, the postings whose amounts are all negative, where the
         $# money came from, are shown on this line instead, without amounts.
         $with sources <- sourceAccounts torig
