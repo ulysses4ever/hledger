@@ -1307,3 +1307,8 @@ msgstr "Поменять местами куда и откуда"
 #: hledger-web/templates/transaction.hamlet
 msgid "Show this entry"
 msgstr "Показать эту запись"
+
+#. hledger-web: the recurring rules page's note.
+#: hledger-web/templates/recurring.hamlet
+msgid "Entries for the month are written ahead from these rules, pending until a statement or a person confirms them. A rule changed here applies from its next date, and the month's pending entry follows the change within the hour; a confirmed entry stays."
+msgstr "Записи месяца пишутся заранее по этим правилам и ждут подтверждения выпиской или человеком. Изменённое здесь правило действует со своей следующей даты, и ожидающая запись месяца следует за изменением в течение часа; подтверждённая запись остаётся."
