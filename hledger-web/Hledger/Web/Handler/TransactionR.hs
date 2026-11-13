@@ -25,6 +25,11 @@ import Hledger.Web.Widget.AddForm (addForm, transactionCollapseNewlines)
 import Hledger.Web.Widget.Common (accountNameAsHtml, accountQuery, writeJournalTextIfValidAndChanged)
 import Hledger.Web.Widget.Entry (EntryKind(..), EntrySummary(..), summarizeEntry, entryKindClass, dayWithWeekday)
 
+-- | A fact on an entry's card: an account (leading to its register), a
+-- text that opens the journal on a search (a payee: its entries), or a
+-- plain text.
+data Fact = FactAccount AccountName | FactSearch Text Text | FactText Text
+
 -- | Where a transaction's text is: its file and its lines, first and last (1-based, inclusive).
 transactionSpan :: Transaction -> (FilePath, Int, Int)
 transactionSpan Transaction{tsourcepos = (startpos, endpos)} =
@@ -71,14 +76,14 @@ showPage t original view enctype editing = do
       (payee, note) = case payeeAndNoteFromDescription' (tdescription t) of
         ("", whole) -> (whole, "")
         pn -> pn
-      facts :: [(Text, Either AccountName Text)]
+      facts :: [(Text, Fact)]
       facts =
         (case esKind es of
-           Moving   -> [(tr trs "From", Left a) | a <- esFrom es] ++ [(tr trs "To", Left a) | a <- esTo es]
-           Spending -> [(tr trs "Account", Left a) | a <- esFrom es]
-           Earning  -> [(tr trs "Account", Left a) | a <- esTo es])
-        ++ [(trc trs "placeholder" "Payee", Right payee) | not (T.null payee)]
-        ++ [(trc trs "placeholder" "Note", Right note) | not (T.null note)]
+           Moving   -> [(tr trs "From", FactAccount a) | a <- esFrom es] ++ [(tr trs "To", FactAccount a) | a <- esTo es]
+           Spending -> [(tr trs "Account", FactAccount a) | a <- esFrom es]
+           Earning  -> [(tr trs "Account", FactAccount a) | a <- esTo es])
+        ++ [(trc trs "placeholder" "Payee", FactSearch payee ("payee:" <> quoteIfSpaced payee)) | not (T.null payee)]
+        ++ [(trc trs "placeholder" "Note", FactText note) | not (T.null note)]
       editLink = (TransactionR (tindex t), [("edit", "1")])
       back = (JournalR, [("q", "date:" <> T.pack (show (tdate t)))])
   defaultLayout $ do

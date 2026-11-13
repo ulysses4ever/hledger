@@ -14,15 +14,18 @@ $# forms, so a change to the file meanwhile is noticed (TransactionR).
           <span .more title=_{HMsg "and other accounts"}>+#{esMore es}
       $nothing
         _{HMsg "Transfer"}
-    <p .entry-view-date>#{dayWithWeekday (tdate t)}
+    <p .entry-view-date>
+      <a href=@?{back} title=_{HMsg "Show the journal entries on this date"}>#{dayWithWeekday (tdate t)}
     <dl .entry-view-facts>
       $forall (label, value) <- facts
         <dt>#{label}
         <dd>
           $case value
-            $of Left acc
+            $of FactAccount acc
               <a href=@?{(RegisterR, [("q", accountQuery acc)])}>^{accountNameAsHtml acc}
-            $of Right txt
+            $of FactSearch txt q
+              <a href=@?{(JournalR, [("q", q)])} title=_{HMsg "Show the entries with this payee"}>#{txt}
+            $of FactText txt
               #{txt}
       $maybe (i, expr) <- mrule
         <dt>

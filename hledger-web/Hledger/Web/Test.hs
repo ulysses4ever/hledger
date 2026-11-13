@@ -1546,6 +1546,10 @@ hledgerWebTest = do
       statusIs 200
       htmlAnyContain ".entry-view-facts dd" "TxnPageShow"
       htmlAnyContain ".entry-view-facts dd" "checking"
+      -- the date opens the journal on its day, the payee its entries
+      htmlAnyContain ".entry-view-date a" "2025-02-02"
+      htmlAnyContain ".entry-view-facts dd a" "TxnPageShow"
+      bodyContains "journal?q=payee%3ATxnPageShow"
       htmlAnyContain ".entry-actions a.entry-edit-button" "Edit"
       bodyContains "class=\"form entry-edit-form\""
       bodyContains "value=\"TxnPageShow\""
