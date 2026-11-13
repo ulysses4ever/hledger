@@ -17,12 +17,13 @@ function entry(page, description) {
   return page.locator('#main-content tr.title', { hasText: description }).evaluate(title => {
     const shown = el => getComputedStyle(el).display !== 'none';
     const rows = [];
-    // single-sided, the main posting sits on the title row itself
-    const main = title.querySelector('td.account.main-posting');
-    if (main && shown(main))
+    // single-sided, the entry sits on the title row itself: its two
+    // accounts (from, to) in cells of their own, or its main posting
+    const mains = [...title.querySelectorAll('td.account.main-posting')].filter(shown);
+    if (mains.length)
       rows.push({
         from: false,
-        accounts: [...main.querySelectorAll('a[title]')].map(a => a.title),
+        accounts: mains.flatMap(td => [...td.querySelectorAll('a[title]')].map(a => a.title)),
         amount: title.querySelector('td.amount.main-posting').textContent.trim(),
       });
     for (let r = title.nextElementSibling; r && !r.classList.contains('title'); r = r.nextElementSibling)

@@ -30,14 +30,15 @@ $# given with --css can rearrange them with the order property.
       <thead>
         <th .date>_{HMsgc "column heading" "Date"}
         <th .description>_{HMsgc "column heading" "Description"}
-        <th .account>_{HMsgc "column heading" "Account"}
+        $# (three columns: where the money came from, the arrow, where it went)
+        <th .account colspan=3>_{HMsgc "column heading" "Account"}
         <th .amount>_{HMsgc "column heading" "Amount"}
 
       $# Entries dated after today are folded away under this row, which
       $# hledger.js shows, and which shows them (they come first: newest first).
       $if futureCount > 0
         <tr .future-toggle hidden>
-          <td colspan=4>
+          <td colspan=6>
             <button type=button .btn .btn-link .future-button data-hide=_{HMsg "Hide the entries dated after today"}>#{trf trs "Show {n} entries dated after today" [("n", T.pack (show futureCount))]}
       $forall (torig, es) <- entries
         $# data-account and data-kind are for an instance stylesheet, to give
@@ -67,28 +68,30 @@ $# given with --css can rearrange them with the order property.
           $# for, and how much), the other postings keeping their rows
           $# below. Both sides shown, these cells hide instead (hledger.css).
           $maybe (src, dst) <- flowOf torig
-            <td .account .main-posting .flow>
+            $# three cells, so the arrows line up down the page
+            <td .account .main-posting .flow-from>
               <a href="@?{acctlink (paccount src) torig}##{transactionFrag torig}" title="#{paccount src}">
                 ^{accountNameAsHtml (paccount src)}
-              <span .flow-arrow aria-hidden="true">→
+            <td .main-posting .flow-arrow aria-hidden="true">→
+            <td .account .main-posting .flow-to>
               <a href="@?{acctlink (paccount dst) torig}##{transactionFrag torig}" title="#{paccount dst}">
                 ^{accountNameAsHtml (paccount dst)}
             <td .amount .main-posting>
               ^{mixedAmountAsHtml (pamount dst)}
           $nothing
             $maybe p <- mainPosting torig
-              <td .account .main-posting>
+              <td .account .main-posting colspan=3>
                 <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
                   ^{accountNameAsHtml (paccount p)}
               <td .amount .main-posting>
                 ^{mixedAmountAsHtml (pamount p)}
             $nothing
-              <td .account .main-posting>
+              <td .account .main-posting colspan=3>
               <td .amount .main-posting>
           $# On a phone, single-sided, the entry is shown as this block instead
           $# (hledger.css section 15): what it was for and how much; its date and
           $# where the money came from or went; its payee and note.
-          <td .entry-card colspan=4>
+          <td .entry-card colspan=6>
             <span .entry-icon>
             <span .entry-what>
               $maybe acc <- esAccount es
@@ -128,7 +131,7 @@ $# given with --css can rearrange them with the order property.
           <tr .posting :isSource (pamount p):.source :isMain:.main :isJust (flowOf torig):.flow :isFuture torig:.future>
             <td>
             <td>
-            <td .account>
+            <td .account colspan=3>
               <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
                 ^{accountNameAsHtml (paccount p)}
             <td .amount>
@@ -140,7 +143,7 @@ $# given with --css can rearrange them with the order property.
             <tr .posting .from :isJust (flowOf torig):.flow :isFuture torig:.future>
               <td>
               <td>
-              <td .from-accounts>
+              <td .from-accounts colspan=3>
                 <span>
                   <span .from-label>
                     $# TRANSLATORS: begins a line naming the accounts a journal entry's money came from, eg "from bank › checking, cash".

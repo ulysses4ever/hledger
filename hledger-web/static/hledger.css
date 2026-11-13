@@ -1589,10 +1589,22 @@ a:focus > .account-name > * {
 .transactionsreport.both-sides tr.posting.from {
   display: none;
 }
-/* between the two accounts of an entry on one line, the way the money went */
-.transactionsreport td.flow .flow-arrow {
-  margin: 0 0.45em;
+/* An entry on one line has its two accounts in cells of their own with
+   the arrow between them in a third, so the arrows line up down the
+   page: the accounts the money came from end at the arrows, the ones it
+   went to start after them. */
+.transactionsreport > tbody > tr > td.flow-from {
+  padding-right: 2px;
+  text-align: right;
+}
+.transactionsreport > tbody > tr > td.flow-arrow {
+  padding-right: 6px;
+  padding-left: 6px;
+  text-align: center;
   color: var(--account-parents);
+}
+.transactionsreport > tbody > tr > td.flow-to {
+  padding-left: 2px;
 }
 .transactionsreport tr.from,
 .transactionsreport tr.from a {
