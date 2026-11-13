@@ -1661,6 +1661,17 @@ a:focus > .account-name > * {
   display: flex;
   flex-direction: column;
 }
+/* On a wide screen the column is as wide as its table (the band and the
+   buttons with it), rather than the page: the table is only as wide as
+   its text (section 8), and a band reaching far past it looked adrift.
+   It is never narrower than the band needs, nor wider than the pane. */
+@media screen and (min-width: 768px) {
+  .journal-page {
+    width: fit-content;
+    min-width: min(100%, 640px);
+    max-width: 100%;
+  }
+}
 
 /*------------------------------------------------------------------------------------------*/
 /* 14. the period band */
