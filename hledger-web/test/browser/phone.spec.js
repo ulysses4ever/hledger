@@ -26,6 +26,12 @@ const pages = {
   'balance report': '/balance',
   'balance sheet': '/balancesheet',
   'income statement': '/incomestatement',
+  'cashflow statement': '/cashflow',
+  'reports': '/breakdown?kind=expenses',
+  'recurring rules': '/recurring',
+  'new rule': '/recurring-new',
+  'an entry': '/transaction/1',
+  'manage': '/manage',
 };
 
 // In the page: what would have a reader scroll sideways, or miss a figure.

@@ -905,6 +905,20 @@ dialog:focus {
 /* 8. the manage, edit and upload pages */
 
 /* The list of journal files: each name is centered against its row of buttons. */
+/* On a phone the file names wrap, so the table is never wider than the
+   screen. */
+@media screen and (max-width: 767px) {
+  .table.files {
+    table-layout: fixed;
+  }
+  .table.files td.filename {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  .table.files td.text-right {
+    width: 7em;
+  }
+}
 .table.files td.filename {
   vertical-align: middle;
 }
@@ -1965,6 +1979,19 @@ a:focus > .account-name > * {
     body {
       padding-top: calc(env(safe-area-inset-top) + 32px);
     }
+  }
+  /* The page never scrolls sideways: whatever a browser lays out wider
+     than the screen (a native control sized by its content, a separator
+     at the end of a right-aligned line) is clipped at the main pane, which
+     iOS honours where it ignores the root's own overflow. Controls keep
+     to their columns. */
+  #main-content {
+    overflow-x: hidden;
+  }
+  #main-content input.form-control,
+  #main-content select.form-control {
+    max-width: 100%;
+    min-width: 0;
   }
   /* The sidebar's toggle button gives way to the tab bar, and the file
      name has the width of the screen. */
