@@ -1693,3 +1693,13 @@ msgstr ""
 #: hledger-web/Hledger/Web/Handler/RecurringR.hs
 msgid "Twice a month, on the 1st and the 15th"
 msgstr ""
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Accounts"
+msgstr ""
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Transaction"
+msgstr ""

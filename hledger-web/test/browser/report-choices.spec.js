@@ -21,7 +21,7 @@ test.describe('on a phone', () => {
     const [a, b] = [await lists(page).nth(0).boundingBox(), await lists(page).nth(1).boundingBox()];
     expect(Math.abs(a.y - b.y)).toBeLessThan(1);
     await expect(page.locator('#main-content .report-choice-name')).toHaveText(['Report', 'Section']);
-    await expect(picked(page, 0)).toHaveText('Balance sheet');
+    await expect(picked(page, 0)).toHaveText('Accounts');
     await expect(picked(page, 1)).toHaveText('Assets');
     expect(errors).toEqual([]);
   });
@@ -76,7 +76,7 @@ test.describe('on a phone', () => {
     await expect(page).toHaveURL(/\/incomestatement$/);
     await page.goBack();
     await expect(page).toHaveURL(/\/balancesheet$/);
-    await expect(picked(page, 0)).toHaveText('Balance sheet');
+    await expect(picked(page, 0)).toHaveText('Accounts');
   });
 });
 

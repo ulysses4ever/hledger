@@ -1694,3 +1694,13 @@ msgstr "Las entradas del mes se escriben por adelantado según estas reglas, pen
 #: hledger-web/Hledger/Web/Handler/RecurringR.hs
 msgid "Twice a month, on the 1st and the 15th"
 msgstr "Dos veces al mes, el 1 y el 15"
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Accounts"
+msgstr "Cuentas"
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Transaction"
+msgstr "Transacción"

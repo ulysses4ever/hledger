@@ -1,9 +1,6 @@
 $# The page's parts, in a flex column (see hledger.css), so that a stylesheet
 $# given with --css can rearrange them with the order property.
 <div .journal-page>
-  <h2 .journal-heading>
-    #{title'}
-
   <div .journal-period>
     ^{periodBand trs JournalR qparam noParams today shown totals}
 
@@ -30,8 +27,14 @@ $# given with --css can rearrange them with the order property.
       <thead>
         <th .date>_{HMsgc "column heading" "Date"}
         <th .description>_{HMsgc "column heading" "Description"}
-        $# (three columns: where the money came from, the arrow, where it went)
-        <th .account colspan=3>_{HMsgc "column heading" "Account"}
+        $# three columns: where the money came from, the arrow, where it went;
+        $# headed so, over the two accounts; both sides shown, one heading
+        $if bothSides
+          <th .account colspan=3>_{HMsgc "column heading" "Account"}
+        $else
+          <th .account .flow-from>_{HMsg "From"}
+          <th .flow-arrow>
+          <th .account .flow-to>_{HMsg "To"}
         <th .amount>_{HMsgc "column heading" "Amount"}
 
       $# Entries dated after today are folded away under this row, which

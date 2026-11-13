@@ -95,7 +95,7 @@ test('at 1280px there is no tab bar, and the sidebar, search form and add button
   await page.goto('/journal');
   await expect(bar(page)).toBeHidden();
   await expect(page.locator('#searchform')).toBeVisible();
-  await expect(page.locator('#addformlink')).toBeVisible();
+  await expect(page.locator('#topbar .topbar-add')).toBeVisible();
   await expect(page.locator('#sidebar-menu')).toBeVisible();
 });
 

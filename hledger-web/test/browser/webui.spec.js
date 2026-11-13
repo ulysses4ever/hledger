@@ -486,18 +486,25 @@ test.describe('sidebar tree and top menu', () => {
     const sidebar = await page.locator('#sidebar-menu').boundingBox();
     expect(bar.width).toBeGreaterThan(sidebar.width * 3);
     const menu = await page.locator('.topmenu a').first().boundingBox();
-    const heading = await page.locator('#main-content h2').boundingBox();
-    expect(Math.abs(menu.x + 14 - heading.x)).toBeLessThan(2);
+    const column = await page.locator('#main-content .journal-page').boundingBox();
+    expect(Math.abs(menu.x + 14 - column.x)).toBeLessThan(2);
+    // the header names the page, with the journal's file under it; the search and the add button are in it
+    await expect(page.locator('#topbar h1')).toHaveText('General Journal');
+    await expect(page.locator('#topbar .journal-file')).toHaveText(/\.journal$/);
+    await expect(page.locator('#topbar #searchform')).toBeVisible();
+    await expect(page.locator('#topbar .topbar-add')).toBeVisible();
+    await expect(page.locator('#addformlink')).toBeHidden();
     expect(await page.locator('.topmenu a').first().evaluate(a => parseFloat(getComputedStyle(a).fontSize))).toBeGreaterThanOrEqual(16);
   });
 
   test('the pages are a menu across the top, the page shown marked', async ({ page }) => {
     await page.goto('/journal');
-    expect(await page.locator('.topmenu a').allTextContents()).toEqual(['Journal', 'Reports', 'Balance sheet', 'Income statement', 'Cashflow statement', 'Recurring']);
+    expect(await page.locator('.topmenu a').allTextContents()).toEqual(['Journal', 'Accounts', 'Reports', 'Recurring']);
     await expect(page.locator('.topmenu a.current')).toHaveText('Journal');
-    await page.locator('.topmenu a', { hasText: 'Balance sheet' }).click();
+    await page.locator('.topmenu a', { hasText: 'Accounts' }).click();
     await expect(page).toHaveURL(/\/balancesheet$/);
-    await expect(page.locator('.topmenu a.current')).toHaveText('Balance sheet');
+    await expect(page.locator('.topmenu a.current')).toHaveText('Accounts');
+    await expect(page.locator('#topbar h1')).toHaveText('Accounts');
     // the sidebar holds the accounts alone now
     expect(await page.locator('#sidebar-menu td.top').count()).toBe(0);
   });
@@ -601,14 +608,13 @@ test.describe('sidebar', () => {
     expect(pageErrors).toEqual([]);
   });
 
-  test('links to the financial statements from the top menu, marking the one shown', async ({ page }) => {
-    // at a laptop width too, every page is reachable from the menu
+  test('the statements are at their addresses, outside the menu, with no Report row either', async ({ page }) => {
+    // at a laptop width too, the menu holds its four pages
     await page.setViewportSize({ width: 1000, height: 800 });
-    await page.goto('/journal');
-    await page.locator('.topmenu a', { hasText: 'Income statement' }).click();
-    await expect(page).toHaveURL(/\/incomestatement$/);
+    await page.goto('/incomestatement');
     await expect(page.locator('#main-content h2')).toContainText('Income Statement');
-    await expect(page.locator('.topmenu a.current')).toHaveText('Income statement');
+    expect(await page.locator('.topmenu a').allTextContents()).not.toContain('Income statement');
+    await expect(page.locator('.topmenu a.current')).toHaveCount(0);
     // the Report row would say the same, so it is not shown here
     await expect(page.locator('#main-content .report-links.report-row')).toBeHidden();
     await expect(page.locator('#main-content .report-links', { hasText: 'Section' })).toBeVisible();
@@ -633,7 +639,7 @@ test.describe('entry tooltip', () => {
     await expect(tip).toBeVisible();
     await expect(tip).toContainText('Cafe Luna');
     await expect(tip).toContainText('expenses:food:dining');
-    await page.locator('#main-content h2').hover();
+    await page.locator('.period-band .period-name').hover();
     await expect(tip).toBeHidden();
     // a click on the row opens the entry's page (the tooltip goes with the page)
     await description.hover();

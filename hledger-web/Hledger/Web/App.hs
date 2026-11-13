@@ -144,6 +144,7 @@ instance Yesod App where
 
     master <- getYesod
     here <- fromMaybe RootR <$> getCurrentRoute
+    mheading <- cacheGet
     VD{opts, j, qparam, q, qopts, perms, trs} <- getViewData
     msg <- getMessage
     -- Unless --lang fixes the language: an explicit ?_LANG= choice is
@@ -203,6 +204,23 @@ instance Yesod App where
           [p | p@("period", _) <- keptParams] ++
           [("q", qt) | let qt = T.unwords $ removeInacct qparam, not (T.null qt)]
         journalLink = (JournalR, [p | p@("q", _) <- sidebarParams])
+        -- The header names the page: what the page set (the journal's
+        -- title, say), else the menu's name for it, else the journal's file,
+        -- which goes under the name in small type otherwise.
+        fileName = T.pack (takeFileName (journalFilePath j))
+        menuName = case here of
+          RecurringR -> Just (tr trs "Recurring")
+          RecurringNewR -> Just (tr trs "Recurring")
+          RecurringRuleR _ -> Just (tr trs "Recurring")
+          AddR -> Just (tr trs "Add a transaction")
+          ManageR -> Just (tr trs "Manage journal files")
+          _ -> listToMaybe [tr trs label | (route, label, _) <- reportLinkItems reportMenu, route == here]
+        heading = case mheading of
+          Just (PageHeading h) -> h
+          Nothing -> fromMaybe fileName menuName
+        showFile = heading /= fileName
+        -- the add button opens the dialog on the pages that have it, else the add page
+        hasModal = here `elem` [JournalR, RegisterR]
         accounts =
           balanceReportAsHtml RegisterR hideEmptyAccts trs j qparam qopts $
           revenuePositive $
@@ -434,14 +452,22 @@ data ReportMenuItem = ReportMenuItem {
 -- | The report pages, in menu order.
 reportMenu :: [ReportMenuItem]
 reportMenu =
-  -- TRANSLATORS: the report links above each report page and in the sidebar: each link's text, and its tooltip.
-  [ ReportMenuItem BreakdownR          (i18n "Reports")                   (i18n "Show where the money went, by kind and category")  PerPeriod                         True
-  , ReportMenuItem BalancesheetR       (i18n "Balance sheet")             (i18n "Show assets, liabilities, and net worth")          (cbcaccum balancesheetSpec)       True
+  -- TRANSLATORS: the report links above each report page and in the top menu: each link's text, and its tooltip.
+  -- (The top menu, and a phone's tab bar, call the balance sheet Accounts.
+  -- The statements are not in the menu: they are at their addresses, and
+  -- in the Report list on a phone.)
+  [ ReportMenuItem BalancesheetR       (i18n "Accounts")                  (i18n "Show assets, liabilities, and net worth")          (cbcaccum balancesheetSpec)       True
+  , ReportMenuItem BreakdownR          (i18n "Reports")                   (i18n "Show where the money went, by kind and category")  PerPeriod                         True
   , ReportMenuItem BalancesheetequityR (i18n "Balance sheet with equity") (i18n "Show assets, liabilities, and equity")             (cbcaccum balancesheetequitySpec) False
-  , ReportMenuItem IncomestatementR    (i18n "Income statement")          (i18n "Show revenues and expenses")                       (cbcaccum incomestatementSpec)    True
-  , ReportMenuItem CashflowR           (i18n "Cashflow statement")        (i18n "Show changes in liquid assets")                    (cbcaccum cashflowSpec)           True
+  , ReportMenuItem IncomestatementR    (i18n "Income statement")          (i18n "Show revenues and expenses")                       (cbcaccum incomestatementSpec)    False
+  , ReportMenuItem CashflowR           (i18n "Cashflow statement")        (i18n "Show changes in liquid assets")                    (cbcaccum cashflowSpec)           False
   , ReportMenuItem BalanceR            (i18n "Balance report")            (i18n "Show the balance report: any accounts, by period") PerPeriod                         False
   ]
+
+-- | A page's heading, for the header: set by a handler before the layout
+-- (request-scoped, through Yesod's cache); the layout falls back to the
+-- menu's name for the page, then the journal's file.
+newtype PageHeading = PageHeading Text
 
 -- | The report pages' routes, labels, and titles, for a row of links.
 reportLinkItems :: [ReportMenuItem] -> [(Route App, Text, Text)]

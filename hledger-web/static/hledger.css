@@ -1607,9 +1607,13 @@ a:focus > .account-name > * {
    the arrow between them in a third, so the arrows line up down the
    page: the accounts the money came from end at the arrows, the ones it
    went to start after them. */
-.transactionsreport > tbody > tr > td.flow-from {
+.transactionsreport > tbody > tr > td.flow-from,
+.transactionsreport > thead > tr > th.flow-from {
   padding-right: 2px;
   text-align: right;
+}
+.transactionsreport > thead > tr > th.flow-to {
+  padding-left: 2px;
 }
 .transactionsreport > tbody > tr > td.flow-arrow {
   padding-right: 6px;
@@ -2130,10 +2134,6 @@ a:focus > .account-name > * {
   color: var(--account);
 }
 @media screen and (min-width: 768px) {
-  #searchform {
-    max-width: 560px;
-    margin-bottom: 14px;
-  }
   #main-content h2 {
     margin: 6px 0 12px;
     font-size: 24px;
@@ -2308,16 +2308,28 @@ a:focus > .account-name > * {
   #topbar {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 4px 24px;
+    align-items: center;
+    gap: 4px 20px;
     width: 100%;
-    padding: 12px 15px 8px;
+    padding: 8px 15px 8px;
     margin-bottom: 10px;
     border-bottom: 1px solid var(--sidebar-rule);
+  }
+  #topbar .topbar-name {
+    min-width: 0;
   }
   #topbar h1 {
     margin: 0;
     font-size: 20px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #topbar .journal-file {
+    font-size: 11px;
+    line-height: 1.2;
+    color: var(--account-parents);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2325,15 +2337,44 @@ a:focus > .account-name > * {
   /* (the name takes the sidebar's width, so the menu starts where the
      main pane's text does: its column, plus its padding, less the first
      pill's own; the spacer's class says whether the sidebar is shown) */
-  #spacer.col-sm-4 + #topbar h1 {
+  #spacer.col-sm-4 + #topbar .topbar-name {
     flex: 0 0 calc(33.333% + 11px);
-    margin-right: -24px;
+    margin-right: -20px;
+  }
+  /* the search form in the header, and the add button at its right end */
+  #topbar #searchform {
+    flex: 1 1 200px;
+    max-width: 400px;
+    margin: 0;
+  }
+  #topbar .topbar-add {
+    flex: none;
+    margin-left: auto;
+    color: var(--add-button-text);
+    background-color: var(--add-button);
+    border-color: var(--add-button);
+    border-radius: 999px;
+  }
+  #topbar .topbar-add:hover,
+  #topbar .topbar-add:focus {
+    color: var(--add-button-text);
+    filter: brightness(1.1);
+  }
+  /* the journal's own add and rules buttons are the phone's: the header has them */
+  #addformlink,
+  .recurring-button {
+    display: none;
   }
 }
 @media screen and (min-width: 992px) {
-  #spacer.col-md-4 + #topbar h1 {
+  #spacer.col-md-4 + #topbar .topbar-name {
     flex: 0 0 calc(25% + 8px);
-    margin-right: -24px;
+    margin-right: -20px;
+  }
+}
+@media screen and (max-width: 767px) {
+  .topbar-add {
+    display: none;
   }
 }
 .topmenu {

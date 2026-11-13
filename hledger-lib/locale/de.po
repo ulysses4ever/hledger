@@ -1317,3 +1317,13 @@ msgstr "Die Einträge des Monats werden nach diesen Regeln im Voraus geschrieben
 #: hledger-web/Hledger/Web/Handler/RecurringR.hs
 msgid "Twice a month, on the 1st and the 15th"
 msgstr "Zweimal im Monat, am 1. und am 15."
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Accounts"
+msgstr "Konten"
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Transaction"
+msgstr "Buchung"

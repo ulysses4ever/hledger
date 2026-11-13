@@ -21,6 +21,7 @@ import Text.Hamlet (hamletFile)
 import Hledger.Utils.I18n (tr, trc, trf)
 import Hledger
 import Hledger.Cli.CliOptions
+import Hledger.Web.App (PageHeading(..))
 import Hledger.Web.Import
 import Hledger.Web.Paging
 import Hledger.Web.WebOptions
@@ -157,6 +158,7 @@ getRegisterR = do
              | r :| rs <- NE.groupBy ((==) `on` rowDay) items ]
       rowDay (_, tacct, _, _, _, _) = tdate tacct
       noBelow = const mempty
+  cacheSet (PageHeading (tr trs "Register"))
   defaultLayout $ do
     -- TRANSLATORS: the browser tab title of this page.
     setTitleI (HMsg "register - hledger-web")

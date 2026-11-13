@@ -12,6 +12,7 @@ import Data.Text qualified as T
 import Hledger.Utils.I18n (tr, trf)
 import Hledger
 import Hledger.Cli.CliOptions
+import Hledger.Web.App (PageHeading(..))
 import Hledger.Web.Import
 import Hledger.Web.Paging
 import Hledger.Web.WebOptions
@@ -129,6 +130,7 @@ getJournalR = do
         let accts = nub [paccount p | p <- tpostings t, isSource (pamount p)]
         in zip accts (drop 1 (", " <$ accts) ++ [""])
 
+  cacheSet (PageHeading title')
   defaultLayout $ do
     -- TRANSLATORS: the browser tab title of this page.
     setTitleI (HMsg "journal - hledger-web")

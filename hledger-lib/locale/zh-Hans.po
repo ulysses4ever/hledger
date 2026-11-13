@@ -1777,3 +1777,13 @@ msgstr "本月的条目按这些规则预先写入，待对账单或人工确认
 #: hledger-web/Hledger/Web/Handler/RecurringR.hs
 msgid "Twice a month, on the 1st and the 15th"
 msgstr "每月两次，1日和15日"
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Accounts"
+msgstr "账户"
+
+#. hledger-web: the top menu, and the header naming the page.
+#: hledger-web/Hledger/Web/App.hs
+msgid "Transaction"
+msgstr "交易"

@@ -5,8 +5,13 @@
       <span .glyphicon.glyphicon-align-left.tgl-icon>
 
 <div#topbar .col-md-8 .col-sm-8 .col-xs-10>
-  <h1>#{takeFileName (journalFilePath j)}
-  $# The pages, as a menu across the top (a phone has its tab bar instead).
+  $# The page's name, with the journal's file under it in small type.
+  <div .topbar-name>
+    <h1>#{heading}
+    $if showFile
+      <div .journal-file>#{fileName}
+  $# The pages, as a menu across the top (a phone has its tab bar instead);
+  $# the search form; and the button that adds an entry, at the right.
   $if elem ViewPermission perms
     <nav .topmenu aria-label=_{HMsgc "tab bar" "Pages"}>
       <a href=@?{journalLink} :onJournal:.current title=_{HMsg "Show general journal entries, most recent first"}>_{HMsgc "tab bar" "Journal"}
@@ -14,6 +19,30 @@
         <a href=@?{(route, sidebarParams)} :here == route:.current title=#{tr trs title}>#{tr trs label}
       $if elem AddPermission perms
         <a href=@{RecurringR} :here == RecurringR:.current>_{HMsg "Recurring"}
+    $# On a phone the search form is out of sight unless a search is in
+    $# force (more than an account's register's own term) or it is asked
+    $# for (the tab bar's Search tab, below).
+    <form#searchform.input-group :searching:.searching method=GET>
+      <input .form-control name=q value=#{qparam} placeholder=_{HMsgc "search box" "Search"}
+        title=_{HMsg "Enter hledger search patterns to filter the data below"}>
+      $forall (name, value) <- keptParams
+        <input type=hidden name=#{name} value=#{value}>
+      <div .input-group-btn>
+        $if not (T.null qparam)
+          <a href=@?{(here, keptParams)} .btn .btn-default title=_{HMsg "Clear search terms"}>
+            <span .glyphicon .glyphicon-remove-circle>
+        <button .btn .btn-default type=submit title=_{HMsg "Apply search terms"}>
+          <span .glyphicon .glyphicon-search>
+        $if elem EditPermission perms
+          <a href="@{ManageR}" .btn.btn-default title=_{HMsg "Manage journal files"}>
+            <span .glyphicon .glyphicon-wrench>
+        <button .btn .btn-default type=button data-toggle="modal" data-target="#helpmodal"
+           title=_{HMsg "Show search and general help"}>
+          <span .glyphicon .glyphicon-question-sign>
+    $if elem AddPermission perms
+      <a .btn .btn-primary .topbar-add href=@{AddR} role="button" :hasModal:data-toggle="modal" :hasModal:data-target="#addmodal" title=_{HMsg "Add a new transaction to the journal"}>
+        <span .glyphicon .glyphicon-plus aria-hidden="true">
+        _{HMsg "Add a transaction"}
 
 $if elem ViewPermission perms
   <div#sidebar-menu .sidebar-offcanvas.#{sideShowmd}.#{sideShowsm}>
@@ -61,27 +90,6 @@ $if elem ViewPermission perms
       _{HMsg "hledger-web is no longer running. It exits after fifteen minutes with no browser window showing it, or when stopped. To continue, start it again and reload this page."}
   $maybe m <- msg
     <div #message .alert.alert-info>#{m}
-  $if elem ViewPermission perms
-    $# On a phone the search form is out of sight unless a search is in
-    $# force (more than an account's register's own term) or it is asked
-    $# for (the tab bar's Search tab, below).
-    <form#searchform.input-group :searching:.searching method=GET>
-      <input .form-control name=q value=#{qparam} placeholder=_{HMsgc "search box" "Search"}
-        title=_{HMsg "Enter hledger search patterns to filter the data below"}>
-      $forall (name, value) <- keptParams
-        <input type=hidden name=#{name} value=#{value}>
-      <div .input-group-btn>
-        $if not (T.null qparam)
-          <a href=@?{(here, keptParams)} .btn .btn-default title=_{HMsg "Clear search terms"}>
-            <span .glyphicon .glyphicon-remove-circle>
-        <button .btn .btn-default type=submit title=_{HMsg "Apply search terms"}>
-          <span .glyphicon .glyphicon-search>
-        $if elem EditPermission perms
-          <a href="@{ManageR}" .btn.btn-default title=_{HMsg "Manage journal files"}>
-            <span .glyphicon .glyphicon-wrench>
-        <button .btn .btn-default type=button data-toggle="modal" data-target="#helpmodal"
-           title=_{HMsg "Show search and general help"}>
-          <span .glyphicon .glyphicon-question-sign>
   ^{widget}
 
 $# On a phone, a bar of tabs along the foot of the screen (hledger.css

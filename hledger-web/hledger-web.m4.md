@@ -231,10 +231,11 @@ If the file is missing or can't be read, hledger-web says so, and shows the page
 The pages' Content-Security-Policy allows no inline styles or scripts, so everything goes in this file.
 
 Some parts of the pages have classes meant as hooks for this.
+The header (`#topbar`) holds the page's name with the journal's file under it (`.topbar-name`),
+the menu (`.topmenu`), the search form (`#searchform`) and, on a wide screen, the add button (`.topbar-add`).
 The journal page's parts are a flex column, which a stylesheet can rearrange with the `order` property.
 From the top, they are:
-`.journal-heading`;
-`.journal-actions`, the row with the add button (`#addformlink`) and the "Show both sides" box
+`.journal-actions`, the row with the phone's add button (`#addformlink`) and the "Show both sides" box
 (`.both-sides-toggle`), which `display: contents` on the row lets move apart;
 `.journal-years`;
 `.journal-paging-top`, the "Showing ..." line and the page links;

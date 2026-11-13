@@ -19,6 +19,7 @@ import Data.Text.IO qualified as T
 
 import Hledger
 import Hledger.Utils.I18n (tr, trc, trf)
+import Hledger.Web.App (PageHeading(..))
 import Hledger.Web.Import
 import Hledger.Web.WebOptions (WebOpts(..))
 import Hledger.Web.Widget.AddForm (addForm, transactionCollapseNewlines)
@@ -86,6 +87,7 @@ showPage t original view enctype editing = do
         ++ [(trc trs "placeholder" "Note", FactText note) | not (T.null note)]
       editLink = (TransactionR (tindex t), [("edit", "1")])
       back = (JournalR, [("q", "date:" <> T.pack (show (tdate t)))])
+  cacheSet (PageHeading (tr trs "Transaction"))
   defaultLayout $ do
     setTitleI (HMsg "transaction - hledger-web")
     $(widgetFile "transaction")

@@ -24,7 +24,7 @@ test.beforeAll(async () => {
     '.journal-entries { order: 1; }',
     '.journal-years, .journal-paging-top { order: 2; }',
     '.journal-paging-bottom { display: none; }',
-    '.journal-heading { letter-spacing: 3px; }',
+    '#topbar h1 { letter-spacing: 3px; }',
     // the manual's icons, by account and by kind
     '[data-account^="expenses:food" i] .entry-icon::before { content: "F"; }',
     '[data-kind="moving"] .entry-icon::before { content: "T"; }',
@@ -42,7 +42,7 @@ test('an instance stylesheet applies, within the policy, and can rearrange the j
   const violations = await watchViolations(page);
   const errors = watchPageErrors(page);
   await page.goto(URL + '/journal');
-  await expect(page.locator('#main-content h2')).toHaveCSS('letter-spacing', '3px');
+  await expect(page.locator('#topbar h1')).toHaveCSS('letter-spacing', '3px');
   // the paging comes after the entries now; the add button stays above them
   const top = sel => page.locator(sel).evaluate(e => e.getBoundingClientRect().top);
   expect(await top('.journal-paging-top')).toBeGreaterThan(await top('.journal-entries'));

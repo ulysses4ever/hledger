@@ -1140,9 +1140,13 @@ hledgerWebTest = do
     yit "lists the balance sheet, income statement, and cashflow statement in the top menu, marking the one shown" $ do
       get BalancesheetR
       statusIs 200
-      bodyContains ("<a class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" title=\"Show assets, liabilities, and net worth\">Balance sheet</a>")
-      htmlAnyContain ".topmenu a" "Income statement"
-      htmlAnyContain ".topmenu a" "Cashflow statement"
+      bodyContains ("<a class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" title=\"Show assets, liabilities, and net worth\">Accounts</a>")
+      htmlAnyContain ".topmenu a" "Reports"
+      -- the statements are at their addresses, not in the menu
+      htmlNoneContain ".topmenu a" "Income statement"
+      htmlNoneContain ".topmenu a" "Cashflow statement"
+      -- the header names the page
+      htmlAnyContain "#topbar h1" "Accounts"
       -- the other two reports are in the Report row, not the menu
       htmlNoneContain ".topmenu a" "with equity"
       htmlNoneContain ".topmenu a" "Balance report"
@@ -1171,7 +1175,7 @@ hledgerWebTest = do
         setUrl JournalR
         addGetParam "q" "date:2025"
       statusIs 200
-      bodyContains ("<a href=\"" ++ defbaseurl defhost defport ++ "/incomestatement?q=date%3A2025\" title=\"Show revenues and expenses\">")
+      bodyContains ("<a href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?q=date%3A2025\" title=\"Show assets, liabilities, and net worth\">")
 
     yit "shows a statement's account names part by part, leaving out the top level its section names" $ do
       request $ do
@@ -1199,7 +1203,7 @@ hledgerWebTest = do
       statusIs 200
       bodyContains "<span class=\"report-choice-name\">Report</span>"
       bodyContains "<select class=\"form-control\" data-navigate autocomplete=\"off\">"
-      bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" selected title=\"Show assets, liabilities, and net worth\">Balance sheet</option>")
+      bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/balancesheet\" selected title=\"Show assets, liabilities, and net worth\">Accounts</option>")
       bodyContains ("<option value=\"" ++ defbaseurl defhost defport ++ "/incomestatement\" title=\"Show revenues and expenses\">Income statement</option>")
       bodyNotContains "<option value=\"\" selected disabled>"
 
