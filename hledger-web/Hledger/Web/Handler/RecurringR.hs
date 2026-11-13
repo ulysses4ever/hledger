@@ -23,6 +23,8 @@ import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Text.Read (readMaybe)
 
+import Data.Time.Calendar (addGregorianMonthsClip, fromGregorian, toGregorian)
+
 import Hledger
 import Hledger.Utils.I18n (Translations, tr, trf)
 import Hledger.Web.Import
@@ -42,6 +44,25 @@ schedules trs =
   , ("quarterly", tr trs "Every quarter",  Quarters 1, "quarterly")
   , ("yearly",    tr trs "Every year",     Years 1,    "yearly")
   ]
+
+-- | The schedule the list offers beyond hledger's single rhythms: twice
+-- a month, on the 1st and the 15th, which is two monthly rules.
+twiceKey :: Text
+twiceKey = "twice"
+
+twiceLabel :: Translations -> Text
+twiceLabel trs = tr trs "Twice a month, on the 1st and the 15th"
+
+-- | The first 1st, and the first 15th, on or after a date.
+firstAndFifteenth :: Day -> (Day, Day)
+firstAndFifteenth d = (onOrAfter 1, onOrAfter 15)
+  where
+    (y, m, dd) = toGregorian d
+    onOrAfter n = if dd <= n then fromGregorian y m n else addGregorianMonthsClip 1 (fromGregorian y m n)
+
+-- | One past the highest rule number in use.
+nextNumber :: Journal -> Int
+nextNumber j = 1 + maximum (0 : [n | pt <- jperiodictxns j, (k, v) <- pttags pt, k == "recurring", Just n <- [readMaybe (T.unpack v) :: Maybe Int]])
 
 scheduleKey :: Translations -> Interval -> Maybe Text
 scheduleKey trs ivl = listToMaybe [k | (k, _, i, _) <- schedules trs, i == ivl]
@@ -94,7 +115,7 @@ recurringForm trs j today mpt extra = do
       schedSettings = FieldSettings "schedule" Nothing Nothing (Just "schedule") [("class", "form-control input-lg")]
       exprSettings = FieldSettings "periodexpr" Nothing Nothing (Just "periodexpr") [("class", "form-control input-lg"), ("placeholder", tr trs "or a period expression, such as: every 3 months from 2026-01-15")]
       untilSettings = FieldSettings "until" Nothing Nothing (Just "until") [("class", "form-control input-lg")]
-  (schedRes, schedView) <- mreq (selectFieldList [(l, k) | (k, l, _, _) <- schedules trs]) schedSettings (Just defKey)
+  (schedRes, schedView) <- mreq (selectFieldList ([(l, k) | (k, l, _, _) <- schedules trs] ++ [(twiceLabel trs, twiceKey)])) schedSettings (Just defKey)
   (exprRes, exprView) <- mopt textField exprSettings (Just defExpr)
   (untilRes, untilView) <- mopt dayField untilSettings (Just defUntil)
   let res = (\(t, _) k e u -> (t, k, mfilter (not . T.null . T.strip) e, u)) <$> txnRes <*> schedRes <*> exprRes <*> untilRes
@@ -166,18 +187,17 @@ postRecurringNewR = do
       when (showroom_ opts) $ do
         setMessageI (HMsg "This is a showroom: nothing is saved.")
         redirect RecurringR
-      -- a number of its own: one past the highest in use
-      let used = [n | pt <- jperiodictxns j, (k, v) <- pttags pt, k == "recurring", Just n <- [readMaybe (T.unpack v) :: Maybe Int]]
-          comment = "recurring:" <> T.pack (show (1 + maximum (0 : used)))
-      case ruleText trs today comment made of
+      -- numbers of its own: one past the highest in use (two, twice a month)
+      let comments = ["recurring:" <> T.pack (show n) | n <- [nextNumber j ..]]
+      case ruleTexts trs today comments made of
         Left err -> setMessage (toHtml err) >> rulePage trs Nothing "" view enctype
-        Right txt -> do
+        Right txts -> do
           -- appended to the file the rules are in, else the main file
           let f = case jperiodictxns j of
                 pt : _ -> sourceName (fst (ptsourcepos pt))
                 [] -> journalFilePath j
           ls <- liftIO $ T.lines <$> T.readFile f
-          saveLines trs f (T.unlines (dropWhileEnd T.null ls ++ [""] ++ T.lines txt)) RecurringNewR
+          saveLines trs f (T.unlines (dropWhileEnd T.null ls ++ concat [ "" : T.lines txt | txt <- txts ])) RecurringNewR
           setMessageI (HMsg "Rule saved.")
           redirect RecurringR
     FormMissing -> rulePage trs Nothing "" view enctype
@@ -215,18 +235,29 @@ postRecurringRuleR i = do
         ((res, view), enctype) <- runFormPost $ recurringForm trs j today (Just pt)
         case res of
           FormSuccess made ->
-            -- the rule's own comment, with its number, stays
-            case ruleText trs today (T.strip (ptcomment pt)) made of
+            -- the rule's own comment, with its number, stays; a second
+            -- rule (twice a month) gets a number of its own
+            case ruleTexts trs today (T.strip (ptcomment pt) : ["recurring:" <> T.pack (show n) | n <- [nextNumber j ..]]) made of
               Left err -> setMessage (toHtml err) >> rulePage trs (Just (i, pt)) current view enctype
-              Right txt -> do
+              Right txts -> do
                 ls <- liftIO $ T.lines <$> T.readFile f
-                saveLines trs f (T.unlines (take (l1 - 1) ls ++ T.lines txt ++ drop l2 ls)) (RecurringRuleR i)
+                saveLines trs f (T.unlines (take (l1 - 1) ls ++ T.lines (T.intercalate "\n" txts) ++ drop l2 ls)) (RecurringRuleR i)
                 setMessageI (HMsg "Rule saved.")
                 redirect RecurringR
           FormMissing -> rulePage trs (Just (i, pt)) current view enctype
           FormFailure errs -> do
             setMessage $ toHtml $ T.intercalate "; " errs
             rulePage trs (Just (i, pt)) current view enctype
+
+-- | The rules' texts from what the form made: one, or two for twice a
+-- month (monthly from the first 1st, and from the first 15th, on or after
+-- the entry's date), each with its own comment; or what is wrong.
+ruleTexts :: Translations -> Day -> [Text] -> (Transaction, Text, Maybe Text, Maybe Day) -> Either Text [Text]
+ruleTexts trs today comments made@(t, key, mexpr, muntil)
+  | key == twiceKey && isNothing mexpr =
+      let (d1, d15) = firstAndFifteenth (tdate t)
+      in sequence [ ruleText trs today c (t{tdate = d}, "monthly", Nothing, muntil) | (c, d) <- zip comments [d1, d15] ]
+  | otherwise = (: []) <$> ruleText trs today (fromMaybe "" (listToMaybe comments)) made
 
 -- | A rule's text from what the form made: the period expression (the
 -- schedule from the entry's date, or the one written, to the end date if

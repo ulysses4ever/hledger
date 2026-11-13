@@ -1741,6 +1741,41 @@ hledgerWebTest = do
   -- rule's form is the add form with a schedule above it.
   runTests "hledger-web recurring rules" [("file", jfile), ("allow", "add")] wj $ do
 
+    yit "writes twice a month as two monthly rules, on the first 1st and 15th from the date" $ do
+      get RecurringNewR
+      statusIs 200
+      bodyContains "Twice a month, on the 1st and the 15th"
+      request $ do
+        setMethod "POST"
+        setUrl RecurringNewR
+        addToken
+        addPostParam "_formid" "identify-add"
+        addPostParam "date" "2025-02-20"
+        addPostParam "description" "TwiceRule"
+        addPostParam "schedule" "7"   -- the seventh, after the six rhythms: twice a month
+        addPostParam "account" "expenses:rent"
+        addPostParam "amount" "5"
+        addPostParam "account" "assets:bank:checking"
+        addPostParam "amount" "-5"
+      statusIs 303
+      txt <- liftIO $ TIO.readFile jfile
+      assertEq "a rule from the 1st" (T.isInfixOf "~ monthly from 2025-03-01  TwiceRule  ; recurring:1" txt) True
+      assertEq "and one from the 15th, numbered after it" (T.isInfixOf "~ monthly from 2025-03-15  TwiceRule  ; recurring:2" txt) True
+      -- (both deleted again, for the other tests)
+      forM_ [1 :: Int, 2] $ \_ -> do
+        txt' <- liftIO $ TIO.readFile jfile
+        let original = T.unlines $ takeWhile (not . T.null) $ dropWhile (not . T.isInfixOf "TwiceRule") $ T.lines txt'
+        get (RecurringRuleR 1)
+        statusIs 200
+        request $ do
+          setMethod "POST"
+          setUrl (RecurringRuleR 1)
+          addToken_ "#deleteform"
+          addPostParam "action" "delete"
+          addPostParam "original" original
+        statusIs 303
+      journalFileLacks jfile "TwiceRule"
+
     yit "lists, adds, changes and deletes a rule, written as a periodic transaction" $ do
       get RecurringR
       statusIs 200
