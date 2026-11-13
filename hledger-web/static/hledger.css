@@ -1584,9 +1584,15 @@ a:focus > .account-name > * {
    javascript the choice could not be kept, so the box is not shown. */
 .transactionsreport:not(.both-sides) tr.posting.source,
 .transactionsreport:not(.both-sides) tr.posting.main,
+.transactionsreport:not(.both-sides) tr.posting.flow,
 .transactionsreport.both-sides tr.title td.main-posting,
 .transactionsreport.both-sides tr.posting.from {
   display: none;
+}
+/* between the two accounts of an entry on one line, the way the money went */
+.transactionsreport td.flow .flow-arrow {
+  margin: 0 0.45em;
+  color: var(--account-parents);
 }
 .transactionsreport tr.from,
 .transactionsreport tr.from a {

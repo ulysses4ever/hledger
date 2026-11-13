@@ -113,6 +113,15 @@ getJournalR = do
             | not seen && not (isSource (pamount p)) = (p, True) : go True ps
             | otherwise = (p, False) : go seen ps
       mainPosting t = listToMaybe [p | (p, True) <- postingRows t]
+      -- An entry between two accounts, the usual kind: where the money
+      -- came from and where it went. Single-sided it is one line, the two
+      -- accounts with an arrow between them beside the description; an
+      -- entry with more accounts keeps its rows.
+      flowOf :: Transaction -> Maybe (Posting, Posting)
+      flowOf t = case (filter (isSource . pamount) ps, filter (not . isSource . pamount) ps) of
+        ([src], [dst]) -> Just (src, dst)
+        _ -> Nothing
+        where ps = filter (not . mixedAmountLooksZero . pamount) (tpostings t)
       -- The accounts an entry's money came from, each with the separator
       -- that follows it.
       sourceAccounts :: Transaction -> [(AccountName, Text)]

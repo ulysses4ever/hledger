@@ -36,10 +36,10 @@ function entry(page, description) {
   });
 }
 
-// Cafe Luna: 18.00 to expenses:food:dining, from assets:bank:checking.
+// Cafe Luna: 18.00 to expenses:food:dining, from assets:bank:checking:
+// single-sided, one line, from → to, with the amount.
 const single = [
-  { from: false, accounts: ['expenses:food:dining'], amount: '18.00' },
-  { from: true, accounts: ['assets:bank:checking'], amount: '' },
+  { from: false, accounts: ['assets:bank:checking', 'expenses:food:dining'], amount: '18.00' },
 ];
 const both = [
   { from: false, accounts: ['expenses:food:dining'], amount: '18.00' },

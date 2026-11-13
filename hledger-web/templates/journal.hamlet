@@ -61,18 +61,30 @@ $# given with --css can rearrange them with the order property.
               <span :T.null (tdescription torig):.entry-kind>#{entryTitle torig es}
             $if isRecurring torig
               <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
-          $# Single-sided, the entry's main posting (what it was for, and how
-          $# much) sits here on the title row, and its own row below is
-          $# hidden; both sides shown, these cells hide instead (hledger.css).
-          $maybe p <- mainPosting torig
-            <td .account .main-posting>
-              <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
-                ^{accountNameAsHtml (paccount p)}
+          $# Single-sided, the entry sits on its title row: between two
+          $# accounts, as where the money came from → where it went, and
+          $# how much; with more accounts, its main posting (what it was
+          $# for, and how much), the other postings keeping their rows
+          $# below. Both sides shown, these cells hide instead (hledger.css).
+          $maybe (src, dst) <- flowOf torig
+            <td .account .main-posting .flow>
+              <a href="@?{acctlink (paccount src) torig}##{transactionFrag torig}" title="#{paccount src}">
+                ^{accountNameAsHtml (paccount src)}
+              <span .flow-arrow aria-hidden="true">→
+              <a href="@?{acctlink (paccount dst) torig}##{transactionFrag torig}" title="#{paccount dst}">
+                ^{accountNameAsHtml (paccount dst)}
             <td .amount .main-posting>
-              ^{mixedAmountAsHtml (pamount p)}
+              ^{mixedAmountAsHtml (pamount dst)}
           $nothing
-            <td .account .main-posting>
-            <td .amount .main-posting>
+            $maybe p <- mainPosting torig
+              <td .account .main-posting>
+                <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
+                  ^{accountNameAsHtml (paccount p)}
+              <td .amount .main-posting>
+                ^{mixedAmountAsHtml (pamount p)}
+            $nothing
+              <td .account .main-posting>
+              <td .amount .main-posting>
           $# On a phone, single-sided, the entry is shown as this block instead
           $# (hledger.css section 15): what it was for and how much; its date and
           $# where the money came from or went; its payee and note.
@@ -113,7 +125,7 @@ $# given with --css can rearrange them with the order property.
                 <span .recurring-mark title=_{HMsg "From a recurring rule"}>↻
 
         $forall (p, isMain) <- postingRows torig
-          <tr .posting :isSource (pamount p):.source :isMain:.main :isFuture torig:.future>
+          <tr .posting :isSource (pamount p):.source :isMain:.main :isJust (flowOf torig):.flow :isFuture torig:.future>
             <td>
             <td>
             <td .account>
@@ -125,7 +137,7 @@ $# given with --css can rearrange them with the order property.
         $# money came from, are shown on this line instead, without amounts.
         $with sources <- sourceAccounts torig
           $if not (null sources)
-            <tr .posting .from :isFuture torig:.future>
+            <tr .posting .from :isJust (flowOf torig):.flow :isFuture torig:.future>
               <td>
               <td>
               <td .from-accounts>
