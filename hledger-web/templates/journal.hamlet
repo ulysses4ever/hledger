@@ -117,7 +117,6 @@ $# given with --css can rearrange them with the order property.
             <td>
             <td>
             <td .account>
-              &nbsp;
               <a href="@?{acctlink (paccount p) torig}##{transactionFrag torig}" title="#{paccount p}">
                 ^{accountNameAsHtml (paccount p)}
             <td .amount>
@@ -130,7 +129,6 @@ $# given with --css can rearrange them with the order property.
               <td>
               <td>
               <td .from-accounts>
-                &nbsp;
                 <span>
                   <span .from-label>
                     $# TRANSLATORS: begins a line naming the accounts a journal entry's money came from, eg "from bank › checking, cash".

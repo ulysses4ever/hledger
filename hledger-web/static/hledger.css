@@ -2133,16 +2133,24 @@ a:focus > .account-name > * {
 .transactionsreport > tbody > tr.posting.from > td {
   font-size: 14px;
 }
-/* The description and the account columns take only the room their
-   text needs, so the columns sit together at the left and the amounts
-   keep the right edge; a long text is cut short rather than pushing the
-   columns apart. */
+/* The journal's table is as wide as its text, not the page: the
+   description and the account columns take only the room their text
+   needs, and the amounts follow the accounts at a short distance rather
+   than keeping the far edge; a long text is cut short rather than
+   pushing the columns apart. */
 @media screen and (min-width: 768px) {
+  .transactionsreport {
+    width: auto;
+  }
+  .transactionsreport > tbody > tr > td.amount,
+  .transactionsreport > thead > tr > th:nth-child(4) {
+    padding-left: 36px;
+    white-space: nowrap;
+  }
   .transactionsreport > tbody > tr > td.description,
   .transactionsreport > tbody > tr > td.account,
   .transactionsreport > thead > tr > th:nth-child(2),
   .transactionsreport > thead > tr > th:nth-child(3) {
-    width: 1%;
     white-space: nowrap;
   }
   .transactionsreport > tbody > tr > td.description {
