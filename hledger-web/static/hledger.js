@@ -647,19 +647,24 @@ function entryHoverInit() {
 // A journal or register row with data-href (one the reader may edit)
 // leads to its entry's page: a tap or click anywhere on it that is not on
 // a link or a control, and selects no text, goes there. In the journal a
-// posting row belongs to the title row above it.
+// posting row belongs to the title row above it. On a phone the entry's
+// block is one target: a tap on a link inside it goes to the entry too.
 function entryRowsInit() {
   var table = document.querySelector('.transactionsreport, .registerreport');
   if (!table) { return; }
   table.addEventListener('click', function(e) {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) { return; }
-    if (e.target.closest('a, button, input, select, label, textarea')) { return; }
-    var sel = window.getSelection();
-    if (sel && sel.toString()) { return; }
     var row = e.target.closest('tr');
     if (!row) { return; }
+    var phoneBlock = e.target.closest('td.entry-card') && window.matchMedia('(max-width: 767px)').matches;
+    if (!phoneBlock && e.target.closest('a, button, input, select, label, textarea')) { return; }
+    var sel = window.getSelection();
+    if (sel && sel.toString()) { return; }
     while (row && !row.dataset.href && row.classList.contains('posting')) { row = row.previousElementSibling; }
-    if (row && row.dataset.href) { window.location = row.dataset.href; }
+    if (row && row.dataset.href) {
+      e.preventDefault();
+      window.location = row.dataset.href;
+    }
   });
 }
 

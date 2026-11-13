@@ -351,6 +351,11 @@ test.describe('transaction page', () => {
     await page.goto('/journal');
     await page.locator('#main-content tr.title', { hasText: 'E2eRowClick' }).locator('td.date a').click();
     await expect(page).toHaveURL(/\/journal\?q=date/);
+    // on a phone the entry's block is one target: even its links open the entry
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/journal');
+    await page.locator('#main-content tr.title', { hasText: 'E2eRowClick' }).locator('td.entry-card .entry-what a').click();
+    await expect(page).toHaveURL(/\/transaction\/\d+$/);
     expect(pageErrors).toEqual([]);
   });
 
