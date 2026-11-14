@@ -526,6 +526,19 @@ test.describe('on a tablet', () => {
     expect(pageErrors).toEqual([]);
   });
 
+  test("the header keeps to one line, in landscape and upright, the add button a round +", async ({ page }) => {
+    for (const width of [1024, 820, 768]) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/journal');
+      const mid = async sel => { const b = await page.locator(sel).boundingBox(); return b.y + b.height / 2; };
+      const menu = await mid('.topmenu'), search = await mid('#topbar #searchform'), add = await mid('#topbar .topbar-add');
+      expect(Math.abs(search - menu), `at ${width}px`).toBeLessThan(6);
+      expect(Math.abs(add - menu), `at ${width}px`).toBeLessThan(6);
+      expect((await page.locator('#topbar .topbar-add').boundingBox()).width, `at ${width}px`).toBeLessThan(50);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), `at ${width}px`).toBe(true);
+    }
+  });
+
   test('a narrow window wraps a long text rather than scrolling the journal sideways', async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 900 });
     await page.goto('/journal?period=all');

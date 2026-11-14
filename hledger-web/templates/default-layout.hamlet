@@ -48,7 +48,7 @@
     $if elem AddPermission perms
       <a .btn .btn-primary .topbar-add href=@{AddR} role="button" :hasModal:data-toggle="modal" :hasModal:data-target="#addmodal" title=_{HMsg "Add a new transaction to the journal"}>
         <span .glyphicon .glyphicon-plus aria-hidden="true">
-        _{HMsg "Add a transaction"}
+        <span .topbar-add-label>_{HMsg "Add a transaction"}
 
 $if elem ViewPermission perms
   <div#sidebar-menu .sidebar-offcanvas.#{sideShowmd}.#{sideShowsm}>

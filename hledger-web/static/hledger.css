@@ -2342,9 +2342,49 @@ a:focus > .account-name > * {
   #topbar .sidebar-toggle:hover {
     background-color: var(--band);
   }
-  #spacer.col-sm-4 + #topbar .topbar-name,
-  #spacer.col-md-4 + #topbar .topbar-name {
+  /* The header keeps to one line: the menu's pills and the gaps tighter,
+     the search giving up width first, and the add button a round + as on
+     a phone, its words left for screen readers. (div#: these outrank
+     the wide screen's header rules, which come later.) */
+  div#topbar {
+    flex-wrap: nowrap;
+    gap: 4px 12px;
+  }
+  div#topbar .topmenu {
     flex: none;
+    flex-wrap: nowrap;
+  }
+  div#topbar .topmenu a {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  div#topbar #searchform {
+    flex: 1 1 120px;
+    min-width: 90px;
+  }
+  div#topbar .topbar-add {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 18px;
+  }
+  div#topbar .topbar-add .topbar-add-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  /* (the page's name takes its width, and on a narrow tablet gives way,
+     cut short, before the menu or the button does) */
+  #spacer.col-sm-4 + div#topbar .topbar-name,
+  #spacer.col-md-4 + div#topbar .topbar-name {
+    flex: 0 1 auto;
+    min-width: 0;
     margin-right: 0;
   }
   #main-content.col-sm-8,
