@@ -1792,3 +1792,38 @@ msgstr "交易"
 #: hledger-web/templates/default-layout.hamlet
 msgid "find it in any field: payee, note, account, amount"
 msgstr "在任意字段中查找：收款人、备注、账户、金额"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Calculator"
+msgstr "计算器"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Clear"
+msgstr "清除"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "plus"
+msgstr "加"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "minus"
+msgstr "减"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "times"
+msgstr "乘"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "divided by"
+msgstr "除以"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "OK"
+msgstr "确定"

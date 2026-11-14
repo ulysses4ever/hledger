@@ -1332,3 +1332,38 @@ msgstr "Buchung"
 #: hledger-web/templates/default-layout.hamlet
 msgid "find it in any field: payee, note, account, amount"
 msgstr "es in jedem Feld finden: Zahlungsempfänger, Notiz, Konto, Betrag"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Calculator"
+msgstr "Rechner"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Clear"
+msgstr "Löschen"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "plus"
+msgstr "plus"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "minus"
+msgstr "minus"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "times"
+msgstr "mal"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "divided by"
+msgstr "geteilt durch"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "OK"
+msgstr "OK"

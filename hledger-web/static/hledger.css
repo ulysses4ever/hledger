@@ -639,6 +639,96 @@ html.no-js .breakdown-chart {
   border-bottom-left-radius: 0;
 }
 
+/* The amount's calculator (hledger.js). On a phone, a pad of keys at the
+   foot of the screen in place of the keyboard, as AndroMoney has: digits
+   in the link colour, the operators and AC and DEL on the band, DEL red,
+   a tall OK green, a wide 0; above the keys, the sum's result. The form
+   makes room under itself while it is open, so the fields can scroll
+   above it; the amount it is keying into is marked. Elsewhere, a sum's
+   result under the field it is typed into. */
+#addform .calc-pad {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1045;
+  padding-bottom: env(safe-area-inset-bottom);
+  background-color: var(--band);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -4px 14px rgba(0, 0, 0, .18);
+}
+#addform .calc-preview {
+  height: 30px;
+  padding: 5px 14px 0;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  color: var(--account-parents);
+}
+#addform .calc-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 58px;
+  gap: 1px;
+  background-color: var(--border);
+  border-top: 1px solid var(--border);
+}
+#addform .calc-key {
+  padding: 0;
+  font-size: 26px;
+  color: var(--link, #2e6da4);
+  background-color: var(--surface);
+  border: 0;
+  border-radius: 0;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+#addform .calc-key:active {
+  background-color: var(--surface-hover, #e6e6e6);
+}
+#addform .calc-op,
+#addform .calc-fn,
+#addform .calc-del,
+#addform .calc-ok {
+  color: var(--text, #333);
+  background-color: var(--band);
+}
+#addform .calc-fn,
+#addform .calc-del {
+  font-size: 22px;
+}
+#addform .calc-del {
+  color: var(--negative);
+}
+#addform .calc-ok {
+  grid-row: span 2;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--income);
+}
+#addform .calc-zero {
+  grid-column: span 2;
+}
+#addform.calc-open {
+  padding-bottom: 340px;
+}
+#addform .amount-input[readonly] {
+  background-color: var(--surface);
+  cursor: pointer;
+}
+#addform .amount-input.calc-target {
+  border-color: var(--link, #66afe9);
+  box-shadow: 0 0 0 2px var(--link, #66afe9);
+}
+#addform .calc-inline {
+  display: block;
+  margin: -10px 0 10px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--account-parents);
+}
+
 /* The last posting row's amount is hledger's to work out, so it is not
    asked for; adding a row shows the previous last row's. The button that
    adds a row sits under the rows, set a little apart. */

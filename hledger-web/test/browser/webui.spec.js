@@ -152,6 +152,33 @@ test.describe('add form', () => {
     expect(pageErrors).toEqual([]);
   });
 
+  test('the amount is a calculator: a sum typed in is worked out, its result shown meanwhile', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    const amount = page.locator('#addform input[name=amount]').first();
+    await amount.fill('12.50+3.99*2');
+    await expect(page.locator('#addform .calc-inline')).toHaveText('= 20.48');
+    await amount.press('Tab');
+    await expect(amount).toHaveValue('20.48');
+    await expect(page.locator('#addform .calc-inline')).toBeHidden();
+    // a plain number is left as typed; no pad without a touch screen
+    await amount.fill('7');
+    await amount.press('Tab');
+    await expect(amount).toHaveValue('7');
+    await expect(page.locator('#addform .calc-pad')).toBeHidden();
+    // a sum left in the field is worked out before the form goes
+    await setPayee(page, 'E2eCalc');
+    await page.locator('#addform .category-select').selectOption('expenses:food');
+    await page.locator('#addform select[name=account]').nth(0).selectOption('expenses:food:dining');
+    await amount.fill('2*3.5');
+    await page.locator('#addform select[name=account]').nth(1).selectOption('assets:bank:checking');
+    await page.locator('#addform button[type=submit]').click();
+    await expect(page.locator('#message')).toContainText('Transaction added.');
+    const journal = fs.readFileSync(process.env.BROWSER_JOURNAL, 'utf8');
+    expect(journal).toMatch(/E2eCalc[\s\S]*7\.00/);
+    expect(pageErrors).toEqual([]);
+  });
+
   test("the note field offers notes as it is typed into, the payee's own first", async ({ page }) => {
     await page.goto('/journal');
     await openAddForm(page);
@@ -517,6 +544,41 @@ test.describe('sidebar tree and top menu', () => {
     await expect(page.locator('#topbar h1')).toHaveText('Accounts');
     // the sidebar holds the accounts alone now
     expect(await page.locator('#sidebar-menu td.top').count()).toBe(0);
+  });
+
+});
+
+test.describe('the amount keypad on a touch phone', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  test('the amount opens a keypad, which keys a sum, works it out on OK and closes', async ({ page }) => {
+    await page.goto('/journal');
+    await page.locator('#tabbar .tab-add').tap();
+    const pad = page.locator('#addform .calc-pad');
+    const amount = page.locator('#addform input[name=amount]').first();
+    await expect(pad).toBeVisible();              // the amount has the focus, and the pad with it
+    await expect(amount).toHaveAttribute('readonly', '');
+    const key = k => pad.locator(`.calc-key[data-key="${k}"]`);
+    for (const k of ['1', '2', '+', '3', '*', '2']) { await key(k).tap(); }
+    await expect(amount).toHaveValue('12+3×2');
+    await expect(pad.locator('.calc-preview')).toHaveText('= 18');
+    await key('del').tap();
+    await key('del').tap();
+    await expect(amount).toHaveValue('12+3');
+    await key('ok').tap();
+    await expect(pad).toBeHidden();
+    await expect(amount).toHaveValue('15');
+    // a tap on the amount opens it again; a tap on another field closes it
+    await amount.tap();
+    await expect(pad).toBeVisible();
+    await key('clear').tap();
+    await expect(amount).toHaveValue('');
+    await key('.').tap();
+    await key('5').tap();
+    await expect(amount).toHaveValue('0.5');
+    await page.locator('#addform input[name=note]').tap();
+    await expect(pad).toBeHidden();
+    expect(pageErrors).toEqual([]);
   });
 
 });

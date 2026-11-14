@@ -1332,3 +1332,38 @@ msgstr "Транзакция"
 #: hledger-web/templates/default-layout.hamlet
 msgid "find it in any field: payee, note, account, amount"
 msgstr "найти это в любом поле: получатель, заметка, счёт, сумма"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Calculator"
+msgstr "Калькулятор"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Clear"
+msgstr "Сбросить"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "plus"
+msgstr "плюс"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "minus"
+msgstr "минус"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "times"
+msgstr "умножить"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "divided by"
+msgstr "разделить"
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "OK"
+msgstr "OK"

@@ -151,6 +151,35 @@ $# something; never on a rule, whose instances get their own.
   <div .col-sm-3.col-xs-5.text-right>
     <button type=submit .btn .btn-default .btn-lg name=submit>_{HMsg "Save"}
 
+$# The amount is a calculator (hledger.js). On a phone this pad stands in
+$# for the keyboard, at the foot of the screen, as AndroMoney's does: the
+$# field shows the sum as it is keyed, the line above the keys its result,
+$# and OK works it out and closes the pad. Elsewhere a sum typed into an
+$# amount is worked out when the field is left, its result shown under it
+$# meanwhile (.calc-inline). Without the script, neither shows.
+<div .calc-pad hidden role=group aria-label=_{HMsg "Calculator"}>
+  <div .calc-preview aria-live=polite>
+  <div .calc-keys>
+    <button type=button .calc-key .calc-fn data-key=clear aria-label=_{HMsg "Clear"}>AC
+    <button type=button .calc-key .calc-del data-key=del aria-label=_{HMsg "Delete"}>DEL
+    <button type=button .calc-key .calc-op data-key="/" aria-label=_{HMsg "divided by"}>÷
+    <button type=button .calc-key .calc-op data-key="*" aria-label=_{HMsg "times"}>×
+    <button type=button .calc-key data-key=7>7
+    <button type=button .calc-key data-key=8>8
+    <button type=button .calc-key data-key=9>9
+    <button type=button .calc-key .calc-op data-key="-" aria-label=_{HMsg "minus"}>−
+    <button type=button .calc-key data-key=4>4
+    <button type=button .calc-key data-key=5>5
+    <button type=button .calc-key data-key=6>6
+    <button type=button .calc-key .calc-op data-key="+" aria-label=_{HMsg "plus"}>+
+    <button type=button .calc-key data-key=1>1
+    <button type=button .calc-key data-key=2>2
+    <button type=button .calc-key data-key=3>3
+    <button type=button .calc-key .calc-ok data-key=ok>_{HMsg "OK"}
+    <button type=button .calc-key .calc-zero data-key=0>0
+    <button type=button .calc-key data-key=".">.
+<span .calc-inline hidden aria-live=polite>
+
 $# The payees the payee field offers, the frequent ones first, each with
 $# the notes it is used with most; and the notes the note field offers.
 <datalist #payeenames>

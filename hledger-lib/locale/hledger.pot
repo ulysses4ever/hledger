@@ -1708,3 +1708,38 @@ msgstr ""
 #: hledger-web/templates/default-layout.hamlet
 msgid "find it in any field: payee, note, account, amount"
 msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Calculator"
+msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "Clear"
+msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "plus"
+msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "minus"
+msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "times"
+msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "divided by"
+msgstr ""
+
+#. hledger-web: the amount's calculator keypad.
+#: hledger-web/templates/add-form.hamlet
+msgid "OK"
+msgstr ""

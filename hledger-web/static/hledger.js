@@ -170,6 +170,7 @@ document.addEventListener('DOMContentLoaded', function() {
   futureRowsInit();
   entryHoverInit();
   entryRowsInit();
+  calcInit();
   entryPageInit();
   sidebarTreeInit();
   registerChartInit();
@@ -666,6 +667,159 @@ function entryRowsInit() {
       window.location = row.dataset.href;
     }
   });
+}
+
+//----------------------------------------------------------------------
+// THE AMOUNT'S CALCULATOR
+//
+// An amount can be a sum: 12.50+3.99*2. On a phone a keypad stands in for
+// the keyboard (see add-form.hamlet), as AndroMoney's does; elsewhere the
+// sum is typed. Either way it is worked out when the field is left, with
+// Enter, with OK, or when the form is sent, and its result shows as it is
+// keyed. A plain number is left as typed.
+
+// The result of a sum, as the amount to write: rounded to the cents, or
+// to as many places as its numbers have (at most six), and whole when its
+// numbers and its result are; or null when the text is not a sum (a plain
+// number, or anything else).
+function calcEvaluate(text) {
+  var s = String(text).replace(/\s+/g, '').replace(/×/g, '*').replace(/÷/g, '/').replace(/[−–]/g, '-');
+  s = s.replace(/(\d),(?=\d{3}(?!\d))/g, '$1').replace(/,/g, '.');
+  if (!/^[-+*\/().0-9]+$/.test(s) || !/[-+*\/]/.test(s.replace(/^-/, ''))) { return null; }
+  var i = 0, places = 0, whole = true;
+  function number() {
+    var m = /^(\d+\.?\d*|\.\d+)/.exec(s.slice(i));
+    if (!m) { throw 0; }
+    i += m[0].length;
+    if (m[0].indexOf('.') >= 0) { whole = false; places = Math.max(places, m[0].split('.')[1].length); }
+    return parseFloat(m[0]);
+  }
+  function factor() {
+    if (s[i] === '-') { i++; return -factor(); }
+    if (s[i] === '+') { i++; return factor(); }
+    if (s[i] === '(') { i++; var v = sum(); if (s[i] !== ')') { throw 0; } i++; return v; }
+    return number();
+  }
+  function product() {
+    var v = factor();
+    while (s[i] === '*' || s[i] === '/') {
+      var op = s[i++], w = factor();
+      if (op === '/') { if (w === 0) { throw 0; } v /= w; } else { v *= w; }
+    }
+    return v;
+  }
+  function sum() {
+    var v = product();
+    while (s[i] === '+' || s[i] === '-') { var op = s[i++], w = product(); v = op === '+' ? v + w : v - w; }
+    return v;
+  }
+  var v;
+  try { v = sum(); } catch (e) { return null; }
+  if (i !== s.length || !isFinite(v)) { return null; }
+  var dec = Math.min(6, Math.max(2, places)), f = Math.pow(10, dec);
+  var r = Math.round(v * f) / f;
+  if (r === 0) { r = 0; }   // (not -0)
+  return whole && Number.isInteger(r) ? String(r) : r.toFixed(dec);
+}
+
+function calcInit() {
+  var form = document.getElementById('addform');
+  if (!form || form.dataset.calcWired) { return; }
+  form.dataset.calcWired = '1';
+  var pad = form.querySelector('.calc-pad');
+  var preview = pad && pad.querySelector('.calc-preview');
+  var inline = form.querySelector('.calc-inline');
+  var touch = !!pad && window.matchMedia('(pointer: coarse)').matches;
+  var target = null;
+  var isAmount = function(el) { return el && el.matches && el.matches('input[name=amount]'); };
+  var amounts = function() { return form.querySelectorAll('input[name=amount]'); };
+  var result = function(input) { var r = calcEvaluate(input.value); return r === null ? '' : '= ' + r; };
+  // a sum left in a field: its result, its last operator dropped if any
+  function settle(input) {
+    var r = calcEvaluate(input.value.replace(/[-+*\/×÷−]+$/, ''));
+    if (r !== null) { input.value = r; }
+  }
+  // the result under the field being typed into (no pad)
+  function showInline(input) {
+    if (!inline) { return; }
+    var text = result(input);
+    var box = input.closest('.account-group') || input.closest('.form-group');
+    if (box && inline.previousElementSibling !== box) { box.after(inline); }
+    inline.textContent = text;
+    inline.hidden = !text;
+  }
+  function hideInline() { if (inline) { inline.hidden = true; inline.textContent = ''; } }
+  // the pad
+  function open(input) {
+    if (target === input && !pad.hidden) { return; }
+    if (target && target !== input) { settle(target); target.classList.remove('calc-target'); }
+    target = input;
+    target.classList.add('calc-target');
+    pad.hidden = false;
+    form.classList.add('calc-open');
+    preview.textContent = result(target);
+    target.scrollIntoView({ block: 'nearest' });
+  }
+  function close() {
+    if (!target) { return; }
+    settle(target);
+    target.classList.remove('calc-target');
+    target = null;
+    pad.hidden = true;
+    form.classList.remove('calc-open');
+    preview.textContent = '';
+  }
+  function press(key) {
+    var v = target.value;
+    if (key === 'ok') { close(); if (document.activeElement && isAmount(document.activeElement)) { document.activeElement.blur(); } return; }
+    if (key === 'clear') { v = ''; }
+    else if (key === 'del') { v = v.slice(0, -1); }
+    else if ('+-*/'.indexOf(key) >= 0) {
+      var sign = { '+': '+', '-': '−', '*': '×', '/': '÷' }[key];
+      if (v === '' && key !== '-') { return; }
+      v = v.replace(/[-+*\/×÷−]$/, '') + sign;
+    } else if (key === '.') {
+      var part = v.split(/[-+*\/×÷−]/).pop();
+      if (part.indexOf('.') >= 0) { return; }
+      v += part === '' ? '0.' : '.';
+    } else {
+      v = (v === '0' ? '' : v) + key;
+    }
+    target.value = v;
+    preview.textContent = result(target);
+  }
+  if (touch) {
+    // the pad stands in for the keyboard: the amounts take no typing
+    var keep = function() { amounts().forEach(function(a) { a.readOnly = true; }); };
+    keep();
+    // the pad is open while an amount has the focus: focus elsewhere closes it
+    form.addEventListener('focusin', function(e) {
+      if (isAmount(e.target)) { keep(); open(e.target); }
+      else if (!pad.contains(e.target)) { close(); }
+    });
+    form.addEventListener('click', function(e) { if (isAmount(e.target)) { open(e.target); } });
+    // a key keeps the focus where it is, and acts once the tap is done (had
+    // it acted on the way down, OK's closing the pad would hand the rest
+    // of the tap to whatever lay under it)
+    pad.addEventListener('pointerdown', function(e) { e.preventDefault(); });
+    pad.addEventListener('mousedown', function(e) { e.preventDefault(); });
+    pad.addEventListener('click', function(e) {
+      var k = e.target.closest('.calc-key');
+      if (k && target) { press(k.dataset.key); }
+    });
+    // a tap on something that takes no focus closes it too, once done
+    document.addEventListener('click', function(e) {
+      if (target && !pad.contains(e.target) && e.target !== target) { close(); }
+    }, true);
+    var dialog = form.closest('dialog');
+    if (dialog) { dialog.addEventListener('close', close); }
+  } else {
+    form.addEventListener('input', function(e) { if (isAmount(e.target)) { showInline(e.target); } });
+    form.addEventListener('focusout', function(e) { if (isAmount(e.target)) { settle(e.target); hideInline(); } });
+    form.addEventListener('keydown', function(e) { if (e.key === 'Enter' && isAmount(e.target)) { settle(e.target); hideInline(); } });
+  }
+  // whatever is left as a sum is worked out before the form goes
+  form.addEventListener('submit', function() { close(); amounts().forEach(settle); hideInline(); }, true);
 }
 
 // On an entry's page, Edit shows the form in place, without reloading.
