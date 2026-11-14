@@ -549,6 +549,29 @@ hledgerWebTest = do
 
     -- With two transactions in one year there is nothing to page or to
     -- move between, and the pages say nothing about it.
+    yit "finds a bare search word in any field, a payee's name included" $ do
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "q" "lunch"
+      statusIs 200
+      bodyContains ">lunch<"
+      bodyNotContains ">pay<"
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "q" "not:lunch"
+      statusIs 200
+      bodyContains ">pay<"
+      bodyNotContains ">lunch<"
+      -- hledger's own terms are as written: an account term matches accounts alone
+      request $ do
+        setMethod "GET"
+        setUrl JournalR
+        addGetParam "q" "acct:lunch"
+      statusIs 200
+      bodyNotContains ">lunch<"
+
     yit "shows no paging and no years row for a small journal" $ do
       get JournalR
       statusIs 200

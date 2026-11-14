@@ -1787,3 +1787,8 @@ msgstr "账户"
 #: hledger-web/Hledger/Web/App.hs
 msgid "Transaction"
 msgstr "交易"
+
+#. hledger-web: the help's line on a bare search word.
+#: hledger-web/templates/default-layout.hamlet
+msgid "find it in any field: payee, note, account, amount"
+msgstr "在任意字段中查找：收款人、备注、账户、金额"

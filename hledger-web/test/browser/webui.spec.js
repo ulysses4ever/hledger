@@ -497,6 +497,16 @@ test.describe('sidebar tree and top menu', () => {
     expect(await page.locator('.topmenu a').first().evaluate(a => parseFloat(getComputedStyle(a).fontSize))).toBeGreaterThanOrEqual(16);
   });
 
+  test('the search box finds a payee by name', async ({ page }) => {
+    await page.goto('/journal');
+    await page.locator('#searchform input[name=q]').fill('Cafe Luna');
+    await page.locator('#searchform input[name=q]').press('Enter');
+    await expect(page).toHaveURL(/q=Cafe\+Luna/);
+    await expect(page.locator('#main-content tr.title')).toHaveCount(1);
+    await expect(page.locator('#main-content tr.title')).toContainText('Cafe Luna');
+    expect(pageErrors).toEqual([]);
+  });
+
   test('the pages are a menu across the top, the page shown marked', async ({ page }) => {
     await page.goto('/journal');
     expect(await page.locator('.topmenu a').allTextContents()).toEqual(['Journal', 'Accounts', 'Reports', 'Recurring']);

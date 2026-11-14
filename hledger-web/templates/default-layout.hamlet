@@ -161,7 +161,8 @@ $if elem ViewPermission perms
               <b>_{HMsgc "help heading" "Search"}
               <ul>
                 <li> _{HMsg "Search patterns with spaces should be enclosed in quotes."}
-                <li> <code>REGEX</code> - _{HMsg "match account names"}
+                <li> <code>WORD</code> - _{HMsg "find it in any field: payee, note, account, amount"}
+                <li> <code>acct:REGEX</code> - _{HMsg "match account names"}
                 <li> <code>type:TYPE</code> - _{HMsg "match account types"}
                 <li> <code>date:PERIODEXP</code> - _{HMsg "match dates"}
                 <li> <code>status:*</code>, <code>status:!</code>, <code>status:</code> - _{HMsg "match status"}

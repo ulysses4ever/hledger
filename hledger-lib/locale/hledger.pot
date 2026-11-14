@@ -1703,3 +1703,8 @@ msgstr ""
 #: hledger-web/Hledger/Web/App.hs
 msgid "Transaction"
 msgstr ""
+
+#. hledger-web: the help's line on a bare search word.
+#: hledger-web/templates/default-layout.hamlet
+msgid "find it in any field: payee, note, account, amount"
+msgstr ""

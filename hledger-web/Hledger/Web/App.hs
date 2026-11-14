@@ -401,9 +401,11 @@ getViewData = do
                 today
 
   -- Get the query specified by the q request parameter, or no query if this fails.
+  -- A bare word in it finds the word in any field (find:), as a search box
+  -- is expected to; hledger's own terms (desc:, inacct:, date:...) are as written.
   qparam <- fromMaybe "" <$> lookupGetParam "q"
   (q1, qopts, mqerr) <- do
-    case parseQuery today qparam of
+    case parseQuery today (searchQuery qparam) of
       Right (q0, qopts) -> return (q0, qopts, Nothing)
       Left err         -> return (Any, [], Just err)
   -- To this, add any depth limit from the initial startup query, preserving that.
@@ -463,6 +465,24 @@ reportMenu =
   , ReportMenuItem CashflowR           (i18n "Cashflow statement")        (i18n "Show changes in liquid assets")                    (cbcaccum cashflowSpec)           False
   , ReportMenuItem BalanceR            (i18n "Balance report")            (i18n "Show the balance report: any accounts, by period") PerPeriod                         False
   ]
+
+-- | The search box's text as a query: a bare word finds the word in any
+-- visible field (payee, note, account, amount), as a search box is
+-- expected to, rather than in account names alone as hledger's bare
+-- terms do; a term with one of hledger's prefixes, or not: before one,
+-- is left as written.
+searchQuery :: Text -> Text
+searchQuery = T.unwords . map (quoteIfSpaced . term . T.pack) . words' . T.unpack
+  where
+    -- (the words come unquoted; a term with a space is quoted again whole)
+    term t
+      | "not:" `T.isPrefixOf` t = "not:" <> term (T.drop 4 t)
+      | "::" `T.isPrefixOf` t = t
+      | prefixed t = t
+      | otherwise = "find:" <> t
+    prefixed t = case T.breakOn ":" t of
+      (p, rest) -> not (T.null rest) && p `elem` prefixes
+    prefixes = ["acct", "amt", "code", "cur", "date", "date2", "depth", "desc", "expr", "find", "inacct", "inacctonly", "note", "payee", "real", "status", "tag", "type", "any", "all"]
 
 -- | A page's heading, for the header: set by a handler before the layout
 -- (request-scoped, through Yesod's cache); the layout falls back to the
