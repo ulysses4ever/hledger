@@ -79,8 +79,10 @@ $# given with --css can rearrange them with the order property.
             <td .account .main-posting .flow-to>
               <a href="@?{acctlink (paccount dst) torig}##{transactionFrag torig}" title="#{paccount dst}">
                 ^{accountNameAsHtml (paccount dst)}
+            $# how much, as the phone's block says it: red and negative
+            $# when spent, green with a plus when earned, plain when moved
             <td .amount .main-posting>
-              ^{mixedAmountAsHtml (pamount dst)}
+              <span .entry-amount .#{entryKindClass (esKind es)}>#{oneLine (esAmount es)}
           $nothing
             $maybe p <- mainPosting torig
               <td .account .main-posting colspan=3>

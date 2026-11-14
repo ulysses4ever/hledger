@@ -5,6 +5,12 @@
       <span .glyphicon.glyphicon-align-left.tgl-icon>
 
 <div#topbar .col-md-8 .col-sm-8 .col-xs-10>
+  $# On a tablet the sidebar is a drawer, which this button opens (hledger.js).
+  $if elem ViewPermission perms
+    <button type=button .sidebar-toggle aria-controls=sidebar-menu aria-expanded=false title=_{HMsg "Show the accounts"} aria-label=_{HMsg "Show the accounts"}>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <rect x="3" y="5" width="18" height="14" rx="2">
+        <path d="M9 5v14">
   $# The page's name, with the journal's file under it in small type.
   <div .topbar-name>
     <h1>#{heading}

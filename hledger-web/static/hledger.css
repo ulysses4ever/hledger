@@ -264,10 +264,6 @@ td.date,
   margin-bottom: 10px;
 }
 
-/* Each posting row is indented a little under the date and description. */
-#addform .account-group {
-  padding-left: 1em;
-}
 
 /* When the journal has several files, a selector chooses which one to add to.
    It sits inline after its "Add to:" label instead of filling the row. */
@@ -1697,6 +1693,16 @@ a:focus > .account-name > * {
    the arrow between them in a third, so the arrows line up down the
    page: the accounts the money came from end at the arrows, the ones it
    went to start after them. */
+/* how much, coloured by what the entry did, as on a phone */
+.transactionsreport td.main-posting .entry-amount.spending {
+  color: var(--negative);
+}
+.transactionsreport td.main-posting .entry-amount.earning {
+  color: var(--income);
+}
+.transactionsreport td.main-posting .entry-amount.earning::before {
+  content: "+";
+}
 .transactionsreport > tbody > tr > td.flow-from,
 .transactionsreport > thead > tr > th.flow-from {
   padding-right: 2px;
@@ -2293,24 +2299,79 @@ a:focus > .account-name > * {
     padding-left: 36px;
     white-space: nowrap;
   }
-  .transactionsreport > tbody > tr > td.description,
-  .transactionsreport > tbody > tr > td.account,
-  .transactionsreport > thead > tr > th:nth-child(2),
-  .transactionsreport > thead > tr > th:nth-child(3) {
-    white-space: nowrap;
-  }
-  .transactionsreport > tbody > tr > td.description {
-    max-width: 30em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .transactionsreport > tbody > tr > td.account {
-    max-width: 24em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+  /* (where the text is wider than the pane, a long description or
+     account name wraps, rather than the table scrolling sideways) */
   .transactionsreport > tbody > tr > td.description {
     padding-right: 24px;
+    overflow-wrap: anywhere;
+  }
+  .transactionsreport > tbody > tr > td.flow-arrow {
+    white-space: nowrap;
+  }
+}
+
+/* On a tablet (and a narrow window) the sidebar folds away, the main pane
+   taking the width: the ☰ button at the header's left opens it as a
+   drawer over the page, which a tap outside it, Escape, or the button
+   closes (hledger.js). A phone has its tab bar instead, and a wide screen
+   keeps the sidebar beside the page. */
+.sidebar-toggle {
+  display: none;
+}
+@media screen and (min-width: 768px) and (max-width: 1199px) {
+  #topbar .sidebar-toggle {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 36px;
+    padding: 0;
+    color: var(--account);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  #topbar .sidebar-toggle svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+  #topbar .sidebar-toggle:hover {
+    background-color: var(--band);
+  }
+  #spacer.col-sm-4 + #topbar .topbar-name,
+  #spacer.col-md-4 + #topbar .topbar-name {
+    flex: none;
+    margin-right: 0;
+  }
+  #main-content.col-sm-8,
+  #main-content.col-md-8 {
+    width: 100%;
+  }
+  #sidebar-menu.sidebar-offcanvas {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1035;
+    display: block;
+    width: min(360px, 85vw) !important;
+    height: 100% !important;
+    max-height: none;
+    padding: calc(12px + env(safe-area-inset-top)) 12px 12px;
+    overflow-y: auto;
+    opacity: 1;
+    background-color: var(--bg);
+    border-right: 1px solid var(--border);
+    box-shadow: 4px 0 18px rgba(0, 0, 0, .25);
+    transform: translateX(-105%);
+    transition: transform .2s ease;
+  }
+  body.sidebar-open #sidebar-menu.sidebar-offcanvas {
+    transform: none;
   }
 }
 .transactionsreport td.description .entry-icon::before,

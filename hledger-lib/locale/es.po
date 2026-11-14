@@ -1744,3 +1744,8 @@ msgstr "dividido entre"
 #: hledger-web/templates/add-form.hamlet
 msgid "OK"
 msgstr "OK"
+
+#. hledger-web: the header's button opening the sidebar on a tablet.
+#: hledger-web/templates/default-layout.hamlet
+msgid "Show the accounts"
+msgstr "Mostrar las cuentas"

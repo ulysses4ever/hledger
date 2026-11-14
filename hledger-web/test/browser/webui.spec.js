@@ -352,6 +352,27 @@ test.describe('transaction page', () => {
     await expect(page).toHaveURL(/\/transaction\/\d+$/);
   }
 
+  test("on a wide screen a journal row's amount is coloured as the phone's: spent red, earned green with a plus", async ({ page }) => {
+    await page.goto('/journal');
+    const amountOf = desc => page.locator('#main-content tr.title', { hasText: desc }).locator('td.amount.main-posting .entry-amount');
+    await expect(amountOf('Cafe Luna')).toHaveClass(/spending/);
+    await expect(amountOf('Cafe Luna')).toHaveText('-18.00');
+    await expect(amountOf('Employer Inc')).toHaveClass(/earning/);
+    const colours = await Promise.all(['Cafe Luna', 'Employer Inc'].map(d => amountOf(d).evaluate(e => getComputedStyle(e).color)));
+    expect(colours[0]).not.toEqual(colours[1]);
+    expect(await amountOf('Employer Inc').evaluate(e => getComputedStyle(e, '::before').content)).toBe('"+"');
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('the add form lines its rows up, the account rows not indented', async ({ page }) => {
+    await page.goto('/journal');
+    await openAddForm(page);
+    const left = sel => page.locator(sel).first().evaluate(e => e.getBoundingClientRect().left);
+    const amount = await left('#addform input[name=amount]');
+    expect(Math.abs(await left('#addform .category-select') - amount)).toBeLessThan(2);
+    expect(Math.abs(await left('#addform input[name=description]') - amount)).toBeLessThan(2);
+  });
+
   test('every journal row starts with an icon slot, and a transfer without a description is named', async ({ page }) => {
     await page.goto('/journal');
     expect(await page.locator('#main-content tr.title td.description .entry-icon').count()).toBeGreaterThan(0);
@@ -471,6 +492,45 @@ test.describe('search', () => {
     await page.locator('#searchform input[name=q]').press('Enter');
     await expect(page.locator('#main-content table')).toContainText('Cafe Luna');
     await expect(page.locator('#main-content table')).not.toContainText('Metro Transit');
+  });
+
+});
+
+test.describe('on a tablet', () => {
+
+  test('in landscape the sidebar is a drawer, and the journal fits without scrolling sideways', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto('/journal');
+    const sidebar = page.locator('#sidebar-menu');
+    const button = page.locator('#topbar .sidebar-toggle');
+    await expect(button).toBeVisible();
+    expect((await sidebar.boundingBox()).x + (await sidebar.boundingBox()).width).toBeLessThanOrEqual(0);
+    expect(await page.locator('.journal-entries').evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    // the button opens it over the page; a tap outside closes it
+    await button.click();
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await expect.poll(async () => (await sidebar.boundingBox()).x).toBeGreaterThanOrEqual(0);
+    await page.locator('#sidebar-menu a.acct-name', { hasText: 'groceries' }).first().isVisible();
+    await page.locator('.period-band .period-name').click();
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    // the s key does as the button does
+    await page.locator('body').press('s');
+    await expect(button).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(button).toHaveAttribute('aria-expanded', 'false');
+    // a wide screen keeps the sidebar beside the page, with no button
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(button).toBeHidden();
+    expect((await sidebar.boundingBox()).x).toBeGreaterThanOrEqual(0);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('a narrow window wraps a long text rather than scrolling the journal sideways', async ({ page }) => {
+    await page.setViewportSize({ width: 800, height: 900 });
+    await page.goto('/journal?period=all');
+    expect(await page.locator('.journal-entries').evaluate(e => e.scrollWidth <= e.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 
 });

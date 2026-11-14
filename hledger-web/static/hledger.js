@@ -171,6 +171,7 @@ document.addEventListener('DOMContentLoaded', function() {
   entryHoverInit();
   entryRowsInit();
   calcInit();
+  sidebarDrawerInit();
   entryPageInit();
   sidebarTreeInit();
   registerChartInit();
@@ -571,7 +572,36 @@ function addformAddPosting() {
 //----------------------------------------------------------------------
 // SIDEBAR
 
+// On a tablet the sidebar is a drawer (hledger.css): the header's button,
+// and the s key, open and close it; a tap outside it or Escape closes it.
+var sidebarDrawerQuery = window.matchMedia('(min-width: 768px) and (max-width: 1199px)');
+function sidebarDrawer(open) {
+  var button = document.querySelector('#topbar .sidebar-toggle');
+  document.body.classList.toggle('sidebar-open', open);
+  if (button) { button.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+}
+function sidebarDrawerInit() {
+  var button = document.querySelector('#topbar .sidebar-toggle');
+  var sidebar = document.getElementById('sidebar-menu');
+  if (!button || !sidebar) { return; }
+  button.addEventListener('click', function(e) {
+    e.stopPropagation();
+    sidebarDrawer(!document.body.classList.contains('sidebar-open'));
+  });
+  document.addEventListener('click', function(e) {
+    if (document.body.classList.contains('sidebar-open') && !sidebar.contains(e.target)) { sidebarDrawer(false); }
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) { sidebarDrawer(false); }
+  });
+  sidebarDrawerQuery.addEventListener('change', function() { sidebarDrawer(false); });
+}
+
 function sidebarToggle() {
+  if (sidebarDrawerQuery.matches) {
+    sidebarDrawer(!document.body.classList.contains('sidebar-open'));
+    return;
+  }
   var sidebar = document.getElementById('sidebar-menu');
   var main = document.getElementById('main-content');
   var spacer = document.getElementById('spacer');
