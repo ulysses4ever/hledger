@@ -22,7 +22,7 @@ test.describe('on a phone', () => {
     expect(Math.abs(a.y - b.y)).toBeLessThan(1);
     await expect(page.locator('#main-content .report-choice-name')).toHaveText(['Report', 'Section']);
     await expect(picked(page, 0)).toHaveText('Accounts');
-    await expect(picked(page, 1)).toHaveText('Assets');
+    await expect(picked(page, 1)).toHaveText('All');
     expect(errors).toEqual([]);
   });
 
@@ -42,11 +42,13 @@ test.describe('on a phone', () => {
   test('a statement shows one section at a time, untitled, and all of them when asked', async ({ page }) => {
     const errors = watchPageErrors(page);
     const rows = page.locator('#main-content tbody td.account a');
+    // the Accounts page (the balance sheet) opens on all of its sections
     await page.goto('/balancesheet');
-    await expect(page.locator('#main-content tr.section')).toHaveCount(0);
+    await expect(page.locator('#main-content tr.section').first()).toBeVisible();
     await expect(rows.filter({ hasText: 'assets:bank:checking' })).toHaveCount(1);
     await expect(rows.filter({ hasText: 'equity:' })).toHaveCount(0);
     await page.goto('/balancesheetequity');
+    await expect(page.locator('#main-content tr.section')).toHaveCount(0);
     await lists(page).nth(1).selectOption({ label: 'Equity' });
     await expect(page).toHaveURL(/\/balancesheetequity\?section=equity$/);
     await expect(rows.filter({ hasText: 'equity:opening' })).toHaveCount(1);

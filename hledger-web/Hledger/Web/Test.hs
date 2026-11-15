@@ -961,8 +961,11 @@ hledgerWebTest = do
       -- without inline styles
       bodyNotContains "style=\""
 
-    yit "opens the balance sheet on its liabilities, untitled, with their total as the table's" $ do
-      get BalancesheetR
+    yit "shows the balance sheet's liabilities alone when asked, untitled, with their total as the table's" $ do
+      request $ do
+        setMethod "GET"
+        setUrl BalancesheetR
+        addGetParam "section" "liabilities"
       statusIs 200
       -- an account's link carries no type term (its page would say "filtered")
       bodyContains "href=\"register?q=inacct:liabilities:card+date:2025-01-01..2025-02-07&amp;accum=historical\""
@@ -1043,19 +1046,24 @@ hledgerWebTest = do
       bodyContains "inacct:liabilities:card"
       bodyNotContains "inacct:assets:bank:checking"
       bodyContains "Section:"
-      -- the page's own section (liabilities, since there are some) needs no parameter
+      -- what the page opens on (all of the sections) needs no parameter
       bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=assets&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Assets</a>")
-      bodyContains ("class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Liabilities</a>")
-      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=all&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show every section, and the net total\">All</a>")
+      bodyContains ("class=\"current\" href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?section=liabilities&amp;period=monthly&amp;accum=change&amp;q=card\" title=\"Show only this section\">Liabilities</a>")
+      bodyContains ("href=\"" ++ defbaseurl defhost defport ++ "/balancesheet?period=monthly&amp;accum=change&amp;q=card\" title=\"Show every section, and the net total\">All</a>")
 
-    yit "shows the page's own section for a section it does not have" $ do
+    yit "opens the balance sheet on all of its sections, and so for a section it does not have" $ do
+      get BalancesheetR
+      statusIs 200
+      bodyContains "inacct:liabilities:card"
+      bodyContains "inacct:assets:bank:checking"
+      bodyContains "<tr class=\"section\">"
       request $ do
         setMethod "GET"
         setUrl BalancesheetR
         addGetParam "section" "revenues"
       statusIs 200
       bodyContains "inacct:liabilities:card"
-      bodyNotContains "inacct:assets:bank:checking"
+      bodyContains "inacct:assets:bank:checking"
 
     yit "serves the multi-period balance sheet, headed by end dates linking to this report" $ do
       request $ do

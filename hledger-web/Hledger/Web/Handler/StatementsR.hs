@@ -38,11 +38,12 @@ import Hledger.Web.Widget.Common (accountNameHtml, helplink, linksRow, removeIna
 
 getBalancesheetR, getBalancesheetequityR, getIncomestatementR, getCashflowR :: Handler Html
 -- TRANSLATORS: the browser tab titles of the statement pages.
--- Each opens on one of its sections (see statementPage): the balance
--- sheets on assets, the income statement on expenses, which is what a
--- money app's statistics open on.
-getBalancesheetR       = statementPage BalancesheetR       (i18n "balance sheet - hledger-web")             (rawSigns balancesheetSpec)       1  -- liabilities, the cards, first
-getBalancesheetequityR = statementPage BalancesheetequityR (i18n "balance sheet with equity - hledger-web") (rawSigns balancesheetequitySpec) 0
+-- Each opens on one of its sections (see statementPage), or on all of
+-- them: the balance sheet (the Accounts page) on all of them, the one
+-- with equity on assets, the income statement on expenses, which is what
+-- a money app's statistics open on.
+getBalancesheetR       = statementPage BalancesheetR       (i18n "balance sheet - hledger-web")             (rawSigns balancesheetSpec)       Nothing
+getBalancesheetequityR = statementPage BalancesheetequityR (i18n "balance sheet with equity - hledger-web") (rawSigns balancesheetequitySpec) (Just 0)
 
 -- | A balance sheet with every figure as the books have it: a liability
 -- owed is negative, as it is on the account's own page and in the sidebar,
@@ -53,8 +54,8 @@ rawSigns spec = spec{cbcqueries = [ s{ cbcsubreporttransform = id, cbcsubreporti
                                          -- (the normal sign also decides the note on a figure's link)
                                          , cbcsubreportoptions = \ropts -> (cbcsubreportoptions s ropts){normalbalance_ = Just NormallyPositive} }
                                      | s <- cbcqueries spec ]}
-getIncomestatementR    = statementPage IncomestatementR    (i18n "income statement - hledger-web")          incomestatementSpec    1
-getCashflowR           = statementPage CashflowR           (i18n "cashflow statement - hledger-web")        cashflowSpec           0
+getIncomestatementR    = statementPage IncomestatementR    (i18n "income statement - hledger-web")          incomestatementSpec    (Just 1)
+getCashflowR           = statementPage CashflowR           (i18n "cashflow statement - hledger-web")        cashflowSpec           (Just 0)
 
 -- | Which of a statement's sections a page shows.
 data ShownSections = OneSection Int | AllSections
@@ -73,7 +74,7 @@ data ShownSections = OneSection Int | AllSections
 -- the command does, with the net total (section=all). A row of links, or
 -- on a phone a drop-down list, picks one. Shown alone, a section needs no
 -- title row: the list names it.
-statementPage :: AppRoute -> Text -> CompoundBalanceCommandSpec -> Int -> Handler Html
+statementPage :: AppRoute -> Text -> CompoundBalanceCommandSpec -> Maybe Int -> Handler Html
 statementPage here tabtitle spec defaultSection = do
   checkServerSideUiEnabled
   VD{j, q, qopts, qparam, opts, today, trs} <- getViewData
@@ -149,24 +150,25 @@ statementPage here tabtitle spec defaultSection = do
             sectionKeys = map (T.intercalate "-" . T.words . T.toLower . cbcsubreporttitle) (cbcqueries spec)
             sectionNames = zipWith (\sub (title, _, _) -> if T.null title then tr trs (cbcsubreporttitle sub) else title) (cbcqueries spec) cbrpSections
             several = length cbrpSections > 1
-            -- The section the page opens on: the one given, when it has any
-            -- rows (a balance sheet opens on the liabilities, the cards,
-            -- when there are any), else the first.
+            -- What the page opens on: all of its sections, or the one
+            -- given when it has any rows, else the first.
             hasRows i = case drop i (cbrSubreports cbr) of
               (_, r, _) : _ -> not (null (prRows r))
               _ -> False
-            opening = if hasRows defaultSection then defaultSection else 0
+            opening = case defaultSection of
+              Nothing -> AllSections
+              Just d -> OneSection (if hasRows d then d else 0)
             shown
               | not several = OneSection 0
               | otherwise = case lookup "section" params of
                   Just "all" -> AllSections
                   Just k | Just i <- elemIndex k sectionKeys -> OneSection i
-                  _ -> OneSection opening
-            -- The parameter for showing the given sections: none for the
-            -- page's own section.
+                  _ -> opening
+            -- The parameter for showing the given sections: none for what
+            -- the page opens on.
             sectionParam = \case
-              OneSection i | i == opening -> []
-                           | otherwise -> [("section", k) | k <- take 1 (drop i sectionKeys)]
+              s | s == opening -> []
+              OneSection i -> [("section", k) | k <- take 1 (drop i sectionKeys)]
               AllSections -> [("section", "all")]
             -- Links to the sections keep the search, the period and the mode.
             sectionLinks =
